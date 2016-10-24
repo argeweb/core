@@ -154,7 +154,6 @@ def get_controller_in_plugin(plugin_name):
         return ["plugins."+plugin_name+".controllers."+plugin_name]
 
 
-@cache("get_all_controller_in_plugins")
 def get_all_controller_in_plugins(use_cache=True):
     """
         取得 plugins 下所有的 controller

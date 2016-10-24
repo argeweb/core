@@ -22,17 +22,17 @@ class Datastore(object):
     def __init__(self, controller):
         self._controller = controller
 
-    def get(self, name, *args, **kwargs):
-        if name in _commands:
-            rv = _commands[name](*args, **kwargs)
+    def get(self, query_name, *args, **kwargs):
+        if query_name in _commands:
+            rv = _commands[query_name](*args, **kwargs)
             try:
                 return rv.get()
             except:
                 return rv
 
-    def query(self, name, *args, **kwargs):
-        if name in _commands:
-            query = _commands[name](*args, **kwargs)
+    def query(self, query_name, *args, **kwargs):
+        if query_name in _commands:
+            query = _commands[query_name](*args, **kwargs)
             check_near = 3
             if "size" not in kwargs:
                 kwargs["size"] = self._controller.params.get_integer("size", 10)
