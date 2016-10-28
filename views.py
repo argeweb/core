@@ -89,6 +89,7 @@ class TemplateView(View):
             'request': self.controller.request,
             'route': self.controller.route,
             'params': self.controller.params,
+            'namespace': self.controller.namespace,
             'print_key': self.controller.util.encode_key,
             'print_setting': self.controller.settings.print_setting,
             'datastore': self.controller.datastore,

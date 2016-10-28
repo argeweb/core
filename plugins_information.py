@@ -103,7 +103,6 @@ def get_all_plugin(use_cache=True):
     return c
 
 
-@cache("get_all_controller")
 def get_all_controller():
     """
         取得所有的 controller
@@ -111,7 +110,6 @@ def get_all_controller():
     return get_all_controller_in_application() + get_all_controller_in_plugins()
 
 
-@cache("get_all_controller_in_application")
 def get_all_controller_in_application():
     """
         取得 Application 目錄下所有的 controller

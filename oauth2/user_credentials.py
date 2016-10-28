@@ -9,7 +9,6 @@ import hashlib
 
 
 class UserCredentials(Model):
-
     user = ndb.UserProperty(indexed=True)
     scopes = ndb.StringProperty(repeated=True, indexed=False)
     admin = ndb.BooleanProperty(indexed=True)

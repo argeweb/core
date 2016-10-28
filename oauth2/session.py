@@ -8,7 +8,6 @@ from oauth2client.appengine import FlowNDBProperty
 
 
 class Session(Model):
-
     scopes = ndb.StringProperty(indexed=False, repeated=True)
     admin = ndb.BooleanProperty(indexed=False)
     force_prompt = ndb.BooleanProperty(indexed=False)

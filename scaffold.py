@@ -122,6 +122,7 @@ class Scaffolding(object):
             'singular': controller.scaffold.singular,
             'form_action': controller.scaffold.form_action,
             'form_encoding': controller.scaffold.form_encoding,
+            'form_excluded_fields': controller.scaffold.form_excluded_fields,
             'display_properties': controller.scaffold.display_properties,
             'display_properties_in_list': controller.scaffold.display_properties_in_list,
             'layouts': controller.scaffold.layouts,
@@ -155,6 +156,7 @@ class Scaffold(object):
             redirect=redirect_url,
             form_action=None,
             form_encoding='application/x-www-form-urlencoded',
+            form_excluded_fields=(),
             flash_messages=True,
             layouts={
                 None: 'layouts/default.html',
