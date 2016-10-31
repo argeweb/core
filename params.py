@@ -97,6 +97,8 @@ class ParamInfo(object):
             key: the key to get from request
             default_value: then value not exits return
         """
+        from inflector import titleize
+        key = "-".join(titleize(key).split(" "))
         if key is "":
             return default_value
         try:
