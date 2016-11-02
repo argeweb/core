@@ -12,20 +12,12 @@ from argeweb.core import property as Fields
 
 
 class HostInformationModel(BasicModel):
-    class Meta:
-        label_name = {
-            "host": u"域名",
-            "namespace": u"命名空間",
-            "site_name": u"",
-            "plugins": u"命名空間",
-            "is_lock": u"命名空間",
-        }
-    host = Fields.StringProperty(required=True)
-    namespace = Fields.StringProperty(required=True)
-    site_name = Fields.StringProperty()
-    plugins = Fields.StringProperty()
-    theme = Fields.StringProperty()
-    is_lock = Fields.BooleanProperty(default=True)
+    host = Fields.StringProperty(required=True, verbose_name=u"域名")
+    namespace = Fields.StringProperty(required=True, verbose_name=u"命名空間")
+    site_name = Fields.StringProperty(verbose_name=u"網站名稱")
+    plugins = Fields.StringProperty(verbose_name=u"模組")
+    theme = Fields.StringProperty(verbose_name=u"主題樣式")
+    is_lock = Fields.BooleanProperty(default=True, verbose_name=u"是否鎖定")
 
     def plugins_list(self):
         return str(self.plugins).split(",")
@@ -56,15 +48,9 @@ class HostInformationModel(BasicModel):
 
 
 class WebSettingModel(BasicModel):
-    class Meta:
-        label_name = {
-            "setting_name": u"名稱",
-            "setting_key": u"鍵",
-            "setting_value": u"值",
-        }
-    setting_name = Fields.StringProperty()
-    setting_key = Fields.StringProperty(required=True)
-    setting_value = Fields.StringProperty(required=True)
+    setting_name = Fields.StringProperty(verbose_name=u"名稱")
+    setting_key = Fields.StringProperty(required=True, verbose_name=u"鍵")
+    setting_value = Fields.StringProperty(required=True, verbose_name=u"值")
 
     @classmethod
     def get_by_key(cls, key):
