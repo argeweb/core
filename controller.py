@@ -571,13 +571,16 @@ class Controller(webapp2.RequestHandler, Uri):
             start = 1
             end = near
         has_next = False
+        async_list = []
         for i in xrange(start, end):
             q = query.fetch_async(size, offset=size*(i-1), keys_only=True)
-            if page < i:
+            async_list.append({"q": q, "i": i})
+        for item in async_list:
+            if page < item["i"]:
                 has_next = True
-            q_result = len(q.get_result())
+            q_result = len(item["q"].get_result())
             if q_result > 0:
-                pager["near_list"].append(i)
+                pager["near_list"].append(item["i"])
             if q_result < size:
                 break
         pager["data"] = data.get_result()
