@@ -136,8 +136,19 @@ class Scaffold(object):
     """
     def __init__(self, controller):
         display_properties, model_form_data, redirect_url = None, None, None
+        field_name = {
+            "created": u"建立時間",
+            "modified": u"修改時間",
+            "sort": u"排序值",
+            "is_enable": u"啟用"
+        }
         if hasattr(controller.meta, "Model"):
-            display_properties=sorted([name for name, property in controller.meta.Model._properties.items()])
+            display_properties = []
+            for name, property in controller.meta.Model._properties.items():
+                display_properties.append(name)
+                if property._verbose_name is not None:
+                    field_name[name] = property._verbose_name
+            display_properties=sorted(display_properties)
             model_form_data=model_form(controller.meta.Model)
         try:
             redirect_url = controller.uri(action='list') if controller.uri_exists(action='list') else None
@@ -161,13 +172,8 @@ class Scaffold(object):
             layouts={
                 None: 'layouts/default.html',
             },
+            field_name=field_name,
             navigation={},
-            field_name={
-                "created": u"建立時間",
-                "modified": u"修改時間",
-                "sort": u"排序值",
-                "is_enable": u"啟用"
-            }
         )
         try:
             defaults["field_name"].update(controller.meta.Model.Meta.label_name)
