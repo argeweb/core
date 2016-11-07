@@ -31,10 +31,10 @@ def require_admin(controller):
     Requires that a user is logged in and that the user is and administrator on the App Engine Application
     """
     admin_user = None
-    if "application_user_key" not in controller.session:
+    if "application_admin_user_key" not in controller.session:
         return False, "require_admin"
-    if controller.session["application_user_key"] is not None:
-        admin_user = controller.session["application_user_key"].get()
+    if controller.session["application_admin_user_key"] is not None:
+        admin_user = controller.session["application_admin_user_key"].get()
     if admin_user is None:
         return False, "require_admin"
     if admin_user.role is None:
@@ -45,8 +45,8 @@ def require_admin(controller):
     controller.application_user = admin_user
     controller.application_user_level = role.level
     controller.prohibited_actions = str(role.prohibited_actions).split(",")
-    controller.context["application_user_level"] = controller.application_user_level
-    controller.context["application_user_key"] = admin_user.key
+    controller.context["application_admin_user_level"] = controller.application_user_level
+    controller.context["application_admin_user_key"] = admin_user.key
     name = ".".join(str(controller).split(" object")[0][1:].split(".")[0:-1]) + "." + controller.route.action
     if name in controller.prohibited_actions:
         return controller.abort(403)
