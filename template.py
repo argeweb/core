@@ -138,7 +138,6 @@ class TemplateEngine(object):
         return result
 
     def find(self, name):
-        logging.info(name)
         return self.environment.get_or_select_template(name)
 
     def themed(self, name, theme=None):

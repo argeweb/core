@@ -122,9 +122,10 @@ class Scaffolding(object):
             'singular': controller.scaffold.singular,
             'form_action': controller.scaffold.form_action,
             'form_encoding': controller.scaffold.form_encoding,
-            'form_excluded_fields': controller.scaffold.form_excluded_fields,
+            'excluded_properties_in_from': controller.scaffold.excluded_properties_in_from,
             'display_properties': controller.scaffold.display_properties,
             'display_properties_in_list': controller.scaffold.display_properties_in_list,
+            'hidden_properties_in_edit': controller.scaffold.hidden_properties_in_edit,
             'layouts': controller.scaffold.layouts,
             'navigation': controller.scaffold.navigation
         }
@@ -164,10 +165,11 @@ class Scaffold(object):
             ModelForm=model_form_data,
             display_properties=display_properties,
             display_properties_in_list=display_properties,
+            hidden_properties_in_edit=(),
             redirect=redirect_url,
             form_action=None,
             form_encoding='application/x-www-form-urlencoded',
-            form_excluded_fields=(),
+            excluded_properties_in_from=(),
             flash_messages=True,
             layouts={
                 None: 'layouts/default.html',

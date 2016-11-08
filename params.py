@@ -125,7 +125,12 @@ class ParamInfo(object):
             if key not in self.request.params:
                 return default_value
             else:
-                return bool(self.request.get(key))
+                v = self.request.get(key)
+                if v.lower() == u"false":
+                    return False
+                if v.lower() == u"0":
+                    return False
+                return bool(v)
         except:
             return default_value
 
