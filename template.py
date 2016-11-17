@@ -82,7 +82,7 @@ class TemplateEngine(object):
                         pass
                 raise TemplateNotFound(template)
 
-        def AssetsLoader(template):
+        def assets_loader(template):
             template = u""+template
             if template.startswith(u"code:") is True:
                 return template.replace(u"code:", u"")
@@ -97,6 +97,7 @@ class TemplateEngine(object):
             if template.startswith(u"assets:") is False:
                 return None
             template = template.replace(u"assets:", u"")
+            logging.info(template)
             template = template.split("?")[0]
             if template.startswith(u"/") is False:
                 template = u"/" + template
@@ -114,7 +115,7 @@ class TemplateEngine(object):
                 raise TemplateNotFound(template)
 
         loader = ChoiceLoader([
-            jinja2.FunctionLoader(AssetsLoader),
+            jinja2.FunctionLoader(assets_loader),
             jinja2.FileSystemLoader(non_prefix_template_paths),
             jinja2.PrefixLoader({
                 k: jinja2.FileSystemLoader(v)

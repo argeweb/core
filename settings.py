@@ -133,7 +133,7 @@ def get_from_datastore(setting_key, default=None, auto_save=True, use_memcache=T
     return item.setting_value
 
 
-def get_info(key, memcache_key, host=None, host_item=None, timeout=100):
+def get_host_information(key, memcache_key, host=None, host_item=None, timeout=100):
     if host_item is not None:
         return_string = getattr(host_item, key)
         memcache.set(key=memcache_key, value=return_string, time=timeout)
@@ -159,7 +159,7 @@ def set_theme(server_name, namespace, theme):
     host_item = HostInformationModel.get_by_host(server_name)
     host_item.theme = theme
     host_item.put()
-    update_memcache(server_name, host_item)
+    update_host_information_in_memcache(server_name, host_item)
     namespace_manager.set_namespace(namespace)
 
 
@@ -174,15 +174,28 @@ def get_host_information_item(server_name):
             plugins="application_user,application_user_role,backend_ui_material,scaffold,themes,web_file,web_page,web_setting,webdav,plugin_manager",
             is_lock=True
         )
-        host_item = update_memcache(server_name, host_item)
+        host_item = update_host_information_in_memcache(server_name, host_item)
     host_item.plugin_enable_list = str(host_item.plugins).split(",")
     host_item.application_controller_list = []
     return host_item, host_item.namespace, host_item.theme
 
 
-def update_memcache(server_name, host_item=None):
-    namespace_manager.set_namespace("shared")
+def update_host_information_in_memcache(server_name, host_item=None):
     memcache_key = "host.information." + server_name
-    memcache.set(key=memcache_key, value=host_item, time=3600)
-    namespace_manager.set_namespace(host_item.namespace)
+    set_memcache_in_shared(host_item.namespace, memcache_key, host_item)
     return host_item
+
+
+def get_memcache_in_shared(current_namespace, memcache_key):
+    namespace_manager.set_namespace("shared")
+    item = memcache.get(memcache_key)
+    namespace_manager.set_namespace(current_namespace)
+    return item
+
+
+def set_memcache_in_shared(current_namespace, memcache_key, memcache_value):
+    namespace_manager.set_namespace("shared")
+    memcache.set(key=memcache_key, value=memcache_value, time=3600)
+    namespace_manager.set_namespace(current_namespace)
+
+

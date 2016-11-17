@@ -74,7 +74,7 @@ class ImageSelectWidget(object):
             <div class="input-group-btn">
                 <div class="btn btn-outline img_selector_item" style="background-image: url(%s);"></div>
             </div>
-            <a href="#" class="btn btn-info filepicker"><i class="fa fa-photo"></i> 選取</a>
+            <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-photo"></i> 選取</a>
         </div>
         """ % (self.html_tag, html_params(**kwargs), field_data, field_data)
         return HTMLString(html)
@@ -187,7 +187,7 @@ class HiddenWidget(object):
             <%s type="text" %s value="%s" />
             <div class="input-group-btn">
                 <div class="btn btn-outline img_selector_item" style="background-image: url(%s);" /></div>
-                <a href="#" class="btn btn-info filepicker"><i class="fa fa-photo"></i> 選取</a>
+                <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-photo"></i> 選取</a>
             </div>
         </div>
         """ % (self.html_tag, html_params(**kwargs), field_data, field_data)

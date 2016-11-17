@@ -5,7 +5,7 @@ import argeweb
 import os
 from caching import cache
 from model import HostInformationModel
-from settings import update_memcache
+from settings import update_host_information_in_memcache
 from google.appengine.api import namespace_manager
 from google.appengine.api import memcache
 
@@ -25,16 +25,10 @@ def exists(name):
     return name in _plugin_installed_list
 
 
-def register_plugin_controller(controller_name):
-    if controller_name in _plugins_controller:
+def register_controller(controller_name, target_list):
+    if controller_name in target_list:
         return
-    _plugins_controller.append(controller_name)
-
-
-def register_application_controller(controller_name):
-    if controller_name in _application_controller:
-        return
-    _application_controller.append(controller_name)
+    target_list.append(controller_name)
 
 
 def register_template(plugin_name, templating=True):
@@ -129,7 +123,7 @@ def get_all_controller_in_application():
             if file_name.endswith(".py") == False or file_name in ['__init__.py', 'settings.py']:
                 continue
             controller_name = file_name.split('.')[0]
-            register_application_controller(controller_name)
+            register_controller(controller_name, _application_controller)
             if has_controllers_dir:
                 application_controller.append("application.controllers.%s" % controller_name)
     return application_controller
@@ -145,7 +139,7 @@ def get_controller_in_plugin(plugin_name):
         for file_name in files:
             if file_name.endswith(".py") and file_name not in ['__init__.py', 'settings.py']:
                 controllers.append("plugins."+plugin_name+".controllers."+file_name.replace(".py", ""))
-    register_plugin_controller(plugin_name)
+    register_controller(plugin_name, _plugins_controller)
     if len(controllers) > 0:
         return controllers
     else:
@@ -187,5 +181,5 @@ def set_enable_plugins_to_db(server_name, namespace, plugins):
     host_item = HostInformationModel.get_by_host(server_name)
     host_item.plugins = ",".join(plugins)
     host_item.put()
-    update_memcache(server_name, host_item)
+    update_host_information_in_memcache(server_name, host_item)
     namespace_manager.set_namespace(namespace)
