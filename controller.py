@@ -4,7 +4,6 @@ import re, os
 import weakref
 import webapp2
 import logging
-import time
 import base64
 from argeweb.core import plugins_information
 from google.appengine.api import users
@@ -291,7 +290,6 @@ class Controller(webapp2.RequestHandler, Uri):
             return get_route_menu(list_name, self._controller)
 
     def __init__(self, *args, **kwargs):
-        self.request_start_time = time.time()
         super(Controller, self).__init__(*args, **kwargs)
         self.settings = settings
         if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):

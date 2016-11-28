@@ -48,11 +48,11 @@ def add(route, app_router=None):
     app_router.add(route)
 
 
-def auto_route(app_router, debug=True):
+def auto_route(app_router, debug=True, version=u""):
     """
     Automatically routes all controllers in main app and plugins
     """
-    for item in plugins_information.get_all_controller():
+    for item in plugins_information.get_all_controller(debug, version):
         try:
             route_controllers(app_router, item)
         except ImportError, e:

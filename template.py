@@ -97,17 +97,17 @@ class TemplateEngine(object):
             if template.startswith(u"assets:") is False:
                 return None
             template = template.replace(u"assets:", u"")
-            logging.info(template)
             template = template.split("?")[0]
-            if template.startswith(u"/") is False:
-                template = u"/" + template
+            if template.startswith(u"/") is True:
+                template = template[1:]
+            logging.info(template)
             try:
                 from plugins.code.models.code_model import get_source
-                from plugins.code.models.code_target_model import get_target
-                t = get_target(template)
+                from plugins.file.models.file_model import get_file
+                t = get_file(template)
                 if t is None:
                     raise TemplateNotFound(template)
-                s = get_source(target=t, code_type="html", version=t.last_version)
+                s = get_source(target=t, version=t.last_version)
                 if s is None:
                     raise TemplateNotFound(template)
                 return s.source

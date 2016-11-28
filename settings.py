@@ -163,7 +163,19 @@ def set_theme(server_name, namespace, theme):
     namespace_manager.set_namespace(namespace)
 
 
-def get_host_information_item(server_name):
+def get_server_name():
+    import os
+    if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
+        paths = "_".join(os.path.dirname(os.path.abspath(__file__)).split("\\")[1:-1])
+        server_name = os.environ["SERVER_NAME"] + "@" + paths.lower()
+    else:
+        server_name = os.environ["SERVER_NAME"]
+    return server_name
+
+
+def get_host_information_item(server_name=None):
+    if server_name is None:
+        server_name = get_server_name()
     namespace_manager.set_namespace("shared")
     memcache_key = "host.information." + server_name
     host_item = memcache.get(memcache_key)
@@ -171,7 +183,7 @@ def get_host_information_item(server_name):
         host_item = HostInformationModel.get_or_insert(
             host=server_name,
             theme="install",
-            plugins="application_user,application_user_role,backend_ui_material,scaffold,themes,web_file,web_page,web_setting,webdav,plugin_manager",
+            plugins="application_user,backend_ui_material,scaffold,themes,file,user_file,code,plugin_manager",
             is_lock=True
         )
         host_item = update_host_information_in_memcache(server_name, host_item)

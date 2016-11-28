@@ -97,11 +97,22 @@ def get_all_plugin(use_cache=True):
     return c
 
 
-def get_all_controller():
+def get_all_controller(debug, version):
     """
         取得所有的 controller
         """
-    return get_all_controller_in_application() + get_all_controller_in_plugins()
+    if debug is True:
+        return get_all_controller_in_application() + get_all_controller_in_plugins()
+    last_version = memcache.get(key='application.controller.version')
+    if last_version is None:
+        return get_all_controller_in_application() + get_all_controller_in_plugins()
+    if version != last_version:
+        controllers = get_all_controller_in_application() + get_all_controller_in_plugins()
+        memcache.set(key='plugins.all.controller.version', value=version, time=86400)
+        memcache.set(key='all.controller', value=controllers, time=86400)
+    else:
+        controllers = memcache.get(key='all.controller')
+    return controllers
 
 
 def get_all_controller_in_application():

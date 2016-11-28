@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import random
 import time
 import template
 import json_util
@@ -66,6 +67,7 @@ class TemplateView(View):
         super(TemplateView, self).__init__(controller, context)
         self.template_name = None
         self.template_ext = 'html'
+        self.cache = True
         self.theme = controller.theme
         self.setup_template_variables()
 
@@ -105,7 +107,6 @@ class TemplateView(View):
         self.controller.response.content_type = 'text/html'
         self.controller.response.charset = 'utf-8'
         self.controller.response.unicode_body = result
-        self.controller.response.headers["spend-time"] = str(time.time() - self.controller.request_start_time)
         self.controller.events.after_render(controller=self.controller, result=result)
         return self.controller.response
 
@@ -125,7 +126,20 @@ class TemplateView(View):
 
         """
         if self.template_name:
-            return self.template_name
+            if self.cache:
+                return self.template_name
+            else:
+                # 使用隨機字串可以避開 Jinja2 樣版系統的快取
+                random_string = str(random.random())
+                return_list = []
+                for item in self.template_name:
+                    return_list.append(item + "?random_string=" + random_string)
+                return return_list
+        if self.cache:
+            random_string = ""
+        else:
+            # 使用隨機字串可以避開 Jinja2 樣版系統的快取
+            random_string = "?random_string=" + str(random.random())
 
         templates = []
 
@@ -154,9 +168,9 @@ class TemplateView(View):
         for i in templates:
             lower = i.lower()
             if not i in templates_new:
-                templates_new.append(i)
+                templates_new.append(i+random_string)
             if not lower in templates_new:
-                templates_new.append(lower)
+                templates_new.append(lower+random_string)
         self.controller.events.template_names(controller=self.controller, templates=templates_new)
         return templates_new
 
@@ -184,7 +198,6 @@ class JsonView(View):
         result = unicode(json_util.stringify(self._get_data()))
         self.controller.response.unicode_body = result
         self.controller.events.after_render(controller=self.controller, result=result)
-        self.controller.response.headers["spend-time"] = str(time.time() - self.controller.request_start_time)
         return self.controller.response
 
 
@@ -201,7 +214,6 @@ class JsonpView(JsonView):
         self.controller.response.unicode_body = u'%s(%s)' % (callback, result)
         self.controller.logging.debug(result)
         self.controller.events.after_render(controller=self.controller, result=result)
-        self.controller.response.headers["spend-time"] = str(time.time() - self.controller.request_start_time)
         return self.controller.response
 
 
@@ -214,7 +226,6 @@ class MessageView(JsonView):
         result = unicode(protojson.encode_message(data))
         self.controller.response.unicode_body = result
         self.controller.events.after_render(controller=self.controller, result=result)
-        self.controller.response.headers["spend-time"] = str(time.time() - self.controller.request_start_time)
         return self.controller.response
 
 
