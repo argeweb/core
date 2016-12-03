@@ -133,7 +133,10 @@ class TemplateView(View):
                 random_string = str(random.random())
                 return_list = []
                 for item in self.template_name:
-                    return_list.append(item + "?random_string=" + random_string)
+                    if str(item).startswith("assets:"):
+                        return_list.append(item + "?random_string=" + random_string)
+                    else:
+                        return_list.append(item)
                 return return_list
         if self.cache:
             random_string = ""

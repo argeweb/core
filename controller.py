@@ -74,8 +74,7 @@ def get_route_menu(list_name=u"", controller=None):
             url = controller.uri(uri)
         except:
             continue
-        sort = menu["sort"] if "sort" in menu else 1
-        icon = menu["icon"] if "icon" in menu else "list"
+
         if (u"%s" % menu["text"]).startswith(u"gt:"):
             text = u"gt"
             group_title = (u"%s" % menu["text"]).replace(u"gt:", "")
@@ -86,9 +85,11 @@ def get_route_menu(list_name=u"", controller=None):
             "uri": uri,
             "url": url,
             "text": text,
+            "need_hr": menu["need_hr"] if "need_hr" in menu else False,
+            "need_hr_parent": menu["need_hr_parent"] if "need_hr_parent" in menu else False,
             "group_title": group_title,
-            "icon": icon,
-            "sort": sort,
+            "icon": menu["icon"] if "icon" in menu else "list",
+            "sort": menu["sort"] if "sort" in menu else 1,
             "level": 1
         }
         if "group" in menu:
@@ -103,6 +104,8 @@ def get_route_menu(list_name=u"", controller=None):
                     is_find = j
             if is_find:
                 if "submenu" in is_find:
+                    if sub_item["need_hr_parent"]:
+                        is_find["need_hr_parent"] = True
                     if is_find["sort"] > sub_item["sort"]:
                         is_find["sort"] = sub_item["sort"]
                     is_find["submenu"].append(sub_item)
