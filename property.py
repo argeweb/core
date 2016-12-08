@@ -28,6 +28,7 @@ __all__ = (
     'HiddenProperty',
     'ImageProperty',
     'ImagesProperty',
+    'FileProperty',
 )
 
 class ReverseReferenceProperty(list):
@@ -59,3 +60,7 @@ class ImagesProperty(TextProperty):
 
 class HiddenProperty(StringProperty):
     __property_name__ = "hidden"
+
+
+class FileProperty(StringProperty):
+    __property_name__ = "file"

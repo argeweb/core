@@ -50,6 +50,39 @@ class RichTextWidget(object):
         return HTMLString(html)
 
 
+class FileSelectWidget(object):
+    html_params = staticmethod(html_params)
+    """
+    Widget for MultipleReferenceField. Displays options as checkboxes"""
+    def __init__(self, html_tag='input'):
+        super(FileSelectWidget, self).__init__()
+        self.html_tag = html_tag
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('name', field.id)
+        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + " file"
+        if field.data == "None" or field.data is None:
+            field.data = ""
+        if field.data:
+            field_data = field.data
+        else:
+            field_data = ""
+        ext = field_data.split(".")[-1]
+        if len(ext) > 5:
+            ext = "---"
+        html = u"""
+        <div class="file_picker_div input-group">
+            <%s type="text" %s value="%s" />
+            <div class="input-group-btn">
+                <div class="btn btn-outline file_picker_item" data-ext="%s">%s</div>
+            </div>
+            <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-file"></i> 選取檔案</a>
+        </div>
+        """ % (self.html_tag, html_params(**kwargs), field_data, ext, ext)
+        return HTMLString(html)
+
+
 class ImageSelectWidget(object):
     html_params = staticmethod(html_params)
     """
@@ -69,12 +102,12 @@ class ImageSelectWidget(object):
         else:
             field_data = ""
         html = u"""
-        <div class="img_selector_div input-group">
+        <div class="file_picker_div input-group">
             <%s type="text" %s value="%s" />
             <div class="input-group-btn">
-                <div class="btn btn-outline img_selector_item" style="background-image: url(%s);"></div>
+                <div class="btn btn-outline file_picker_item" style="background-image: url(%s);"></div>
             </div>
-            <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-photo"></i> 選取</a>
+            <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-photo"></i> 選取圖片</a>
         </div>
         """ % (self.html_tag, html_params(**kwargs), field_data, field_data)
         return HTMLString(html)
@@ -104,7 +137,7 @@ class ImagesSelectWidget(object):
                % (self.html_tag, html_params(**kwargs), field.data, self.html_tag, field.id, field.id, field.id,)
         for item in list:
             if item != u"":
-                html += u'<div class="img_selector_item" data-link="%s" style="background-image: url(%s);" />' % (item, item)
+                html += u'<div class="file_picker_item" data-link="%s" style="background-image: url(%s);" />' % (item, item)
         return HTMLString(html + "</div>")
 
 
@@ -183,10 +216,10 @@ class HiddenWidget(object):
         else:
             field_data = ""
         html = u"""
-        <div class="img_selector_div input-group">
+        <div class="file_picker_div input-group">
             <%s type="text" %s value="%s" />
             <div class="input-group-btn">
-                <div class="btn btn-outline img_selector_item" style="background-image: url(%s);" /></div>
+                <div class="btn btn-outline file_picker_item" style="background-image: url(%s);" /></div>
                 <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-photo"></i> 選取</a>
             </div>
         </div>

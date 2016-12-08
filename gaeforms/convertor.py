@@ -54,6 +54,10 @@ def convert_HiddenProperty(self, model, prop, kwargs):
     return fields.HiddenField(**kwargs)
 
 
+def convert_FileProperty(self, model, prop, kwargs):
+    return fields.FilePropertyField(**kwargs)
+
+
 def convert_ImageProperty(self, model, prop, kwargs):
     return fields.ImagePropertyField(**kwargs)
 
@@ -77,6 +81,7 @@ add_convertor('CategoryProperty', convert_CategoryProperty)
 add_convertor('HiddenProperty', convert_HiddenProperty)
 add_convertor('ImageProperty', convert_ImageProperty)
 add_convertor('ImagesProperty', convert_ImagesProperty)
+add_convertor('FileProperty', convert_FileProperty)
 
 
 
