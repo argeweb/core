@@ -40,7 +40,7 @@ def require_admin(controller):
     if admin_user.role is None:
         return False, "require_admin"
     role = admin_user.role.get()
-    if role is None or role.name not in [u"super_monkey", u"super_user"]:
+    if role is None or role.name not in [u"administrator", u"super_user"]:
         return False, "require_admin"
     controller.application_user = admin_user
     controller.application_user_level = role.level

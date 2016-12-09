@@ -181,7 +181,7 @@ class CategorySelectWidget(object):
             return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(text_type(label))))
         else:
             if hasattr(label, "level") and hasattr(label, "name"):
-                if label.level == 9999 and label.name == u'super_monkey' and (selected is False or selected is None):
+                if label.level == 9999 and label.name == u'super_user' and (selected is False or selected is None):
                     return None
             return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(text_type(label.title))))
 
