@@ -2,6 +2,34 @@ from google.appengine.api import users
 import logging
 
 
+def check_user(controller):
+    """
+    Requires that a user is logged in
+    """
+    check_target = ""
+    if "application_admin_user_key" in controller.session:
+        check_target = "application_admin_user_key"
+    else:
+        if "application_user_key" in controller.session:
+            check_target = "application_user_key"
+        else:
+            return True
+    application_user = controller.session[check_target].get()
+    if application_user is None:
+        return True
+    if application_user.role is None:
+        return True
+    role = application_user.role.get()
+    if role is None:
+        return True
+    controller.application_user = application_user
+    controller.application_user_level = role.level
+    controller.prohibited_actions = str(role.prohibited_actions).split(",")
+    controller.context["application_user_level"] = controller.application_user_level
+    controller.context["application_user_key"] = application_user.key
+    return True
+
+
 def require_user(controller):
     """
     Requires that a user is logged in
@@ -103,6 +131,10 @@ def route_predicate(route):
         return False
     return inner
 
+
+check_user_for_prefix = predicate_chain(prefix_predicate, check_user)
+check_user_for_action = predicate_chain(action_predicate, check_user)
+check_user_for_route = predicate_chain(route_predicate, check_user)
 
 require_user_for_prefix = predicate_chain(prefix_predicate, require_user)
 require_user_for_action = predicate_chain(action_predicate, require_user)
