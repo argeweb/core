@@ -52,7 +52,8 @@ def auto_route(app_router, debug=True, version=u""):
     """
     Automatically routes all controllers in main app and plugins
     """
-    for item in plugins_information.get_all_controller(debug, version):
+    plugins = sorted(plugins_information.get_all_controller(debug, version))
+    for item in plugins:
         try:
             route_controllers(app_router, item)
         except ImportError, e:

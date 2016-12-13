@@ -7,6 +7,7 @@
 # Date: 2015/7/12.
 from argeweb.libs import wtforms
 from cgi import escape
+from argeweb.core.template import pure_text
 
 html_params = wtforms.widgets.html_params
 HTMLString = wtforms.widgets.HTMLString
@@ -141,7 +142,6 @@ class ImagesSelectWidget(object):
         return HTMLString(html + "</div>")
 
 
-
 class CategorySelectWidget(object):
     """
     Renders a select field.
@@ -178,12 +178,12 @@ class CategorySelectWidget(object):
         if selected:
             options['selected'] = True
         if value == '__None':
-            return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(text_type(label))))
+            return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label)))))
         else:
             if hasattr(label, "level") and hasattr(label, "name"):
                 if label.level == 9999 and label.name == u'super_user' and (selected is False or selected is None):
                     return None
-            return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(text_type(label.title))))
+            return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label.title)))))
 
 
 class Option(object):

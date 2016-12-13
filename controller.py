@@ -149,7 +149,7 @@ def route_with(*args, **kwargs):
 
     For example::
 
-        @route_with(template='/posts/archive/<year>')
+        @route_with(template='"posts/archive/<year>")
         def archive_by_year(self, year):
             pass
     """
