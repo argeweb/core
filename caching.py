@@ -80,7 +80,7 @@ def cache_by_args(key, ttl=0, backend=None):
         @wraps(f)
         def dispatcher(*args, **kwargs):
             targs = args if not is_method else args[1:]
-            arg_key = "%s:%s:%s" % (key, targs, kwargs)
+            arg_key = '%s:%s:%s' % (key, targs, kwargs)
 
             @cache(arg_key, ttl, backend=backend)
             def inner_dispatcher():
@@ -314,7 +314,7 @@ class DatastoreChunkedBackend(object):
                              (key, len_serialized, len(chunks), cls.maxchunks))
 
         for i in chunks:
-            DatastoreCacheModel(id="%s.%i" % (key, i//cls.chunksize),\
+            DatastoreCacheModel(id='%s.%i' % (key, i//cls.chunksize),\
                                 data=serialized[i:i+cls.chunksize],\
                                 expires=expires).put_async()
 

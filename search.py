@@ -58,7 +58,7 @@ def default_entity_indexer(instance, properties, extra_converters=None):
 
         if not value or not converter:
             if property_class in (ndb.KeyProperty, ndb.BlobKeyProperty):
-                logging.debug("Search utilities will not automatically index Key or BlobKey property %s" % property)
+                logging.debug('Search utilities will not automatically index Key or BlobKey property %s' % property)
             continue
 
         if not property_instance._repeated:
@@ -67,7 +67,7 @@ def default_entity_indexer(instance, properties, extra_converters=None):
             if not property_class in non_repeatable_properties:
                 converted = [converter(property, x) for n, x in enumerate(value)]
             else:
-                logging.debug("Could not automatically add field %s to the index because date and number fields can not be repeated." % property)
+                logging.debug('Could not automatically add field %s to the index because date and number fields can not be repeated.' % property)
 
         if not converted:
             continue
@@ -119,8 +119,8 @@ def index_entity(instance, index, only=None, exclude=None, extra_converters=None
             index.put(doc)
 
     except Exception as e:
-        logging.error("Adding model %s instance %s to the full-text index failed" % (instance.key.kind(), instance.key.id()))
-        logging.error("Search API error: %s" % e)
+        logging.error('Adding model %s instance %s to the full-text index failed' % (instance.key.kind(), instance.key.id()))
+        logging.error('Search API error: %s' % e)
         logging.debug([(x.name, x.value) for x in fields])
 
 
@@ -232,5 +232,5 @@ def join_query(filters, operator='AND', parenthesis=False):
     operator = ' %s ' % operator
     filters = [x for x in filters if x]
     if parenthesis:
-        filters = ["(%s)" % x for x in filters]
+        filters = ['(%s)' % x for x in filters]
     return operator.join(filters)

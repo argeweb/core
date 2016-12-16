@@ -10,7 +10,7 @@
 _function_list = {}
 
 def register(function_object=None, prefix=u'global'):
-    name = prefix + ":" + function_object.__name__
+    name = prefix + ':' + function_object.__name__
     if name in _function_list:
         return
     _function_list[name] = function_object
@@ -27,7 +27,7 @@ class Function(object):
             prefix = u'global'
             if kwargs.has_key('function_prefix'):
                 prefix = kwargs['function_prefix']
-            name = prefix + ":" + common_name
+            name = prefix + ':' + common_name
             if name in _function_list:
                 return _function_list[name](*args, **kwargs)
         return run

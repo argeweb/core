@@ -20,7 +20,7 @@ class HostInformationModel(BasicModel):
     is_lock = Fields.BooleanProperty(default=True, verbose_name=u'是否鎖定')
 
     def plugins_list(self):
-        return str(self.plugins).split(",")
+        return str(self.plugins).split(',')
 
     @classmethod
     def get_by_host(cls, host):
@@ -39,9 +39,9 @@ class HostInformationModel(BasicModel):
             item = cls()
             item.host = host
             r = ''.join(random.choice(string.lowercase) for i in range(25))
-            item.namespace = u"%s-%s-%s-%s" % (r[0:4], r[5:9], r[10:14], r[15:19])
-            item.theme = theme if theme is not None else u""
-            item.plugins = plugins if plugins is not None else u""
+            item.namespace = u'%s-%s-%s-%s' % (r[0:4], r[5:9], r[10:14], r[15:19])
+            item.theme = theme if theme is not None else u''
+            item.plugins = plugins if plugins is not None else u''
             item.is_lock = is_lock
             item.put()
         return item

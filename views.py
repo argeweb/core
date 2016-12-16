@@ -133,40 +133,40 @@ class TemplateView(View):
                 random_string = str(random.random())
                 return_list = []
                 for item in self.template_name:
-                    if str(item).startswith("assets:"):
+                    if str(item).startswith('assets:'):
                         return_list.append(item + "?random_string=" + random_string)
                     else:
                         return_list.append(item)
                 return return_list
         if self.cache:
-            random_string = ""
+            random_string = ''
         else:
             # 使用隨機字串可以避開 Jinja2 樣版系統的快取
             random_string = "?random_string=" + str(random.random())
 
         templates = []
 
-        template_path = "%s/" % self.controller.name
-        action_name = "%s.%s" % (self.controller.route.action, self.template_ext)
+        template_path = '%s/' % self.controller.name
+        action_name = '%s.%s' % (self.controller.route.action, self.template_ext)
 
-        templates.append("%s%s" % (template_path, action_name))
+        templates.append('%s%s' % (template_path, action_name))
 
         if self.controller.route.prefix:
-            templates.insert(0, "%s%s_%s" % (template_path, self.controller.route.prefix, action_name))
+            templates.insert(0, '%s%s_%s' % (template_path, self.controller.route.prefix, action_name))
 
         if self.controller.name == 'home':
             if self.controller.route.prefix:
-                templates.insert(0, "%s_%s" % ( self.controller.route.prefix, action_name))
+                templates.insert(0, '%s_%s' % ( self.controller.route.prefix, action_name))
             else:
                 templates.insert(0, action_name)
         path = self.controller.request.path
         if path != '' and path != '/' and hasattr(self.controller, 'scaffold') is False:
-            if path.startswith("/"):
+            if path.startswith('/'):
                 path = path[1:]
             if path.endswith(self.template_ext):
                 templates.append(path)
             else:
-                templates.append("%s.%s" % (path, self.template_ext))
+                templates.append('%s.%s' % (path, self.template_ext))
         templates_new = []
         for i in templates:
             lower = i.lower()

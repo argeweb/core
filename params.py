@@ -18,14 +18,14 @@ class ParamInfo(object):
         """
         self.request = request
 
-    def get_ndb_record(self, key="", default_value=None):
+    def get_ndb_record(self, key='', default_value=None):
         """ get from request and try to parse to a int
 
         Args:
             key: the key to get from request
             default_value: then value not exits return
         """
-        if key is "":
+        if key is '':
             return default_value
         try:
             if key not in self.request.params:
@@ -34,14 +34,14 @@ class ParamInfo(object):
         except:
             return default_value
 
-    def get_integer(self, key="", default_value=0):
+    def get_integer(self, key='', default_value=0):
         """ get from request and try to parse to a int
 
         Args:
             key: the key to get from request
             default_value: then value not exits return
         """
-        if key is "":
+        if key is '':
             return default_value
         try:
             if key not in self.request.params:
@@ -51,14 +51,14 @@ class ParamInfo(object):
         except:
             return default_value
 
-    def get_float(self, key="", default_value=0.0):
+    def get_float(self, key='', default_value=0.0):
         """ get from request and try to parse to a float
 
         Args:
             key: the key to get from request
             default_value: then value not exits return
         """
-        if key is "":
+        if key is '':
             return default_value
         try:
             if key not in self.request.params:
@@ -70,14 +70,14 @@ class ParamInfo(object):
         except:
             return default_value
 
-    def get_string(self, key="", default_value=u''):
+    def get_string(self, key='', default_value=u''):
         """ get from request and try to parse to a str(unicode)
 
         Args:
             key: the key to get from request
             default_value: then value not exits return
         """
-        if key is "":
+        if key is '':
             return default_value
         try:
             if key not in self.request.params:
@@ -86,11 +86,11 @@ class ParamInfo(object):
                 rv = self.request.get(key)
         except:
             rv = default_value
-        if rv is None or rv is '' or rv is u"":
-            rv = u""
+        if rv is None or rv is '' or rv is u'':
+            rv = u''
         return rv
 
-    def get_header(self, key="", default_value=u''):
+    def get_header(self, key='', default_value=u''):
         """ get from request and try to parse to a str(unicode)
 
         Args:
@@ -98,8 +98,8 @@ class ParamInfo(object):
             default_value: then value not exits return
         """
         from inflector import titleize
-        key = "-".join(titleize(key).split(" "))
-        if key is "":
+        key = '-'.join(titleize(key).split(' '))
+        if key is '':
             return default_value
         try:
             if key not in self.request.headers.keys():
@@ -108,18 +108,18 @@ class ParamInfo(object):
                 rv = self.request.headers.get(key)
         except:
             rv = default_value
-        if rv is None or rv is '' or rv is u"":
-            rv = u""
+        if rv is None or rv is '' or rv is u'':
+            rv = u''
         return rv
 
-    def get_boolean(self, key="", default_value=False):
+    def get_boolean(self, key='', default_value=False):
         """ get from request and try to parse to a bool
 
         Args:
             key: the key to get from request
             default_value: then value not exits return
         """
-        if key is "":
+        if key is '':
             return default_value
         try:
             if key not in self.request.params:
@@ -134,7 +134,7 @@ class ParamInfo(object):
         except:
             return default_value
 
-    def get_list(self, key="", exactly_equal=True, use_dict=False):
+    def get_list(self, key='', exactly_equal=True, use_dict=False):
         """ get from request and try to parse to a list
 
         Args:
@@ -142,7 +142,7 @@ class ParamInfo(object):
             default_value: then value not exits return
         """
         list = []
-        if key is not "":
+        if key is not '':
             for item in self.request.POST.multi._items:
                 if exactly_equal:
                     if item[0] == key:
@@ -158,13 +158,13 @@ class ParamInfo(object):
                             list.append(item[1])
         return list
 
-    def get_json(self, key=""):
+    def get_json(self, key=''):
         try:
             import simplejson as json
         except ImportError:
             import json
 
-        if key is "":
+        if key is '':
             return {}
         data = self.request.get(key)
         return json.loads(data)
@@ -180,21 +180,21 @@ class ParamInfo(object):
         for i in xrange(10):
             if self.request.get('search[%s][type]' % i) == 'text' and self.request.get('search[%s][value]' % i) != '':
                 search_str.append({
-                    'value': u"" + self.request.get('search[%s][value]' % i).replace(u"'", u"''"),
-                    'field': u"" + self.request.get('search[%s][field]' % i),
-                    'type': u"" + self.request.get('search[%s][type]' % i),
-                    'operator': u"" + self.request.get('search[%s][operator]' % i),
+                    'value': u'' + self.request.get('search[%s][value]' % i).replace(u'\'', u'\'\''),
+                    'field': u'' + self.request.get('search[%s][field]' % i),
+                    'type': u'' + self.request.get('search[%s][type]' % i),
+                    'operator': u'' + self.request.get('search[%s][operator]' % i),
                 })
         return search_str
 
-    def get_mobile_number(self, key="", default_value=u'', taiwan_format=True):
+    def get_mobile_number(self, key='', default_value=u'', taiwan_format=True):
         """ get from request and try to parse to a str(unicode)
 
         Args:
             key: the key to get from request
             default_value: then value not exits return
         """
-        if key is "":
+        if key is '':
             return default_value
         try:
             if key not in self.request.params:
@@ -203,7 +203,7 @@ class ParamInfo(object):
                 rv = self.request.get(key)
         except:
             rv = default_value
-        if rv is '' or rv is u"":
+        if rv is '' or rv is u'':
             return None
         else:
             if len(rv) != 10 or rv.startswith('09') is False:
@@ -212,14 +212,14 @@ class ParamInfo(object):
             rv = "+886" + rv[1:]
         return rv
 
-    def string_is_empty(self, key=""):
+    def string_is_empty(self, key=''):
         key = key.strip()
-        if key is None or key is '' or key is u"":
+        if key is None or key is '' or key is u'':
             return True
         else:
             return False
 
-    def get_base64(self, key="", default_value=None):
+    def get_base64(self, key='', default_value=None):
         """ get from request and try to parse to a str(unicode)
 
         Args:
@@ -227,7 +227,7 @@ class ParamInfo(object):
             default_value: then value not exits return
         """
         import base64
-        if key is "":
+        if key is '':
             return default_value
         try:
             if key not in self.request.params:
@@ -236,7 +236,7 @@ class ParamInfo(object):
                 rv = self.request.get(key)
         except:
             rv = default_value
-        if rv is None or rv is '' or rv is u"":
+        if rv is None or rv is '' or rv is u'':
             return None
         return base64.urlsafe_b64decode(str(rv))
 

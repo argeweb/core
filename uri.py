@@ -76,7 +76,7 @@ class Uri(object):
                    if value is not None}
         for key, value in tkwargs.items():
             if isinstance(value, unicode):
-                tkwargs[key] = value.encode("utf-8")
+                tkwargs[key] = value.encode('utf-8')
 
         return webapp2.uri_for(route_name, *args, **tkwargs)
 
@@ -114,13 +114,13 @@ class Uri(object):
         else:
             uri = self.uri(route_name, kwargs=kwargs)
             returnVal, return_name = self.uri_exists(route_name=route_name, *args, **kwargs)
-        uri_sn = str(self.uri).split("<")[2].split(" ")[0].lower().split(".")
+        uri_sn = str(self.uri).split("<")[2].split(' ')[0].lower().split('.')
         if 'controller' in kwargs:
-            uri_s = ".".join(uri_sn[:-2]) + "." + kwargs['controller']
+            uri_s = '.'.join(uri_sn[:-2]) + '.' + kwargs['controller']
         else:
-            uri_s = ".".join(uri_sn[:-1])
+            uri_s = '.'.join(uri_sn[:-1])
         if 'action' in kwargs:
-            uri_s = uri_s + "." + kwargs['action']
+            uri_s = uri_s + '.' + kwargs['action']
         if returnVal and uri_s not in self.prohibited_actions:
             return True
         else:

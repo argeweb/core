@@ -10,7 +10,7 @@ from google.appengine.ext.ndb.google_imports import datastore_errors
 def generate_upload_url(success_path):
     from google.appengine.ext import blobstore
     from argeweb import settings
-    cloud_storage_bucket = ""
+    cloud_storage_bucket = ''
     if settings.get('upload').get('use_cloud_storage'):
         cloud_storage_bucket = settings.get('upload', {}).get('bucket')
     return blobstore.create_upload_url(
@@ -46,7 +46,7 @@ class Scaffolding(object):
         plugins_helper = self.controller.plugins.get_helper(self.controller)
         if plugins_helper is not None:
             try:
-                titles = plugins_helper['controllers'][str(self.controller.name).split(".")[-1]]['actions']
+                titles = plugins_helper['controllers'][str(self.controller.name).split('.')[-1]]['actions']
                 setattr(self.controller.Scaffold, 'title', titles)
             except:
                 setattr(self.controller.Scaffold, 'title', u'Unknown')
@@ -313,7 +313,7 @@ def parser_action(controller, item, callback=save_callback):
     parser = controller.parse_request(fallback=item)
 
     if controller.request.method in ('PUT', 'POST', 'PATCH'):
-        controller.response.headers["Request-Method"] = controller.request.method
+        controller.response.headers['Request-Method'] = controller.request.method
         controller.events.scaffold_before_validate(controller=controller, parser=parser, item=item)
         if parser.validate():
             controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=item)
@@ -377,7 +377,7 @@ def edit(controller, key):
 
 
 def delete(controller, key):
-    controller.response.headers["Request-Method"] = 'DELETE'
+    controller.response.headers['Request-Method'] = 'DELETE'
     key = controller.util.decode_key(key)
     controller.events.scaffold_before_delete(controller=controller, key=key)
     key.delete()
@@ -385,7 +385,7 @@ def delete(controller, key):
     _flash(controller, u'此項目已成功的刪除', 'success')
     if controller.scaffold.redirect:
         import time
-        controller.response.headers["Command-Redirect"] = controller.scaffold.redirect + "?rnid=" + str(time.time())
+        controller.response.headers['Command-Redirect'] = controller.scaffold.redirect + "?rnid=" + str(time.time())
         controller.meta.change_view('json')
         controller.context['data'] = {'info': 'success'}
 
@@ -412,7 +412,7 @@ def sort_up(controller, key):
         prev_item.put()
         item.put()
     controller.meta.change_view('json')
-    controller.response.headers["Command-Redirect"] = redirect_path
+    controller.response.headers['Command-Redirect'] = redirect_path
     controller.context['data'] = {'info': 'success'}
 
 
@@ -437,7 +437,7 @@ def sort_down(controller, key):
         next_item.put()
         item.put()
     controller.meta.change_view('json')
-    controller.response.headers["Command-Redirect"] = redirect_path
+    controller.response.headers['Command-Redirect'] = redirect_path
     controller.context['data'] = {'info': 'success'}
 
 

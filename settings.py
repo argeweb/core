@@ -36,7 +36,7 @@ def load_settings(app_settings=None, refresh=False):
             # except ImportError:
             #     raise ConfigurationError("Settings not found. Please create /application/settings.py")
             appdefaults = appsettings.settings
-            logging.debug("Static settings loaded from application.settings.py")
+            logging.debug('Static settings loaded from application.settings.py')
         except:
             try:
                 from argeweb import base_settings as appsettings
@@ -45,7 +45,7 @@ def load_settings(app_settings=None, refresh=False):
                 # except ImportError:
                 #     raise ConfigurationError("Settings not found. Please create /application/settings.py")
                 appdefaults = appsettings.settings
-                logging.debug("Static settings loaded from argeweb.settings.py")
+                logging.debug('Static settings loaded from argeweb.settings.py')
             except AttributeError:
                 raise ConfigurationError("No dictionary 'settings' found in settings.py")
     else:
@@ -78,7 +78,7 @@ def settings():
 
 
 def print_setting(key):
-    return get_from_datastore(key, "")
+    return get_from_datastore(key, '')
 
 
 def get(key, default=None):
@@ -91,17 +91,17 @@ def get(key, default=None):
         return _settings[key]
     default = os.environ.get(key, default)
     if default is None:
-        raise ConfigurationError("Missing setting %s" % key)
+        raise ConfigurationError('Missing setting %s' % key)
     else:
         _defaults.update({key: default})
         return default
 
 
-def save_to_datastore(setting_key, setting_value, use_memcache=True, prefix=u""):
+def save_to_datastore(setting_key, setting_value, use_memcache=True, prefix=u''):
     _prefix = prefix
-    if _prefix is not u"":
-        _prefix += "."
-    memcache_key = "setting." + _prefix + setting_key
+    if _prefix is not u'':
+        _prefix += '.'
+    memcache_key = 'setting.' + _prefix + setting_key
     item = WebSettingModel.get_or_insert(key=setting_key, default=setting_value)
     item.setting_value = setting_value
     item.put()
@@ -109,13 +109,13 @@ def save_to_datastore(setting_key, setting_value, use_memcache=True, prefix=u"")
         memcache.set(key=memcache_key, value=setting_value, time=100)
 
 
-def get_from_datastore(setting_key, default=None, auto_save=True, use_memcache=True, prefix=u""):
+def get_from_datastore(setting_key, default=None, auto_save=True, use_memcache=True, prefix=u''):
     if default is None:
-        default = u""
+        default = u''
     _prefix = prefix
-    if _prefix is not u"":
-        _prefix += "."
-    memcache_key = "setting." + _prefix + setting_key
+    if _prefix is not u'':
+        _prefix += '.'
+    memcache_key = 'setting.' + _prefix + setting_key
     if use_memcache:
         data = memcache.get(memcache_key)
         if data is not None:
@@ -166,8 +166,8 @@ def set_theme(server_name, namespace, theme):
 def get_server_name():
     import os
     if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
-        paths = '_'.join(os.path.dirname(os.path.abspath(__file__)).split("\\")[1:-1])
-        server_name = os.environ['SERVER_NAME'] + "@" + paths.lower()
+        paths = '_'.join(os.path.dirname(os.path.abspath(__file__)).split('\\')[1:-1])
+        server_name = os.environ['SERVER_NAME'] + '@' + paths.lower()
     else:
         server_name = os.environ['SERVER_NAME']
     return server_name
@@ -177,23 +177,23 @@ def get_host_information_item(server_name=None):
     if server_name is None:
         server_name = get_server_name()
     namespace_manager.set_namespace('shared')
-    memcache_key = "host.information." + server_name
+    memcache_key = 'host.information.' + server_name
     host_item = memcache.get(memcache_key)
     if host_item is None:
         host_item = HostInformationModel.get_or_insert(
             host=server_name,
             theme='install',
-            plugins="application_user,backend_ui_material,scaffold,themes,file,user_file,code,plugin_manager",
+            plugins='application_user,backend_ui_material,scaffold,themes,file,user_file,code,plugin_manager',
             is_lock=True
         )
         host_item = update_host_information_in_memcache(server_name, host_item)
-    host_item.plugin_enable_list = str(host_item.plugins).split(",")
+    host_item.plugin_enable_list = str(host_item.plugins).split(',')
     host_item.application_controller_list = []
     return host_item, host_item.namespace, host_item.theme
 
 
 def update_host_information_in_memcache(server_name, host_item=None):
-    memcache_key = "host.information." + server_name
+    memcache_key = 'host.information.' + server_name
     set_memcache_in_shared(host_item.namespace, memcache_key, host_item)
     return host_item
 

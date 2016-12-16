@@ -33,8 +33,8 @@ _prefixes = ('admin', 'console', 'dashboard')
 def route_menu(*args, **kwargs):
     def inner(f):
         if 'uri' not in kwargs:
-            prefix = ""
-            ctrl = f.__module__.split(".")[-1]
+            prefix = ''
+            ctrl = f.__module__.split('.')[-1]
             action = f.__name__
             if 'prefix' in kwargs:
                 prefix = kwargs['prefix']
@@ -44,12 +44,12 @@ def route_menu(*args, **kwargs):
                 if action.startswith(possible_prefix):
                     prefix = possible_prefix
                     break
-            if prefix != u"":
-                action = action.replace(prefix + '_', "")
-            if prefix is not "":
-                kwargs['uri'] = "%s:%s:%s" % (prefix, ctrl, action)
+            if prefix != u'':
+                action = action.replace(prefix + '_', '')
+            if prefix is not '':
+                kwargs['uri'] = '%s:%s:%s' % (prefix, ctrl, action)
             else:
-                kwargs['uri'] = "%s:%s" % (ctrl, action)
+                kwargs['uri'] = '%s:%s' % (ctrl, action)
             kwargs['controller'] = str(f.__module__)
             kwargs['action'] = action
         _temporary_menu_storage.append(kwargs)
@@ -57,7 +57,7 @@ def route_menu(*args, **kwargs):
     return inner
 
 
-def get_route_menu(list_name=u"", controller=None):
+def get_route_menu(list_name=u'', controller=None):
     menus = []
     if _temporary_menu_storage is None:
         return []
@@ -67,7 +67,7 @@ def get_route_menu(list_name=u"", controller=None):
             continue
         if menu['controller'] in controller.prohibited_controllers:
             continue
-        if str(menu['controller'] + "." + menu['action']) in controller.prohibited_actions:
+        if str(menu['controller'] + '.' + menu['action']) in controller.prohibited_actions:
             continue
         uri = menu['uri']
         try:
@@ -75,12 +75,12 @@ def get_route_menu(list_name=u"", controller=None):
         except:
             continue
 
-        if (u"%s" % menu['text']).startswith(u"gt:"):
+        if (u'%s' % menu['text']).startswith(u'gt:'):
             text = u'gt'
-            group_title = (u"%s" % menu['text']).replace(u"gt:", "")
+            group_title = (u'%s' % menu['text']).replace(u'gt:', '')
         else:
             text = menu['text']
-            group_title = u""
+            group_title = u''
         insert_item = {
             'uri': uri,
             'url': url,
@@ -296,8 +296,8 @@ class Controller(webapp2.RequestHandler, Uri):
         super(Controller, self).__init__(*args, **kwargs)
         self.settings = settings
         if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
-            paths = '_'.join(os.path.dirname(os.path.abspath(__file__)).split("\\")[1:-1])
-            self.server_name = os.environ['SERVER_NAME'] + "@" + paths.lower()
+            paths = '_'.join(os.path.dirname(os.path.abspath(__file__)).split('\\')[1:-1])
+            self.server_name = os.environ['SERVER_NAME'] + '@' + paths.lower()
         else:
             self.server_name = os.environ['SERVER_NAME']
         self.host_information, self.namespace, self.theme = self.settings.get_host_information_item(self.server_name)
@@ -399,14 +399,14 @@ class Controller(webapp2.RequestHandler, Uri):
         """
         self.startup()
         self.prohibited_controllers = plugins_information.get_prohibited_controllers(self.server_name, self.host_information.namespace)
-        name = ".".join(str(self).split(" object")[0][1:].split(".")[0:-1])
+        name = '.'.join(str(self).split(' object')[0][1:].split('.')[0:-1])
         if name in self.prohibited_controllers:
             # 組件被停用
-            self.logging.debug(u"%s is disable" % self.name)
+            self.logging.debug(u'%s is disable' % self.name)
             return self.abort(404)
         if name in self.prohibited_actions:
             # 權限不足
-            self.logging.debug(u"%s in %s" % (self.name, self.prohibited_actions))
+            self.logging.debug(u'%s in %s' % (self.name, self.prohibited_actions))
             return self.abort(404)
         if self.name in self.plugins.get_installed_list():
             pass
@@ -437,7 +437,7 @@ class Controller(webapp2.RequestHandler, Uri):
             pass
 
         elif auth_result is not True:
-            message = u"Authorization chain rejected request"
+            message = u'Authorization chain rejected request'
             if isinstance(auth_result, tuple):
                 message = auth_result[1]
 
@@ -592,7 +592,7 @@ class Controller(webapp2.RequestHandler, Uri):
     def get_file_name(file):
         import os
         dri_path = os.path.join(file)
-        l = dri_path.split(os.path.sep)[-1].split(".")[0]
+        l = dri_path.split(os.path.sep)[-1].split('.')[0]
         return l
 
     def json(self, data):

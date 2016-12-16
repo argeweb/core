@@ -6,7 +6,7 @@ def check_user(controller):
     """
     Requires that a user is logged in
     """
-    check_target = ""
+    check_target = ''
     if 'application_admin_user_key' in controller.session:
         check_target = 'application_admin_user_key'
     else:
@@ -24,7 +24,7 @@ def check_user(controller):
         return True
     controller.application_user = application_user
     controller.application_user_level = role.level
-    controller.prohibited_actions = str(role.prohibited_actions).split(",")
+    controller.prohibited_actions = str(role.prohibited_actions).split(',')
     controller.context['application_user_level'] = controller.application_user_level
     controller.context['application_user_key'] = application_user.key
     return True
@@ -46,7 +46,7 @@ def require_user(controller):
         return False, 'require_user'
     controller.application_user = application_user
     controller.application_user_level = role.level
-    controller.prohibited_actions = str(role.prohibited_actions).split(",")
+    controller.prohibited_actions = str(role.prohibited_actions).split(',')
     controller.context['application_user_level'] = controller.application_user_level
     controller.context['application_user_key'] = application_user.key
     if controller.route.name in controller.prohibited_actions:
@@ -72,10 +72,10 @@ def require_admin(controller):
         return False, 'require_admin'
     controller.application_user = admin_user
     controller.application_user_level = role.level
-    controller.prohibited_actions = str(role.prohibited_actions).split(",")
+    controller.prohibited_actions = str(role.prohibited_actions).split(',')
     controller.context['application_user_level'] = controller.application_user_level
     controller.context['application_user_key'] = admin_user.key
-    name = ".".join(str(controller).split(" object")[0][1:].split(".")[0:-1]) + "." + controller.route.action
+    name = '.'.join(str(controller).split(' object')[0][1:].split('.')[0:-1]) + '.' + controller.route.action
     if name in controller.prohibited_actions:
         return controller.abort(403)
     # if controller.route.name in controller.prohibited_actions:
@@ -125,7 +125,7 @@ def route_predicate(route):
     route = route if isinstance(route, (list, tuple)) else (route,)
 
     def inner(controller):
-        route_name = controller.route.name.split(":")[0]
+        route_name = controller.route.name.split(':')[0]
         if route_name in route:
             return True
         return False

@@ -10,13 +10,13 @@ debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 def generic_handler(code, template=None):
     if not template:
-        template = "%s" % code
+        template = '%s' % code
     template = ('errors/%s.html' % template, 'templates/errors/500.html')
 
     def inner(request, response, exception):
         logging.exception(exception)
         response.set_status(code)
-        if request.path.find("/admin") == 0:
+        if request.path.find('/admin') == 0:
             is_backend = True
         else:
             is_backend = False

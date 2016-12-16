@@ -70,7 +70,7 @@ def get_helper(plugin_name_or_controller):
         controller_module_name = str(plugin_name_or_controller.__module__)
         try:
             if controller_module_name.startswith('plugins'):
-                plugin_name = controller_module_name.split(".")[1]
+                plugin_name = controller_module_name.split('.')[1]
             else:
                 return None
         except:
@@ -91,7 +91,7 @@ def get_all_plugin(use_cache=True):
         取得所有的 controller
         """
     c = get_all_controller_in_plugins(use_cache)
-    b = [item.split(".")[1] if item.find(".") > 0 else item for item in c]
+    b = [item.split('.')[1] if item.find('.') > 0 else item for item in c]
     c = list(set(b))
     c.sort(key=b.index)
     return c
@@ -131,12 +131,12 @@ def get_all_controller_in_application():
         return
     for root_path, _, files in os.walk(directory):
         for file_name in files:
-            if file_name.endswith(".py") == False or file_name in ['__init__.py', 'settings.py']:
+            if file_name.endswith('.py') == False or file_name in ['__init__.py', 'settings.py']:
                 continue
             controller_name = file_name.split('.')[0]
             register_controller(controller_name, _application_controller)
             if has_controllers_dir:
-                application_controller.append("application.controllers.%s" % controller_name)
+                application_controller.append('application.controllers.%s' % controller_name)
     return application_controller
 
 
@@ -148,13 +148,13 @@ def get_controller_in_plugin(plugin_name):
     controllers = []
     for root_path, _, files in os.walk(directory):
         for file_name in files:
-            if file_name.endswith(".py") and file_name not in ['__init__.py', 'settings.py']:
-                controllers.append("plugins."+plugin_name+".controllers."+file_name.replace(".py", ""))
+            if file_name.endswith('.py') and file_name not in ['__init__.py', 'settings.py']:
+                controllers.append('plugins.'+plugin_name+'.controllers.'+file_name.replace('.py', ''))
     register_controller(plugin_name, _plugins_controller)
     if len(controllers) > 0:
         return controllers
     else:
-        return ["plugins."+plugin_name+".controllers."+plugin_name]
+        return ['plugins.'+plugin_name+'.controllers.'+plugin_name]
 
 
 def get_all_controller_in_plugins(use_cache=True):
@@ -168,7 +168,7 @@ def get_all_controller_in_plugins(use_cache=True):
     plugins_controller = []
     dir_plugins = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'plugins'))
     for dirPath in os.listdir(dir_plugins):
-        if dirPath.find(".") < 0:
+        if dirPath.find('.') < 0:
             plugins_controller += get_controller_in_plugin(dirPath)
     memcache.set(key='plugins.all.controller', value=plugins_controller, time=60)
     return plugins_controller
@@ -181,7 +181,7 @@ def get_enable_plugins_from_db(server_name, namespace):
     namespace_manager.set_namespace('shared')
     host_item = HostInformationModel.get_by_host(server_name)
     namespace_manager.set_namespace(namespace)
-    return str(host_item.plugins).split(",")
+    return str(host_item.plugins).split(',')
 
 
 def set_enable_plugins_to_db(server_name, namespace, plugins):
@@ -190,7 +190,7 @@ def set_enable_plugins_to_db(server_name, namespace, plugins):
         """
     namespace_manager.set_namespace('shared')
     host_item = HostInformationModel.get_by_host(server_name)
-    host_item.plugins = ",".join(plugins)
+    host_item.plugins = ','.join(plugins)
     host_item.put()
     update_host_information_in_memcache(server_name, host_item)
     namespace_manager.set_namespace(namespace)

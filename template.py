@@ -74,7 +74,7 @@ class TemplateEngine(object):
 
         class ChoiceLoader(jinja2.ChoiceLoader):
             def get_source(self, environment, template):
-                is_assets = template.startswith(u"assets:")
+                is_assets = template.startswith(u'assets:')
                 for loader in self.loaders:
                     loader_name = str(loader)
                     if is_assets and loader_name.find('FunctionLoader') < 0:
@@ -86,22 +86,22 @@ class TemplateEngine(object):
                 raise TemplateNotFound(template)
 
         def assets_loader(template):
-            template = u""+template
-            if template.startswith(u"code:") is True:
-                return template.replace(u"code:", u"")
-            if template.startswith(u"ndb:") is True:
+            template = u''+template
+            if template.startswith(u'code:') is True:
+                return template.replace(u'code:', u'')
+            if template.startswith(u'ndb:') is True:
                 from argeweb.core.ndb import decode_key
-                template = str(template).replace(u"ndb:", u"")
+                template = str(template).replace(u'ndb:', u'')
                 item = decode_key(template)
                 if item is None:
                     return None
                 if hasattr(item, 'source') is True:
                     return item.source
-            if template.startswith(u"assets:") is False:
+            if template.startswith(u'assets:') is False:
                 return None
-            template = template.replace(u"assets:", u"")
-            template = template.split("?")[0]
-            if template.startswith(u"/") is True:
+            template = template.replace(u'assets:', u'')
+            template = template.split('?')[0]
+            if template.startswith(u'/') is True:
                 template = template[1:]
             logging.info(template)
             try:
@@ -288,7 +288,7 @@ formatters = {
 }
 
 
-def pure_text(text, length=50, more=u"..."):
+def pure_text(text, length=50, more=u'...'):
     import re
     tag_re = re.compile(r'<[^>]+>')
     s = tag_re.sub(u'', text)
@@ -318,10 +318,10 @@ def format_value(val, format=None):
 
 def format_value_with_lang(item, field_name, lang=None):
     if field_name is None or lang is None:
-        return ""
-    lang_field = "%s_lang_%s" % (field_name, lang)
+        return ''
+    lang_field = '%s_lang_%s' % (field_name, lang)
     if hasattr(item, lang_field):
         return format_value(getattr(item, lang_field))
     else:
-        return ""
+        return ''
 

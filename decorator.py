@@ -87,7 +87,7 @@ class FunctionMaker(object):
                 if sys.version < '3': # easy way
                     self.shortsignature = self.signature = \
                         inspect.formatargspec(
-                        formatvalue=lambda val: "", *argspec)[1:-1]
+                        formatvalue=lambda val: '', *argspec)[1:-1]
                 else: # Python 3 way
                     allargs = list(self.args)
                     allshortargs = list(self.args)
@@ -196,7 +196,7 @@ def decorator(caller, func=None):
         evaldict['_call_'] = caller
         evaldict['_func_'] = func
         return FunctionMaker.create(
-            func, "return _call_(_func_, %(shortsignature)s)",
+            func, 'return _call_(_func_, %(shortsignature)s)',
             evaldict, undecorated=func, __wrapped__=func)
     else: # returns a decorator
         if inspect.isclass(caller):
@@ -230,7 +230,7 @@ def decorator(caller, func=None):
 def __call__(self, func):
     'Context manager decorator'
     return FunctionMaker.create(
-        func, "with _self_: return _func_(%(shortsignature)s)",
+        func, 'with _self_: return _func_(%(shortsignature)s)',
         dict(_self_=self, _func_=func), __wrapped__=func)
 
 try: # Python >= 3.2

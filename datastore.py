@@ -47,7 +47,7 @@ class Datastore(object):
     def random(self, cls_name, common_name, size=3, *args, **kwargs):
         import random
         return_lst = []
-        cls_name = cls_name + ":" + common_name
+        cls_name = cls_name + ':' + common_name
         if cls_name not in _commands:
             return return_lst
         query = _commands[cls_name](*args, **kwargs)

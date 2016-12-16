@@ -37,7 +37,7 @@ class Event(object):
         try:
             self.handlers.remove((priority, handler))
         except:
-            raise ValueError("Handler is not handling this event, so cannot unhandle it.")
+            raise ValueError('Handler is not handling this event, so cannot unhandle it.')
         return self
 
     def fire(self, *args, **kargs):

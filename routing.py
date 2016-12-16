@@ -28,7 +28,7 @@ def get_true_name_and_argspec(method):
     if hasattr(method, '__func__'):
         method = method.__func__
     if not hasattr(method, 'func_closure') or method.func_closure is None:
-        raise Exception("No closure for method.")
+        raise Exception('No closure for method.')
 
     method = method.func_closure[0].cell_contents
     return get_true_name_and_argspec(method)
@@ -48,7 +48,7 @@ def add(route, app_router=None):
     app_router.add(route)
 
 
-def auto_route(app_router, debug=True, version=u""):
+def auto_route(app_router, debug=True, version=u''):
     """
     Automatically routes all controllers in main app and plugins
     """
@@ -58,7 +58,7 @@ def auto_route(app_router, debug=True, version=u""):
             route_controllers(app_router, item)
         except ImportError, e:
             if debug:
-                logging.error("Plugin %s does not exist, or contains a bad import: %s" % (item, e))
+                logging.error('Plugin %s does not exist, or contains a bad import: %s' % (item, e))
                 raise
             else:
                 pass
@@ -76,7 +76,7 @@ def route_controllers(app_router, controller_path=None):
     Called in app.routes to automatically route all controllers in the app/controllers
     folder
     """
-    sp = ("%s" % controller_path).split(".")
+    sp = ('%s' % controller_path).split('.')
     type_name = sp[0]
     controller_name = sp[-1]
     try:
@@ -87,7 +87,7 @@ def route_controllers(app_router, controller_path=None):
             if type_name == 'plugins':
                 plugins_information.register_template(controller_name)
         except AttributeError:
-            logging.debug("Controller %s not found, skipping" % inflector.camelize(controller_name))
+            logging.debug('Controller %s not found, skipping' % inflector.camelize(controller_name))
     except ImportError as e:
         logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (controller_name, e))
     except AttributeError as e:
@@ -223,7 +223,7 @@ def build_routes_for_controller(controllercls):
         if len(args) == 1:
             tkwargs['template'] = args[0]
         if len(args) > 1:
-            raise ValueError("Only one positional argument may be passed to route_with")
+            raise ValueError('Only one positional argument may be passed to route_with')
 
         routes_list.append(Route(**tkwargs))
 
