@@ -160,7 +160,7 @@ class TemplateView(View):
             else:
                 templates.insert(0, action_name)
         path = self.controller.request.path
-        if path != '' and path != '/' and hasattr(self.controller, "scaffold") is False:
+        if path != '' and path != '/' and hasattr(self.controller, 'scaffold') is False:
             if path.startswith("/"):
                 path = path[1:]
             if path.endswith(self.template_ext):

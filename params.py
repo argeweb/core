@@ -126,9 +126,9 @@ class ParamInfo(object):
                 return default_value
             else:
                 v = self.request.get(key)
-                if v.lower() == u"false":
+                if v.lower() == u'false':
                     return False
-                if v.lower() == u"0":
+                if v.lower() == u'0':
                     return False
                 return bool(v)
         except:
@@ -147,13 +147,13 @@ class ParamInfo(object):
                 if exactly_equal:
                     if item[0] == key:
                         if use_dict:
-                            list.append({"key": str(item[0]), "value": str(item[1])})
+                            list.append({'key': str(item[0]), 'value': str(item[1])})
                         else:
                             list.append(item[1])
                 else:
                     if item[0].find(key) >= 0:
                         if use_dict:
-                            list.append({"key": str(item[0]), "value": str(item[1])})
+                            list.append({'key': str(item[0]), 'value': str(item[1])})
                         else:
                             list.append(item[1])
         return list
@@ -180,10 +180,10 @@ class ParamInfo(object):
         for i in xrange(10):
             if self.request.get('search[%s][type]' % i) == 'text' and self.request.get('search[%s][value]' % i) != '':
                 search_str.append({
-                    "value": u"" + self.request.get('search[%s][value]' % i).replace(u"'", u"''"),
-                    "field": u"" + self.request.get('search[%s][field]' % i),
-                    "type": u"" + self.request.get('search[%s][type]' % i),
-                    "operator": u"" + self.request.get('search[%s][operator]' % i),
+                    'value': u"" + self.request.get('search[%s][value]' % i).replace(u"'", u"''"),
+                    'field': u"" + self.request.get('search[%s][field]' % i),
+                    'type': u"" + self.request.get('search[%s][type]' % i),
+                    'operator': u"" + self.request.get('search[%s][operator]' % i),
                 })
         return search_str
 
@@ -206,7 +206,7 @@ class ParamInfo(object):
         if rv is '' or rv is u"":
             return None
         else:
-            if len(rv) != 10 or rv.startswith("09") is False:
+            if len(rv) != 10 or rv.startswith('09') is False:
                 return None
         if taiwan_format:
             rv = "+886" + rv[1:]

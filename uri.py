@@ -100,10 +100,10 @@ class Uri(object):
         return routing.route_name_exists(route_name), route_name
 
     def uri_exists_with_permission(self, route_name=None, *args, **kwargs):
-        if "namespace" in kwargs:
-            namespace_manager.set_namespace(kwargs["namespace"])
-        if "item" in kwargs:
-            item = kwargs["item"]
+        if 'namespace' in kwargs:
+            namespace_manager.set_namespace(kwargs['namespace'])
+        if 'item' in kwargs:
+            item = kwargs['item']
             try:
                 uri = self.uri(route_name, key=self.util.encode_key(item))
                 returnVal = True
@@ -115,12 +115,12 @@ class Uri(object):
             uri = self.uri(route_name, kwargs=kwargs)
             returnVal, return_name = self.uri_exists(route_name=route_name, *args, **kwargs)
         uri_sn = str(self.uri).split("<")[2].split(" ")[0].lower().split(".")
-        if "controller" in kwargs:
-            uri_s = ".".join(uri_sn[:-2]) + "." + kwargs["controller"]
+        if 'controller' in kwargs:
+            uri_s = ".".join(uri_sn[:-2]) + "." + kwargs['controller']
         else:
             uri_s = ".".join(uri_sn[:-1])
-        if "action" in kwargs:
-            uri_s = uri_s + "." + kwargs["action"]
+        if 'action' in kwargs:
+            uri_s = uri_s + "." + kwargs['action']
         if returnVal and uri_s not in self.prohibited_actions:
             return True
         else:

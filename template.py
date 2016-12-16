@@ -33,12 +33,15 @@ class TemplateEngine(object):
             'auto_reload': False,
             # 'cache_size':  0 if debug else 50,
             'cache_size':  400,
+            'variable_start_string': "{{ ",
+            'variable_end_string': " }}"
+
         }
         events.fire('before_jinja2_environment_creation', engine=self, jinja2_env_kwargs=jinja2_env_kwargs)
         self.environment = jinja2.Environment(**jinja2_env_kwargs)
         events.fire('after_jinja2_environment_creation', engine=self)
         self._update_globals(extra_globals)
-        events.fire("template_engine_created", self)
+        events.fire('template_engine_created', self)
 
     def _build_loader(self, extra_paths=None):
         # Paths for resolving template file locations
@@ -74,7 +77,7 @@ class TemplateEngine(object):
                 is_assets = template.startswith(u"assets:")
                 for loader in self.loaders:
                     loader_name = str(loader)
-                    if is_assets and loader_name.find("FunctionLoader") < 0:
+                    if is_assets and loader_name.find('FunctionLoader') < 0:
                         continue
                     try:
                         return loader.get_source(environment, template)
@@ -92,7 +95,7 @@ class TemplateEngine(object):
                 item = decode_key(template)
                 if item is None:
                     return None
-                if hasattr(item, "source") is True:
+                if hasattr(item, 'source') is True:
                     return item.source
             if template.startswith(u"assets:") is False:
                 return None

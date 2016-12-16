@@ -46,10 +46,10 @@ class Scaffolding(object):
         plugins_helper = self.controller.plugins.get_helper(self.controller)
         if plugins_helper is not None:
             try:
-                titles = plugins_helper["controllers"][str(self.controller.name).split(".")[-1]]["actions"]
-                setattr(self.controller.Scaffold, "title", titles)
+                titles = plugins_helper['controllers'][str(self.controller.name).split(".")[-1]]['actions']
+                setattr(self.controller.Scaffold, 'title', titles)
             except:
-                setattr(self.controller.Scaffold, "title", u"Unknown")
+                setattr(self.controller.Scaffold, 'title', u'Unknown')
 
 
         if not issubclass(self.controller.Scaffold, Scaffold):
@@ -80,15 +80,15 @@ class Scaffolding(object):
     def _on_before_render(self, controller):
         scaffold_title = {}
         try:
-            if hasattr(controller.scaffold, "title"):
+            if hasattr(controller.scaffold, 'title'):
                 scaffold_title_temp = controller.scaffold.title
-                if hasattr(scaffold_title_temp, "items"):
+                if hasattr(scaffold_title_temp, 'items'):
                     scaffold_title = scaffold_title_temp
                     for item in scaffold_title_temp:
                         scaffold_title.append(item)
                 else:
                     for item in scaffold_title_temp:
-                        scaffold_title[item["action"]] = item["name"]
+                        scaffold_title[item['action']] = item['name']
         except:
             pass
         try:
@@ -101,9 +101,9 @@ class Scaffolding(object):
             scaffold_field_name = {}
         scaffold_languages = []
         languages = {
-            "zhtw": {"lang":"zhtw", "title": u"繁體中文"},
-            "zhcn": {"lang":"zhcn", "title": u"简体中文"},
-            "enus": {"lang":"enus", "title": u"英語"},
+            'zhtw': {'lang':'zhtw', 'title': u'繁體中文'},
+            'zhcn': {'lang':'zhcn', 'title': u'简体中文'},
+            'enus': {'lang':'enus', 'title': u'英語'},
         }
         try:
             for lang in controller.scaffold.languages:
@@ -138,12 +138,12 @@ class Scaffold(object):
     def __init__(self, controller):
         display_properties, model_form_data, redirect_url = None, None, None
         field_name = {
-            "created": u"建立時間",
-            "modified": u"修改時間",
-            "sort": u"排序值",
-            "is_enable": u"啟用"
+            'created': u'建立時間',
+            'modified': u'修改時間',
+            'sort': u'排序值',
+            'is_enable': u'啟用'
         }
-        if hasattr(controller.meta, "Model"):
+        if hasattr(controller.meta, 'Model'):
             display_properties = []
             for name, property in controller.meta.Model._properties.items():
                 display_properties.append(name)
@@ -178,7 +178,7 @@ class Scaffold(object):
             navigation={},
         )
         try:
-            defaults["field_name"].update(controller.meta.Model.Meta.label_name)
+            defaults['field_name'].update(controller.meta.Model.Meta.label_name)
         except:
             pass
 
@@ -280,14 +280,14 @@ def list(controller):
         try:
             last_record = None
             lst = controller.context[controller.scaffold.plural]
-            if lst.__class__.__name__ == "list":
+            if lst.__class__.__name__ == 'list':
                 last_record = lst[-1]
             else:
                 lst_record = lst.fetch()
                 if len(lst_record) > 0:
                     last_record = lst_record[-1]
             if last_record:
-                controller.context["last_record_date"] = last_record.modified
+                controller.context['last_record_date'] = last_record.modified
         except:
             pass
 
@@ -296,7 +296,7 @@ def view(controller, key):
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
-    controller.context["last_record_date"] = item.modified
+    controller.context['last_record_date'] = item.modified
     controller.context.set(**{
         controller.scaffold.singular: item})
 
@@ -320,13 +320,13 @@ def parser_action(controller, item, callback=save_callback):
             callback(controller, item, parser)
             controller.events.scaffold_after_apply(controller=controller, container=parser.container, item=item)
             response_data = {
-                "response_info": "success",
-                "response_method": controller.params.get_string("routeAction"),
+                'response_info': 'success',
+                'response_method': controller.params.get_string('routeAction'),
             }
-            if "data" in controller.context:
-                controller.context["data"].update(response_data)
+            if 'data' in controller.context:
+                controller.context['data'].update(response_data)
             else:
-                controller.context["data"] = response_data
+                controller.context['data'] = response_data
             controller.context.set(**{
                 controller.scaffold.singular: item,
             })
@@ -337,28 +337,28 @@ def parser_action(controller, item, callback=save_callback):
         else:
             controller.context['errors'] = parser.errors
             response_data = {
-                "errors": parser.errors,
-                "method": controller.params.get_string("routeAction"),
+                'errors': parser.errors,
+                'method': controller.params.get_string('routeAction'),
             }
-            if "data" in controller.context:
-                controller.context["data"].update(response_data)
+            if 'data' in controller.context:
+                controller.context['data'].update(response_data)
             else:
-                controller.context["data"] = response_data
+                controller.context['data'] = response_data
             _flash(controller, u'表單欄位的值有誤，請確認後再試一次', 'error')
 
     # 檢查是否有語系欄位
     lang = []
     for field in parser.container._fields:
-        if field.find("_lang_") > 0:
-            field_name, field_lang = field.split("_lang_")
+        if field.find('_lang_') > 0:
+            field_name, field_lang = field.split('_lang_')
             if field_lang not in lang:
                 lang.append(field_lang)
     controller.scaffold.languages = lang
     controller.context.set(**{
         'form': parser.container,
         controller.scaffold.singular: item})
-    if controller.params.get_string("returnType") == u"json" or controller.request.content_type == 'application/json':
-        controller.meta.change_view("json")
+    if controller.params.get_string('returnType') == u'json' or controller.request.content_type == 'application/json':
+        controller.meta.change_view('json')
 
 
 def add(controller):
@@ -371,7 +371,7 @@ def edit(controller, key):
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
-    controller.context["last_record_date"] = item.modified
+    controller.context['last_record_date'] = item.modified
     controller.scaffold.redirect = False
     return parser_action(controller, item)
 
@@ -386,19 +386,19 @@ def delete(controller, key):
     if controller.scaffold.redirect:
         import time
         controller.response.headers["Command-Redirect"] = controller.scaffold.redirect + "?rnid=" + str(time.time())
-        controller.meta.change_view("json")
-        controller.context["data"] = {"info": "success"}
+        controller.meta.change_view('json')
+        controller.context['data'] = {'info': 'success'}
 
 
 def sort_up(controller, key):
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
-    cursor = "False"
-    if "cursor" in controller.request.params:
-        cursor = controller.request.params.get("cursor")
-    if "category" in controller.request.params:
-        cat_str = controller.request.params.get("category")
+    cursor = 'False'
+    if 'cursor' in controller.request.params:
+        cursor = controller.request.params.get('cursor')
+    if 'category' in controller.request.params:
+        cat_str = controller.request.params.get('category')
         prev_item = controller.meta.Model.get_prev_one_with_category(item, cat_str)
         redirect_path = controller.uri(action='list', category=cat_str, cursor=cursor)
     else:
@@ -411,20 +411,20 @@ def sort_up(controller, key):
         item.sort = sort
         prev_item.put()
         item.put()
-    controller.meta.change_view("json")
+    controller.meta.change_view('json')
     controller.response.headers["Command-Redirect"] = redirect_path
-    controller.context["data"] = {"info": "success"}
+    controller.context['data'] = {'info': 'success'}
 
 
 def sort_down(controller, key):
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
-    cursor = "False"
-    if "cursor" in controller.request.params:
-        cursor = controller.request.params.get("cursor")
-    if "category" in controller.request.params:
-        cat_str = controller.request.params.get("category")
+    cursor = 'False'
+    if 'cursor' in controller.request.params:
+        cursor = controller.request.params.get('cursor')
+    if 'category' in controller.request.params:
+        cat_str = controller.request.params.get('category')
         next_item = controller.meta.Model.get_next_one_with_category(item, cat_str)
         redirect_path = controller.uri(action='list', category=cat_str, cursor=cursor)
     else:
@@ -436,17 +436,17 @@ def sort_down(controller, key):
         item.sort = sort
         next_item.put()
         item.put()
-    controller.meta.change_view("json")
+    controller.meta.change_view('json')
     controller.response.headers["Command-Redirect"] = redirect_path
-    controller.context["data"] = {"info": "success"}
+    controller.context['data'] = {'info': 'success'}
 
 
 def set_boolean_field(controller, key):
-    controller.meta.change_view("json")
+    controller.meta.change_view('json')
     item = controller.util.decode_key(key).get()
-    field_name = controller.params.get_string("field")
-    field_value = controller.params.get_boolean("value")
-    controller.context["data"] = {"info": "failure"}
+    field_name = controller.params.get_string('field')
+    field_value = controller.params.get_boolean('value')
+    controller.context['data'] = {'info': 'failure'}
     if not item:
         return
 
@@ -456,11 +456,11 @@ def set_boolean_field(controller, key):
         except:
             return
         item.put()
-        controller.context["data"] = {"info": "success"}
+        controller.context['data'] = {'info': 'success'}
 
 
 def plugins_check(controller):
     controller.meta.change_view('jsonp')
     controller.context['data'] = {
-        'status': "enable"
+        'status': 'enable'
     }

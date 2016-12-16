@@ -35,11 +35,11 @@ class ReverseReferenceProperty(list):
     pass
 
 class RichTextProperty(TextProperty):
-    __property_name__ = "richtext"
+    __property_name__ = 'richtext'
 
 
 class CategoryProperty(KeyProperty):
-    __property_name__ = "category"
+    __property_name__ = 'category'
     def _fix_up(self, cls, code_name):
         super(CategoryProperty, self)._fix_up(cls, code_name)
         modelclass = Model._kind_map[self._kind]
@@ -51,16 +51,16 @@ class CategoryProperty(KeyProperty):
 
 
 class ImageProperty(StringProperty):
-    __property_name__ = "image"
+    __property_name__ = 'image'
 
 
 class ImagesProperty(TextProperty):
-    __property_name__ = "images"
+    __property_name__ = 'images'
 
 
 class HiddenProperty(StringProperty):
-    __property_name__ = "hidden"
+    __property_name__ = 'hidden'
 
 
 class FileProperty(StringProperty):
-    __property_name__ = "file"
+    __property_name__ = 'file'

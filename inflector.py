@@ -221,13 +221,13 @@ def ordinal(number):
     """
     number = abs(int(number))
     if number % 100 in (11, 12, 13):
-        return "th"
+        return 'th'
     else:
         return {
-            1: "st",
-            2: "nd",
-            3: "rd",
-        }.get(number % 10, "th")
+            1: 'st',
+            2: 'nd',
+            3: 'rd',
+        }.get(number % 10, 'th')
 
 
 def ordinalize(number):
@@ -392,7 +392,7 @@ def underscore(word):
     """
     word = re.sub(r"([A-Z]+)([A-Z][a-z])", r'\1_\2', word)
     word = re.sub(r"([a-z\d])([A-Z])", r'\1_\2', word)
-    word = word.replace("-", "_")
+    word = word.replace("-", '_')
     return word.lower()
 
 

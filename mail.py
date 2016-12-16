@@ -17,10 +17,10 @@ class MailGun():
                 """
         import httplib2
         from urllib import urlencode
-        domain_name = settings.get("email").get("mailgun").get("domain_name")
-        api_key = settings.get("email").get("mailgun").get("api_key")
+        domain_name = settings.get('email').get('mailgun').get('domain_name')
+        api_key = settings.get('email').get('mailgun').get('api_key')
         if sender == u"":
-            default_sender = settings.get("email").get("mailgun").get("default_sender")
+            default_sender = settings.get('email').get('mailgun').get('default_sender')
             if default_sender.find("@") < 0:
                 sender = "%s@%s" % (default_sender, domain_name)
             else:

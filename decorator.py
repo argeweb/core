@@ -34,7 +34,7 @@ for the documentation.
 
 __version__ = '3.4.0'
 
-__all__ = ["decorator", "FunctionMaker", "contextmanager"]
+__all__ = ['decorator', 'FunctionMaker', 'contextmanager']
 
 import sys, re, inspect
 if sys.version >= '3':

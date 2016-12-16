@@ -77,7 +77,7 @@ def get_helper(plugin_name_or_controller):
             return None
     try:
         module = __import__('plugins.%s' % plugin_name, fromlist=['*'])
-        return getattr(module, "plugins_helper")
+        return getattr(module, 'plugins_helper')
     except AttributeError:
         logging.debug("%s's plugin helper not found" % plugin_name)
         return None
@@ -178,7 +178,7 @@ def get_enable_plugins_from_db(server_name, namespace):
     """
         取得 HostInformation 裡的 Plugins ( 取得已啟用的 Plugin )
         """
-    namespace_manager.set_namespace("shared")
+    namespace_manager.set_namespace('shared')
     host_item = HostInformationModel.get_by_host(server_name)
     namespace_manager.set_namespace(namespace)
     return str(host_item.plugins).split(",")
@@ -188,7 +188,7 @@ def set_enable_plugins_to_db(server_name, namespace, plugins):
     """
         設定 HostInformation 裡的 Plugins ( 設定啟用的 Plugin )
         """
-    namespace_manager.set_namespace("shared")
+    namespace_manager.set_namespace('shared')
     host_item = HostInformationModel.get_by_host(server_name)
     host_item.plugins = ",".join(plugins)
     host_item.put()

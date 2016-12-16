@@ -7,11 +7,11 @@ def check_user(controller):
     Requires that a user is logged in
     """
     check_target = ""
-    if "application_admin_user_key" in controller.session:
-        check_target = "application_admin_user_key"
+    if 'application_admin_user_key' in controller.session:
+        check_target = 'application_admin_user_key'
     else:
-        if "application_user_key" in controller.session:
-            check_target = "application_user_key"
+        if 'application_user_key' in controller.session:
+            check_target = 'application_user_key'
         else:
             return True
     application_user = controller.session[check_target].get()
@@ -25,8 +25,8 @@ def check_user(controller):
     controller.application_user = application_user
     controller.application_user_level = role.level
     controller.prohibited_actions = str(role.prohibited_actions).split(",")
-    controller.context["application_user_level"] = controller.application_user_level
-    controller.context["application_user_key"] = application_user.key
+    controller.context['application_user_level'] = controller.application_user_level
+    controller.context['application_user_key'] = application_user.key
     return True
 
 
@@ -34,21 +34,21 @@ def require_user(controller):
     """
     Requires that a user is logged in
     """
-    if "application_user_key" not in controller.session:
-        return False, "require_user"
-    application_user = controller.session["application_user_key"].get()
+    if 'application_user_key' not in controller.session:
+        return False, 'require_user'
+    application_user = controller.session['application_user_key'].get()
     if application_user is None:
-        return False, "require_user"
+        return False, 'require_user'
     if application_user.role is None:
-        return False, "require_user"
+        return False, 'require_user'
     role = application_user.role.get()
     if role is None:
-        return False, "require_user"
+        return False, 'require_user'
     controller.application_user = application_user
     controller.application_user_level = role.level
     controller.prohibited_actions = str(role.prohibited_actions).split(",")
-    controller.context["application_user_level"] = controller.application_user_level
-    controller.context["application_user_key"] = application_user.key
+    controller.context['application_user_level'] = controller.application_user_level
+    controller.context['application_user_key'] = application_user.key
     if controller.route.name in controller.prohibited_actions:
         return controller.abort(403)
     return True
@@ -59,22 +59,22 @@ def require_admin(controller):
     Requires that a user is logged in and that the user is and administrator on the App Engine Application
     """
     admin_user = None
-    if "application_admin_user_key" not in controller.session:
-        return False, "require_admin"
-    if controller.session["application_admin_user_key"] is not None:
-        admin_user = controller.session["application_admin_user_key"].get()
+    if 'application_admin_user_key' not in controller.session:
+        return False, 'require_admin'
+    if controller.session['application_admin_user_key'] is not None:
+        admin_user = controller.session['application_admin_user_key'].get()
     if admin_user is None:
-        return False, "require_admin"
+        return False, 'require_admin'
     if admin_user.role is None:
-        return False, "require_admin"
+        return False, 'require_admin'
     role = admin_user.role.get()
-    if role is None or role.name not in [u"administrator", u"super_user"]:
-        return False, "require_admin"
+    if role is None or role.name not in [u'administrator', u'super_user']:
+        return False, 'require_admin'
     controller.application_user = admin_user
     controller.application_user_level = role.level
     controller.prohibited_actions = str(role.prohibited_actions).split(",")
-    controller.context["application_user_level"] = controller.application_user_level
-    controller.context["application_user_key"] = admin_user.key
+    controller.context['application_user_level'] = controller.application_user_level
+    controller.context['application_user_key'] = admin_user.key
     name = ".".join(str(controller).split(" object")[0][1:].split(".")[0:-1]) + "." + controller.route.action
     if name in controller.prohibited_actions:
         return controller.abort(403)

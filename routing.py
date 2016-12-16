@@ -84,7 +84,7 @@ def route_controllers(app_router, controller_path=None):
         try:
             cls = getattr(module, inflector.camelize(controller_name))
             route_controller(cls, app_router)
-            if type_name == "plugins":
+            if type_name == 'plugins':
                 plugins_information.register_template(controller_name)
         except AttributeError:
             logging.debug("Controller %s not found, skipping" % inflector.camelize(controller_name))
@@ -286,7 +286,7 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None):
     # DELETE /controller/:urlsafe -> controller::d
     if hasattr(controllercls, prefix_string + 'delete'):
         id.append(Route('/delete', controllercls, 'delete', handler_method=prefix_string + 'delete'))
-        path.append(Route('/:<key>', controllercls, 'delete:rest', handler_method=prefix_string + 'delete', methods=["DELETE"]))
+        path.append(Route('/:<key>', controllercls, 'delete:rest', handler_method=prefix_string + 'delete', methods=['DELETE']))
 
     if hasattr(controllercls, prefix_string + 'sort_up'):
         id.append(Route('/sort_up', controllercls, 'sort_up', handler_method=prefix_string + 'sort_up'))

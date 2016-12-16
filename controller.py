@@ -32,26 +32,26 @@ _prefixes = ('admin', 'console', 'dashboard')
 
 def route_menu(*args, **kwargs):
     def inner(f):
-        if "uri" not in kwargs:
+        if 'uri' not in kwargs:
             prefix = ""
             ctrl = f.__module__.split(".")[-1]
             action = f.__name__
-            if "prefix" in kwargs:
-                prefix = kwargs["prefix"]
-            if "action" in kwargs:
-                action = kwargs["action"]
+            if 'prefix' in kwargs:
+                prefix = kwargs['prefix']
+            if 'action' in kwargs:
+                action = kwargs['action']
             for possible_prefix in _prefixes:
                 if action.startswith(possible_prefix):
                     prefix = possible_prefix
                     break
             if prefix != u"":
-                action = action.replace(prefix + "_", "")
+                action = action.replace(prefix + '_', "")
             if prefix is not "":
-                kwargs["uri"] = "%s:%s:%s" % (prefix, ctrl, action)
+                kwargs['uri'] = "%s:%s:%s" % (prefix, ctrl, action)
             else:
-                kwargs["uri"] = "%s:%s" % (ctrl, action)
-            kwargs["controller"] = str(f.__module__)
-            kwargs["action"] = action
+                kwargs['uri'] = "%s:%s" % (ctrl, action)
+            kwargs['controller'] = str(f.__module__)
+            kwargs['action'] = action
         _temporary_menu_storage.append(kwargs)
         return f
     return inner
@@ -63,57 +63,57 @@ def get_route_menu(list_name=u"", controller=None):
         return []
 
     for menu in _temporary_menu_storage:
-        if menu["list_name"] != list_name:
+        if menu['list_name'] != list_name:
             continue
-        if menu["controller"] in controller.prohibited_controllers:
+        if menu['controller'] in controller.prohibited_controllers:
             continue
-        if str(menu["controller"] + "." + menu["action"]) in controller.prohibited_actions:
+        if str(menu['controller'] + "." + menu['action']) in controller.prohibited_actions:
             continue
-        uri = menu["uri"]
+        uri = menu['uri']
         try:
             url = controller.uri(uri)
         except:
             continue
 
-        if (u"%s" % menu["text"]).startswith(u"gt:"):
-            text = u"gt"
-            group_title = (u"%s" % menu["text"]).replace(u"gt:", "")
+        if (u"%s" % menu['text']).startswith(u"gt:"):
+            text = u'gt'
+            group_title = (u"%s" % menu['text']).replace(u"gt:", "")
         else:
-            text = menu["text"]
+            text = menu['text']
             group_title = u""
         insert_item = {
-            "uri": uri,
-            "url": url,
-            "text": text,
-            "need_hr": menu["need_hr"] if "need_hr" in menu else False,
-            "need_hr_parent": menu["need_hr_parent"] if "need_hr_parent" in menu else False,
-            "group_title": group_title,
-            "icon": menu["icon"] if "icon" in menu else "list",
-            "sort": menu["sort"] if "sort" in menu else 1,
-            "level": 1
+            'uri': uri,
+            'url': url,
+            'text': text,
+            'need_hr': menu['need_hr'] if 'need_hr' in menu else False,
+            'need_hr_parent': menu['need_hr_parent'] if 'need_hr_parent' in menu else False,
+            'group_title': group_title,
+            'icon': menu['icon'] if 'icon' in menu else 'list',
+            'sort': menu['sort'] if 'sort' in menu else 1,
+            'level': 1
         }
-        if "group" in menu:
+        if 'group' in menu:
             sub_item = insert_item.copy()
-            sub_item["level"] = 2
-            insert_item["text"] = menu["group"]
-            if list_name == u"backend":
-                insert_item["url"] = "#"
+            sub_item['level'] = 2
+            insert_item['text'] = menu['group']
+            if list_name == u'backend':
+                insert_item['url'] = "#"
             is_find = None
             for j in menus:
-                if j["text"] == menu["group"] and j["level"] == 1:
+                if j['text'] == menu['group'] and j['level'] == 1:
                     is_find = j
             if is_find:
-                if "submenu" in is_find:
-                    if sub_item["need_hr_parent"]:
-                        is_find["need_hr_parent"] = True
-                    if is_find["sort"] > sub_item["sort"]:
-                        is_find["sort"] = sub_item["sort"]
-                    is_find["submenu"].append(sub_item)
-                    is_find["submenu"] = sorted(is_find["submenu"], key=lambda k: k['sort'])
+                if 'submenu' in is_find:
+                    if sub_item['need_hr_parent']:
+                        is_find['need_hr_parent'] = True
+                    if is_find['sort'] > sub_item['sort']:
+                        is_find['sort'] = sub_item['sort']
+                    is_find['submenu'].append(sub_item)
+                    is_find['submenu'] = sorted(is_find['submenu'], key=lambda k: k['sort'])
                 else:
-                    is_find["submenu"] = [sub_item]
+                    is_find['submenu'] = [sub_item]
             else:
-                insert_item["submenu"] = [sub_item]
+                insert_item['submenu'] = [sub_item]
                 menus.append(insert_item)
         else:
             menus.append(insert_item)
@@ -296,10 +296,10 @@ class Controller(webapp2.RequestHandler, Uri):
         super(Controller, self).__init__(*args, **kwargs)
         self.settings = settings
         if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
-            paths = "_".join(os.path.dirname(os.path.abspath(__file__)).split("\\")[1:-1])
-            self.server_name = os.environ["SERVER_NAME"] + "@" + paths.lower()
+            paths = '_'.join(os.path.dirname(os.path.abspath(__file__)).split("\\")[1:-1])
+            self.server_name = os.environ['SERVER_NAME'] + "@" + paths.lower()
         else:
-            self.server_name = os.environ["SERVER_NAME"]
+            self.server_name = os.environ['SERVER_NAME']
         self.host_information, self.namespace, self.theme = self.settings.get_host_information_item(self.server_name)
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
@@ -442,9 +442,9 @@ class Controller(webapp2.RequestHandler, Uri):
                 message = auth_result[1]
 
             self.events.authorization_failed(controller=self, message=message)
-            for item in self.settings.get("authorization_redirect"):
-                if item["authorization"] == message:
-                    return self.redirect("/auth_redirect?to=" + item["redirect"])
+            for item in self.settings.get('authorization_redirect'):
+                if item['authorization'] == message:
+                    return self.redirect("/auth_redirect?to=" + item['redirect'])
             self.abort(403, message)
 
         self.events.after_authorization(controller=self, result=auth_result)
@@ -543,27 +543,27 @@ class Controller(webapp2.RequestHandler, Uri):
 
     def paging(self, query, size=None, page=None, near=None, data_only=None):
         if page is None:
-            page = int(self.params.get_integer("page", 1))
+            page = int(self.params.get_integer('page', 1))
         if size is None:
-            size = int(self.params.get_integer("size", 10))
+            size = int(self.params.get_integer('size', 10))
         if near is None:
-            near = int(self.params.get_integer("near", 10))
+            near = int(self.params.get_integer('near', 10))
         if data_only is None:
-            data_only = int(self.params.get_boolean("data_only", True))
+            data_only = int(self.params.get_boolean('data_only', True))
         data = query.fetch_async(size, offset=size*(page-1))
         if data_only is True:
             c = data.get_result()
             return c
         near_2 = near // 2
         pager = {
-            "prev": 0,
-            "next": 0,
-            "near_list": [],
-            "current": page,
-            "data": None
+            'prev': 0,
+            'next': 0,
+            'near_list': [],
+            'current': page,
+            'data': None
         }
         if page > 1:
-            pager["prev"] = page - 1
+            pager['prev'] = page - 1
         if page > near_2:
             start = page - near_2
             end = page + near_2
@@ -574,18 +574,18 @@ class Controller(webapp2.RequestHandler, Uri):
         async_list = []
         for i in xrange(start, end):
             q = query.fetch_async(size, offset=size*(i-1), keys_only=True)
-            async_list.append({"q": q, "i": i})
+            async_list.append({'q': q, 'i': i})
         for item in async_list:
-            if page < item["i"]:
+            if page < item['i']:
                 has_next = True
-            q_result = len(item["q"].get_result())
+            q_result = len(item['q'].get_result())
             if q_result > 0:
-                pager["near_list"].append(item["i"])
+                pager['near_list'].append(item['i'])
             if q_result < size:
                 break
-        pager["data"] = data.get_result()
+        pager['data'] = data.get_result()
         if has_next:
-            pager["next"] = page + 1
+            pager['next'] = page + 1
         return pager
 
     @staticmethod
@@ -596,8 +596,8 @@ class Controller(webapp2.RequestHandler, Uri):
         return l
 
     def json(self, data):
-        self.meta.change_view("json")
-        self.context["data"] = data
+        self.meta.change_view('json')
+        self.context['data'] = data
 
     admin_list = scaffold.list
     admin_view = scaffold.view
