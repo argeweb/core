@@ -218,6 +218,9 @@ class BasicModel(Model):
         """
         if self.sort is None or self.sort == 0.0:
             self.sort = time.time()
+        if hasattr(self, 'name'):
+            if self.name == None or self.name == u'':
+                self.name = str(int(time.time()))
         super(BasicModel, self).before_put()
 
     @classmethod
