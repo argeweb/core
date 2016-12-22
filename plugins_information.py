@@ -50,11 +50,10 @@ def register_template(plugin_name, templating=True):
 
 def get_prohibited_controllers(server_name, namespace):
     """
-        取得沒有被啟用的 plugin 下
+        取得沒有被啟用的 plugin
         """
     a = set(get_all_controller_in_plugins())
     b = []
-
     for plugin in get_enable_plugins_from_db(server_name, namespace):
         for item in get_controller_in_plugin(plugin):
             b.append(item)

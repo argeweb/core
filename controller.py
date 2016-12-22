@@ -400,7 +400,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.startup()
         self.prohibited_controllers = plugins_information.get_prohibited_controllers(self.server_name, self.host_information.namespace)
         name = '.'.join(str(self).split(' object')[0][1:].split('.')[0:-1])
-        if name in self.prohibited_controllers:
+        if name in self.prohibited_controllers and name.startswith('plugins.') and name.find('.controller.'):
             # 組件被停用
             self.logging.debug(u'%s is disable' % self.name)
             return self.abort(404)

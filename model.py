@@ -15,10 +15,11 @@ class HostInformationModel(BasicModel):
     host = Fields.StringProperty(required=True, verbose_name=u'域名')
     namespace = Fields.StringProperty(required=True, verbose_name=u'命名空間')
     site_name = Fields.StringProperty(verbose_name=u'網站名稱')
-    plugins = Fields.StringProperty(verbose_name=u'模組')
+    plugins = Fields.TextProperty(verbose_name=u'模組')
     theme = Fields.StringProperty(verbose_name=u'主題樣式')
     is_lock = Fields.BooleanProperty(default=True, verbose_name=u'是否鎖定')
 
+    @property
     def plugins_list(self):
         return str(self.plugins).split(',')
 
