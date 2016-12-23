@@ -234,7 +234,7 @@ class BasicModel(Model):
     @classmethod
     def get_prev_one_with_category(cls, item, cat):
         c = ndb.Key(urlsafe=cat)
-        if hasattr(cls, "category"):
+        if hasattr(cls, 'category'):
             return cls.query(cls.category == c, cls.sort > item.sort).order(cls.sort).get()
         else:
             return None
@@ -242,7 +242,7 @@ class BasicModel(Model):
     @classmethod
     def get_next_one_with_category(cls, item, cat):
         c = ndb.Key(urlsafe=cat)
-        if hasattr(cls, "category"):
+        if hasattr(cls, 'category'):
             return cls.query(cls.category == c, cls.sort < item.sort).order(-cls.sort).get()
         else:
             return None
@@ -256,25 +256,30 @@ class BasicModel(Model):
 
     @classmethod
     def all_enable(cls, *args, **kwargs):
-        if hasattr(cls, "is_enable") is False:
+        if hasattr(cls, 'is_enable') is False:
             return None
-        if hasattr(cls, "category") and "category_key" in kwargs:
-            cat = ndb.Key(urlsafe=kwargs["category_key"])
+        if hasattr(cls, 'category') and 'category_key' in kwargs:
+            cat = ndb.Key(urlsafe=kwargs['category_key'])
             if cat is not None:
                 return cls.query(cls.category == cat.key, cls.is_enable == True).order(-cls.sort)
         else:
             return cls.query(cls.is_enable == True).order(-cls.sort)
 
     @classmethod
-    def find_by_name(cls, name):
-        if hasattr(cls, "name"):
+    def find_by_name(cls, *args, **kwargs):
+        name = None
+        if len(args) > 0:
+            name = str(args[0])
+        if 'name' in kwargs:
+            name = str(kwargs['name'])
+        if hasattr(cls, 'name') and name is not None:
             return cls.query(cls.name == name).get()
         else:
             return None
 
     @classmethod
     def find_by_title(cls, title):
-        if hasattr(cls, "title"):
+        if hasattr(cls, 'title'):
             return cls.query(cls.title == title).get()
         else:
             return None

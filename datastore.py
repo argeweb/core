@@ -22,8 +22,19 @@ class Datastore(object):
     def __init__(self, controller):
         self._controller = controller
 
-    def get(self, query_name, *args, **kwargs):
-        if query_name in _commands:
+    def get(self, *args, **kwargs):
+        query_name = None
+        if len(args) > 0:
+            query_name = str(args[0])
+            args = args[1:]
+            if len(args) == 0 and query_name:
+                args = [query_name]
+        import logging
+        logging.info(args)
+        logging.info(kwargs)
+        if 'query_name' in kwargs:
+            query_name = str(kwargs['query_name'])
+        if query_name and query_name in _commands:
             rv = _commands[query_name](*args, **kwargs)
             try:
                 return rv.get()

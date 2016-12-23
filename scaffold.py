@@ -261,7 +261,6 @@ def _flash(controller, *args, **kwargs):
     if 'flash_messages' in controller.components and controller.scaffold.flash_messages:
         controller.components.flash_messages(*args, **kwargs)
 
-
 # controller Methods
 def list(controller):
     plural = None
