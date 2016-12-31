@@ -53,28 +53,7 @@ def auto_route(app_router, debug=True, version=u''):
     Automatically routes all controllers in main app and plugins
     """
     plugins = sorted(plugins_information.get_all_controller(debug, version))
-
-    if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
-        paths = '_'.join(os.path.dirname(os.path.abspath(__file__)).split('\\')[1:-1])
-        server_name = os.environ['SERVER_NAME'] + '@' + paths.lower()
-    else:
-        server_name = os.environ['SERVER_NAME']
-    import settings
-    host_information, namespace, theme = settings.get_host_information_item(server_name)
-    need_loading_plugin_controller = []
-    logging.warning('check : application')
     for item in plugins:
-        if item.startswith('application.') and item not in need_loading_plugin_controller:
-            need_loading_plugin_controller.append(item)
-            logging.warning('        ' + item)
-    for check in host_information.plugins_list:
-        logging.warning('check : ' + check)
-        for item in plugins:
-            if item.find('plugins.' + check + '.') >= 0 and item not in need_loading_plugin_controller:
-                need_loading_plugin_controller.append(item)
-                logging.warning('        ' + item)
-    # TODO 解決需重置實例的問題
-    for item in need_loading_plugin_controller:
         try:
             route_controllers(app_router, item)
         except ImportError, e:
