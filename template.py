@@ -103,7 +103,6 @@ class TemplateEngine(object):
             template = template.split('?')[0]
             if template.startswith(u'/') is True:
                 template = template[1:]
-            logging.info(template)
             try:
                 from plugins.code.models.code_model import get_source
                 from plugins.file.models.file_model import get_file
@@ -113,6 +112,9 @@ class TemplateEngine(object):
                 s = get_source(target=t, version=t.last_version)
                 if s is None:
                     raise TemplateNotFound(template)
+                self.environment.globals.update({
+                    'code_version': t.last_version,
+                })
                 return s.source
             except:
                 raise TemplateNotFound(template)

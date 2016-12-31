@@ -1,5 +1,6 @@
 from google.appengine.ext import ndb
 from argeweb.libs import wtforms
+from argeweb.libs.wtforms import Form, validators
 from argeweb.libs.wtforms_appengine import ndb as wtfndb
 from . import fields
 

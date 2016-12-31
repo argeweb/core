@@ -25,10 +25,12 @@ class Function(object):
     def get_run(self):
         def run(common_name, *args, **kwargs):
             prefix = u'global'
-            if kwargs.has_key('function_prefix'):
-                prefix = kwargs['function_prefix']
+            if kwargs.has_key('prefix'):
+                prefix = kwargs['prefix']
             name = prefix + ':' + common_name
+            kwargs['controller'] = self._controller
             if name in _function_list:
-                return _function_list[name](*args, **kwargs)
+                r = _function_list[name](*args, **kwargs)
+                return r
         return run
 

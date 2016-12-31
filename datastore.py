@@ -7,10 +7,12 @@
 # Date: 2016/07/11
 
 
+import logging
 _commands = {}
 
 
-def register(name, common_object=None):
+def register(name, common_object=None, prefix=u'global'):
+    name = prefix + ':' + name
     if name in _commands:
         return
     _commands[name] = common_object
@@ -29,11 +31,13 @@ class Datastore(object):
             args = args[1:]
             if len(args) + len(kwargs) == 0 and query_name:
                 args = [query_name]
-        import logging
-        logging.info(args)
-        logging.info(kwargs)
         if 'query_name' in kwargs:
             query_name = str(kwargs['query_name'])
+        prefix = u'global'
+        if kwargs.has_key('prefix'):
+            prefix = kwargs['prefix']
+            del kwargs['prefix']
+        query_name = prefix + ':' + query_name
         if query_name and query_name in _commands:
             rv = _commands[query_name](*args, **kwargs)
             try:
@@ -42,6 +46,10 @@ class Datastore(object):
                 return rv
 
     def query(self, query_name, *args, **kwargs):
+        prefix = u'global'
+        if kwargs.has_key('prefix'):
+            prefix = kwargs['prefix']
+        query_name = prefix + ':' + query_name
         if query_name in _commands:
             query = _commands[query_name](*args, **kwargs)
             use_pager = False

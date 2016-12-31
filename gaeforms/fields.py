@@ -4,12 +4,32 @@ import decimal
 
 from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api.users import User
-
+from argeweb.libs.wtforms.compat import text_type, string_types
 from argeweb.libs import wtforms
-# import wtforms.compat.string_types
 from argeweb.core.gaeforms import widgets
 
 TextField = wtforms.StringField
+
+
+class StringField(wtforms.StringField):
+    """
+    This field is the base for most of the more complicated fields, and
+    represents an ``<input type="text">``.
+    """
+    widget = wtforms.widgets.TextInput()
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = valuelist[0]
+        else:
+            self.data = ''
+
+    def _value(self):
+        return text_type(self.data) if self.data is not None else ''
+
+    def pre_validate(self, form):
+      if self.data:
+          a = self.data
 
 class UserField(wtforms.Field):
     """
