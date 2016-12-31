@@ -33,7 +33,11 @@ _prefixes = ('admin', 'console', 'dashboard')
 def route_menu(*args, **kwargs):
     def inner(f):
         if 'uri' not in kwargs:
+            plugin = ''
             prefix = ''
+            f_model_path = f.__module__.split('.')
+            if f_model_path[0] == 'plugins':
+                plugin = f_model_path[1]
             ctrl = f.__module__.split('.')[-1]
             action = f.__name__
             if 'prefix' in kwargs:
@@ -46,10 +50,12 @@ def route_menu(*args, **kwargs):
                     break
             if prefix != u'':
                 action = action.replace(prefix + '_', '')
+            kwargs['uri'] = '%s:%s' % (ctrl, action)
+            if plugin is not '':
+                kwargs['uri'] = '%s:%s' % (plugin, kwargs['uri'])
             if prefix is not '':
-                kwargs['uri'] = '%s:%s:%s' % (prefix, ctrl, action)
-            else:
-                kwargs['uri'] = '%s:%s' % (ctrl, action)
+                kwargs['uri'] = '%s:%s' % (prefix, kwargs['uri'])
+            kwargs['plugin'] = plugin
             kwargs['controller'] = str(f.__module__)
             kwargs['action'] = action
         _temporary_menu_storage.append(kwargs)
@@ -367,9 +373,17 @@ class Controller(webapp2.RequestHandler, Uri):
         """
 
         # Route the rest methods
-        router.add(routing.build_scaffold_routes_for_controller(cls))
-        for prefix in cls.Meta.prefixes:
-            router.add(routing.build_scaffold_routes_for_controller(cls, prefix))
+        if str(cls).find('plugins.') > 0:
+            plugins_name = str(cls).split('.')[1]
+            p1 = routing.build_scaffold_routes_for_controller(cls, plugin_name=plugins_name)
+            router.add(p1)
+            for prefix in cls.Meta.prefixes:
+                p2 = routing.build_scaffold_routes_for_controller(cls, prefix, plugin_name=plugins_name)
+                router.add(p2)
+        else:
+            router.add(routing.build_scaffold_routes_for_controller(cls))
+            for prefix in cls.Meta.prefixes:
+                router.add(routing.build_scaffold_routes_for_controller(cls, prefix))
 
         # Auto route the remaining methods
         for route in routing.build_routes_for_controller(cls):

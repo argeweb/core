@@ -28,8 +28,10 @@ class Uri(object):
         prefix = prefix if prefix != route_sentinel else self.route.prefix
         controller = controller if controller != route_sentinel else self.route.controller
         action = action if action != route_sentinel else self.route.action
-
-        return routing.name_from_canonical_parts(prefix, controller, action)
+        plugin = ''
+        if str(self).find('plugins.') > 0:
+            plugin = str(self).split('.')[1]
+        return routing.name_from_canonical_parts(prefix, controller, action, plugin=plugin)
 
     def uri(self, route_name=None,
             prefix=route_sentinel,

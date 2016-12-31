@@ -161,33 +161,37 @@ def canonical_parts_from_method(controller, method):
             prefix = tprefix
             method_name = method_name.replace(prefix + '_', '')
 
+    plugins_name = ''
+    if str(controller).find('plugins.') > 0:
+        plugins_name = str(controller).split('.')[1]
     return {
         'prefix': prefix,
         'controller': method_class_name,
+        'plugin': plugins_name,
         'action': method_name,
         'args': method_args.args[1:]  # exclude self
     }
 
 
-def path_from_canonical_parts(prefix, controller, action, args):
+def path_from_canonical_parts(prefix, controller, action, args, plugin=''):
     """
     Returns a route ('/admin/users/edit/3') from canonical parts
     ('admin', 'users', 'edit', [id])
     """
     args_parts = ['<' + x + '>' for x in args]
-    route_parts = [prefix, controller, action] + args_parts
+    route_parts = [prefix, plugin, controller, action] + args_parts
     route_parts = [x for x in route_parts if x]
     route_path = '/' + '/'.join(route_parts)
 
     return route_path
 
 
-def name_from_canonical_parts(prefix, controller, action, args=None):
+def name_from_canonical_parts(prefix, controller, action, args=None, plugin=''):
     """
     Returns the route's name ('admin-users-edit') from the canonical
     parts ('admin','users','edit')
     """
-    route_parts = [prefix, controller, action]
+    route_parts = [prefix, plugin, controller, action]
     route_parts = [x for x in route_parts if x]
     route_name = ':'.join(route_parts)
 
@@ -205,7 +209,7 @@ def build_routes_for_controller(controllercls):
 
     becomes
 
-    /controller/some_method/<arg1>/<arg2>/<arg3>
+    /prefix/plugin/controller/some_method/<arg1>/<arg2>/<arg3>
     """
     routes_list = []
     name_counters = {}
@@ -218,6 +222,7 @@ def build_routes_for_controller(controllercls):
         parts = canonical_parts_from_method(controllercls, method)
         route_path = path_from_canonical_parts(**parts)
         route_name = name_from_canonical_parts(**parts)
+
 
         # not the most elegant way to determine the
         # correct member name, but it works. Alternatively,
@@ -251,7 +256,7 @@ def build_routes_for_controller(controllercls):
     return routes_list
 
 
-def build_scaffold_routes_for_controller(controllercls, prefix_name=None):
+def build_scaffold_routes_for_controller(controllercls, prefix_name=None, plugin_name=None):
     """
     Automatically sets up a restful routing interface for a controller
     that has any of the rest methods (list, view, add, edit, delete)
@@ -270,7 +275,7 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None):
 
     admin:controller:edit: /admin/controller/:id/edit
     """
-    if(hasattr(controllercls, 'name')):
+    if hasattr(controllercls, 'name'):
         name = controllercls.name
     name = inflector.underscore(controllercls.__name__)
     prefix_string = ''
@@ -321,12 +326,27 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None):
     if hasattr(controllercls, prefix_string + 'plugins_check'):
         id.append(Route('/plugins_check', controllercls, 'plugins_check', handler_method=prefix_string + 'plugins_check'))
 
-    top_route = routes.NamePrefixRoute(name + ':', top + [
-        routes.PathPrefixRoute('/' + name, path + [
-            routes.PathPrefixRoute('/:<key>', id)
+    if plugin_name:
+        top_route = routes.NamePrefixRoute(name + ':', top + [
+            routes.PathPrefixRoute('/' + name, path + [
+                routes.PathPrefixRoute('/:<key>', id)
+            ])
         ])
-    ])
-
+        top_route_2 = routes.NamePrefixRoute(plugin_name + ':', [
+            routes.PathPrefixRoute('/' + plugin_name, [top_route])
+        ])
+        if prefix_name:
+            prefix_route = routes.NamePrefixRoute(prefix_name + ':', [
+                routes.PathPrefixRoute('/' + prefix_name, [top_route_2])
+            ])
+            return prefix_route
+        return top_route_2
+    else:
+        top_route = routes.NamePrefixRoute(name + ':', top + [
+            routes.PathPrefixRoute('/' + name, path + [
+                routes.PathPrefixRoute('/:<key>', id)
+            ])
+        ])
     if prefix_name:
         prefix_route = routes.NamePrefixRoute(prefix_name + ':', [
             routes.PathPrefixRoute('/' + prefix_name, [top_route])
