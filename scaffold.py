@@ -149,8 +149,8 @@ class Scaffold(object):
                 display_properties.append(name)
                 if property._verbose_name is not None:
                     field_name[name] = property._verbose_name
-            display_properties=sorted(display_properties)
-            model_form_data=model_form(controller.meta.Model)
+            display_properties = sorted(display_properties)
+            model_form_data = model_form(controller.meta.Model)
         try:
             redirect_url = controller.uri(action='list') if controller.uri_exists(action='list') else None
         except KeyError:

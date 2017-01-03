@@ -33,8 +33,10 @@ __all__ = (
     'FileProperty',
 )
 
+
 class ReverseReferenceProperty(list):
     pass
+
 
 class RichTextProperty(TextProperty):
     __property_name__ = 'richtext'

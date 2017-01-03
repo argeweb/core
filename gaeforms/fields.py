@@ -31,12 +31,14 @@ class DatePropertyFiled(wtforms.DateField):
                 self.data = None
                 raise ValueError(self.gettext('Not a valid datetime value'))
 
+
 class LinkPropertyField(wtforms.StringField):
-    widget = html5_widgets.DateInput()
+    widget = html5_widgets.URLInput()
 
     def process_formdata(self, valuelist):
         if valuelist:
             self.data = valuelist[0]
+
 
 class StringField(wtforms.StringField):
     """
@@ -57,6 +59,7 @@ class StringField(wtforms.StringField):
     def pre_validate(self, form):
       if self.data:
           a = self.data
+
 
 class UserField(wtforms.Field):
     """
@@ -313,6 +316,7 @@ class FilePropertyField(TextField):
         if self.__temporary_data:
             self.data = self.__temporary_data
 
+
 class ImagePropertyField(TextField):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
@@ -346,6 +350,7 @@ class ImagesPropertyField(ImagePropertyField):
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
     widget = widgets.ImagesSelectWidget()
+
 
 class RichTextField(wtforms.Field):
     widget = widgets.RichTextWidget()

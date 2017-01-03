@@ -5,8 +5,15 @@ from argeweb.libs.wtforms_appengine import ndb as wtfndb
 from . import fields
 
 
+    
 ### Additional Converters
 def add_convertor(property_type, converter_func):
+    """
+    Converts properties from a ``ndb.Model`` class to form fields.
+
+    Default conversions between properties and fields:
+
+    """  # noqa
     setattr(wtfndb.ModelConverter, 'convert_%s' % property_type, converter_func)
 
 
@@ -70,6 +77,7 @@ def convert_ImageProperty(self, model, prop, kwargs):
 def convert_ImagesProperty(self, model, prop, kwargs):
     return fields.ImagesPropertyField(**kwargs)
 
+
 def convert_DateProperty(self, model, prop, kwargs):
     """Returns a form field for a ``ndb.DateProperty``."""
     if prop._auto_now or prop._auto_now_add:
@@ -94,8 +102,8 @@ add_convertor('HiddenProperty', convert_HiddenProperty)
 add_convertor('ImageProperty', convert_ImageProperty)
 add_convertor('ImagesProperty', convert_ImagesProperty)
 add_convertor('FileProperty', convert_FileProperty)
-add_convertor('LinkProperty', convert_LinkProperty)
 add_convertor('DateProperty', convert_DateProperty)
+add_convertor('LinkProperty', convert_LinkProperty)
 
 
 
