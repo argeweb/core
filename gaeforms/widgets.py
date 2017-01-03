@@ -12,6 +12,8 @@ from argeweb.core.template import pure_text
 html_params = wtforms.widgets.html_params
 HTMLString = wtforms.widgets.HTMLString
 text_type = wtforms.compat.text_type
+
+
 class MultipleReferenceCheckboxWidget(object):
     """
     Widget for MultipleReferenceField. Displays options as checkboxes"""

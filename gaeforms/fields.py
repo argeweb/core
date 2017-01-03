@@ -6,10 +6,37 @@ from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api.users import User
 from argeweb.libs.wtforms.compat import text_type, string_types
 from argeweb.libs import wtforms
+from argeweb.libs.wtforms.widgets import html5 as html5_widgets
 from argeweb.core.gaeforms import widgets
+import datetime
 
 TextField = wtforms.StringField
 
+
+class DatePropertyFiled(wtforms.DateField):
+    widget = html5_widgets.DateInput()
+
+    def _value(self):
+        if self.raw_data:
+            return ' '.join(self.raw_data)
+        else:
+            return self.data and self.data.strftime(self.format) or ''
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            date_str = ' '.join(valuelist)
+            try:
+                self.data = datetime.datetime.strptime(date_str, self.format)
+            except ValueError:
+                self.data = None
+                raise ValueError(self.gettext('Not a valid datetime value'))
+
+class LinkPropertyField(wtforms.StringField):
+    widget = html5_widgets.DateInput()
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = valuelist[0]
 
 class StringField(wtforms.StringField):
     """
@@ -312,6 +339,7 @@ class ImagePropertyField(TextField):
     def post_validate(self, form, validation_stopped):
         if self.__temporary_data:
             self.data = self.__temporary_data
+
 
 class ImagesPropertyField(ImagePropertyField):
     """

@@ -154,7 +154,7 @@ def canonical_parts_from_method(controller, method):
 
 def path_from_canonical_parts(prefix, controller, action, args, plugin=''):
     """
-    Returns a route ('/admin/users/edit/3') from canonical parts
+    Returns a route ('/admin/plugin/users/edit/3') from canonical parts
     ('admin', 'users', 'edit', [id])
     """
     args_parts = ['<' + x + '>' for x in args]
@@ -252,7 +252,7 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None, plugin
 
     prefixes just add to the beginning of the name and uri, for example:
 
-    admin:controller:edit: /admin/controller/:id/edit
+    admin:controller:edit: /admin/plugin/controller/:id/edit
     """
     if hasattr(controllercls, 'name'):
         name = controllercls.name

@@ -59,6 +59,10 @@ def convert_FileProperty(self, model, prop, kwargs):
     return fields.FilePropertyField(**kwargs)
 
 
+def convert_LinkProperty(self, model, prop, kwargs):
+    return fields.LinkPropertyField(**kwargs)
+
+
 def convert_ImageProperty(self, model, prop, kwargs):
     return fields.ImagePropertyField(**kwargs)
 
@@ -66,6 +70,13 @@ def convert_ImageProperty(self, model, prop, kwargs):
 def convert_ImagesProperty(self, model, prop, kwargs):
     return fields.ImagesPropertyField(**kwargs)
 
+def convert_DateProperty(self, model, prop, kwargs):
+    """Returns a form field for a ``ndb.DateProperty``."""
+    if prop._auto_now or prop._auto_now_add:
+        return None
+
+    kwargs.setdefault('format', '%Y-%m-%d')
+    return fields.DatePropertyFiled(**kwargs)
 
 def fallback_converter(self, model, prop, kwargs):
     pass
@@ -83,6 +94,8 @@ add_convertor('HiddenProperty', convert_HiddenProperty)
 add_convertor('ImageProperty', convert_ImageProperty)
 add_convertor('ImagesProperty', convert_ImagesProperty)
 add_convertor('FileProperty', convert_FileProperty)
+add_convertor('LinkProperty', convert_LinkProperty)
+add_convertor('DateProperty', convert_DateProperty)
 
 
 

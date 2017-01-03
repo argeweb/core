@@ -6,7 +6,7 @@
 # Web: http://www.yooliang.com/
 # Date: 2015/7/29.
 
-from google.appengine.ext.ndb import GeoPtProperty, KeyProperty
+from google.appengine.ext.ndb import GeoPtProperty, KeyProperty, JsonProperty
 from google.appengine.ext.ndb import StringProperty, BooleanProperty, IntegerProperty, FloatProperty
 from google.appengine.ext.ndb import DateTimeProperty, DateProperty, TimeProperty, BlobKeyProperty, TextProperty
 from argeweb.core.ndb.model import Model
@@ -22,6 +22,8 @@ __all__ = (
     'BlobKeyProperty',
     'TextProperty',
     'GeoPtProperty',
+    'LinkProperty',
+    'JsonProperty',
     'KeyProperty',
     'RichTextProperty',
     'CategoryProperty',
@@ -48,6 +50,10 @@ class CategoryProperty(KeyProperty):
                                                modelclass.__name__)
 
         setattr(modelclass, collection_name, (cls,self))
+
+
+class LinkProperty(StringProperty):
+    __property_name__ = 'link'
 
 
 class ImageProperty(StringProperty):

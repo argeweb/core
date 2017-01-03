@@ -235,7 +235,7 @@ class Controller(webapp2.RequestHandler, Uri):
         components = (scaffold.Scaffolding,)
 
         #: Prefixes are added in from of controller (like admin_list) and will cause routing
-        #: to produce a url such as '/admin/name/list' and a name such as 'admin:name:list'
+        #: to produce a url such as '/admin/plugin/name/list' and a name such as 'admin:plugin:name:list'
         prefixes = _prefixes
 
         #: Authorizations control access to the controller. Each authorization is a callable.
