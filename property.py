@@ -6,6 +6,7 @@
 # Web: http://www.yooliang.com/
 # Date: 2015/7/29.
 
+from google.appengine.ext.ndb import Property, utils
 from google.appengine.ext.ndb import GeoPtProperty, KeyProperty, JsonProperty
 from google.appengine.ext.ndb import StringProperty, BooleanProperty, IntegerProperty, FloatProperty
 from google.appengine.ext.ndb import DateTimeProperty, DateProperty, TimeProperty, BlobKeyProperty, TextProperty
@@ -44,6 +45,18 @@ class RichTextProperty(TextProperty):
 
 class CategoryProperty(KeyProperty):
     __property_name__ = 'category'
+    _link = None
+    _ajax = None
+
+    @utils.positional(2 + Property._positional)
+    def __init__(self, *args, **kwds):
+        if 'link' in kwds and self._link is None:
+            self._link = kwds.pop('link')
+        if 'ajax' in kwds and self._link is None:
+            self._ajax = kwds.pop('ajax')
+
+        super(CategoryProperty, self).__init__(*args, **kwds)
+
     def _fix_up(self, cls, code_name):
         super(CategoryProperty, self)._fix_up(cls, code_name)
         modelclass = Model._kind_map[self._kind]

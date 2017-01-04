@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# TODO CategoryAjaxWidget CategoryLinkWidget
 """
 # 由 Model 轉換為表單的過程
 # Scaffold 呼叫 argeweb.core.gaeforms.model_form (實際是使用 argeweb.libs.wtforms_appengine.ndb.model_form)
@@ -10,34 +11,33 @@
   +====================+=======================+===========================+=======================================+
   | Property subclass  | in wtforms_appengine  | in gaeforms               | widget                                |
   +====================+=======================+===========================+=======================================+
-  | CategoryProperty   | ----                  | CategoryPropertyField     | gaeforms.widgets.CategorySelectWidget |
+  | CategoryProperty   | ----                  | CategoryField        or   | gaeforms.widgets.CategorySelectWidget |
+  |                    |                       | CategoryLinkField    or   | gaeforms.widgets.CategoryLinkWidget   |
+  |                    |                       | CategoryAjaxField         | gaeforms.widgets.CategoryAjaxWidget   |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | RichTextProperty   | ----                  | RichTextField             | gaeforms.widgets.RichTextWidget       |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | ImageProperty      | ----                  | ImagePropertyField        | gaeforms.widgets.ImageSelectWidget    |
+  | ImageProperty      | ----                  | ImageField                | gaeforms.widgets.ImageSelectWidget    |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | ImagesProperty     | ----                  | ImagesPropertyField       | gaeforms.widgets.ImagesSelectWidget   |
+  | ImagesProperty     | ----                  | ImagesField               | gaeforms.widgets.ImagesSelectWidget   |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | FileProperty       | ----                  | FilePropertyField         | gaeforms.widgets.FileSelectWidget     |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | DateProperty       | ----                  | DatePropertyFiled         | html5_widgets.DateInput               |
+  | HiddenProperty     | ----                  | HiddenField               | wtforms.widgets.HiddenInput           |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | HiddenProperty     | ----                  | HiddenField               | fields.HiddenField                    |
-  +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | StringProperty     | TextField             | StringListPropertyField   | wtforms.widgets.TextArea              |
-  |                    |                       | StringField               | wtforms.widgets.TextInput             |
+  | StringProperty     | TextField             | StringField          or   | wtforms.widgets.TextInput             |
+  |                    |                       | StringListPropertyField   | wtforms.widgets.TextArea              |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | BooleanProperty    | BooleanField          |                           | wtforms.widgets.CheckboxInput         |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | IntegerProperty    | IntegerField          |                           |                                       |
+  | IntegerProperty    | IntegerField          | IntegerField              | html5_widgets.NumberInput             |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | FloatProperty      | TextField             |                           |                                       |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | DateTimeProperty   | DateTimeField         |                           |                                       |
   |                    |                       |                           |                                       |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | DateProperty       | DateField             |                           |                                       |
-  |                    |                       |                           |                                       |
+  | DateProperty       | DateField             | DatePropertyFiled         | html5_widgets.DateInput               |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | TimeProperty       | DateTimeField         |                           |                                       |
   |                    |                       |                           |                                       |

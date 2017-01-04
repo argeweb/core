@@ -40,6 +40,10 @@ class LinkPropertyField(wtforms.StringField):
             self.data = valuelist[0]
 
 
+class IntegerField(wtforms.StringField):
+    widget = html5_widgets.NumberInput()
+
+
 class StringField(wtforms.StringField):
     """
     This field is the base for most of the more complicated fields, and
@@ -175,7 +179,21 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
                 raise ValueError(self.gettext('Not a valid choice'))
 
 
-class CategoryPropertyField(KeyPropertyField):
+class CategoryAjaxField(KeyPropertyField):
+    """
+    Identical to the non-ndb counterpart, but only supports ndb references.
+    """
+    widget = widgets.CategorySelectWidget()
+
+
+class CategoryLinkField(KeyPropertyField):
+    """
+    Identical to the non-ndb counterpart, but only supports ndb references.
+    """
+    widget = widgets.CategorySelectWidget()
+
+
+class CategoryField(KeyPropertyField):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
@@ -317,7 +335,7 @@ class FilePropertyField(TextField):
             self.data = self.__temporary_data
 
 
-class ImagePropertyField(TextField):
+class ImageField(TextField):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
@@ -345,7 +363,7 @@ class ImagePropertyField(TextField):
             self.data = self.__temporary_data
 
 
-class ImagesPropertyField(ImagePropertyField):
+class ImagesField(ImageField):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """

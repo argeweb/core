@@ -42,7 +42,11 @@ def convert_CategoryProperty(self, model, prop, kwargs):
     """Returns a form field for a ``ndb.KeyProperty``."""
     kwargs['kind'] = prop._kind
     kwargs.setdefault('allow_blank', not prop._required)
-    return fields.CategoryPropertyField(**kwargs)
+    if prop._ajax:
+        return fields.CategoryAjaxField(**kwargs)
+    if prop._ajax:
+        return fields.CategoryLinkField(**kwargs)
+    return fields.CategoryField(**kwargs)
 
 
 def convert_BlobKeyProperty(self, model, prop, kwargs):
@@ -71,11 +75,15 @@ def convert_LinkProperty(self, model, prop, kwargs):
 
 
 def convert_ImageProperty(self, model, prop, kwargs):
-    return fields.ImagePropertyField(**kwargs)
+    return fields.ImageField(**kwargs)
 
 
 def convert_ImagesProperty(self, model, prop, kwargs):
-    return fields.ImagesPropertyField(**kwargs)
+    return fields.ImagesField(**kwargs)
+
+
+def convert_IntegerProperty(self, model, prop, kwargs):
+    return fields.IntegerField(**kwargs)
 
 
 def convert_DateProperty(self, model, prop, kwargs):
@@ -104,6 +112,7 @@ add_convertor('ImagesProperty', convert_ImagesProperty)
 add_convertor('FileProperty', convert_FileProperty)
 add_convertor('DateProperty', convert_DateProperty)
 add_convertor('LinkProperty', convert_LinkProperty)
+add_convertor('IntegerProperty', convert_IntegerProperty)
 
 
 
