@@ -44,10 +44,18 @@ def convert_CategoryProperty(self, model, prop, kwargs):
     kwargs.setdefault('allow_blank', not prop._required)
     if prop._ajax:
         return fields.CategoryAjaxField(**kwargs)
-    if prop._ajax:
-        return fields.CategoryLinkField(**kwargs)
     return fields.CategoryField(**kwargs)
 
+
+def convert_BackendLinkProperty(self, model, prop, kwargs):
+    """Returns a form field for a ``ndb.BlobKeyProperty``."""
+    if prop._link:
+        kwargs['link'] = prop._link
+    if prop._link:
+        kwargs['link_text'] = prop._link_text
+    if prop._link:
+        kwargs['link_target'] = prop._link_target
+    return fields.BackendLinkField(**kwargs)
 
 def convert_BlobKeyProperty(self, model, prop, kwargs):
     """Returns a form field for a ``ndb.BlobKeyProperty``."""
@@ -111,6 +119,7 @@ add_convertor('ImageProperty', convert_ImageProperty)
 add_convertor('ImagesProperty', convert_ImagesProperty)
 add_convertor('FileProperty', convert_FileProperty)
 add_convertor('DateProperty', convert_DateProperty)
+add_convertor('BackendLinkProperty', convert_BackendLinkProperty)
 add_convertor('LinkProperty', convert_LinkProperty)
 add_convertor('IntegerProperty', convert_IntegerProperty)
 

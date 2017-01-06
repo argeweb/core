@@ -261,6 +261,7 @@ def _flash(controller, *args, **kwargs):
     if 'flash_messages' in controller.components and controller.scaffold.flash_messages:
         controller.components.flash_messages(*args, **kwargs)
 
+
 # controller Methods
 def list(controller):
     plural = None
@@ -360,9 +361,12 @@ def parser_action(controller, item, callback=save_callback):
         controller.meta.change_view('json')
 
 
-def add(controller):
+def add(controller, **kwargs):
     item = controller.scaffold.create_factory(controller)
     controller.scaffold.redirect = False
+    for i in kwargs:
+        if hasattr(item, i):
+            setattr(item, i, kwargs[i])
     return parser_action(controller, item)
 
 

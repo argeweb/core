@@ -188,6 +188,36 @@ class CategorySelectWidget(object):
             return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label.title)))))
 
 
+class BackendLinkWidget(object):
+    """
+    Renders a select field.
+
+    If `multiple` is True, then the `size` property should be specified on
+    rendering to make the field useful.
+
+    The field must provide an `iter_choices()` method which the widget will
+    call on rendering; this method must yield tuples of
+    `(value, label, selected)`.
+    """
+    def __init__(self, multiple=False):
+        self.multiple = multiple
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs['class'] = kwargs.get('class', '').replace('form-control', '')
+        if field.data == "None" or field.data is None:
+            field.data = ""
+        if field.data:
+            field_data = field.data
+        else:
+            field_data = field._link
+        html = [
+            '<a %s href="%s" target="%s">' % (html_params(name=field.name, **kwargs), field_data, field._link_target)]
+        html.append(field._link_text)
+
+        html.append('</a>')
+        return HTMLString(''.join(html))
+
 class Option(object):
     """
     Renders the individual option from a select field.

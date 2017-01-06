@@ -186,11 +186,24 @@ class CategoryAjaxField(KeyPropertyField):
     widget = widgets.CategorySelectWidget()
 
 
-class CategoryLinkField(KeyPropertyField):
+class BackendLinkField(wtforms.StringField):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
-    widget = widgets.CategorySelectWidget()
+    _link = None
+    _link_text = None
+    _link_target = None
+    widget = widgets.BackendLinkWidget()
+
+    def __init__(self, *args, **kwargs):
+        if 'link' in kwargs:
+            self._link = kwargs.pop('link')
+        if 'link_text' in kwargs:
+            self._link_text = kwargs.pop('link_text')
+        if 'link_target' in kwargs:
+            self._link_target = kwargs.pop('link_target')
+        super(BackendLinkField, self).__init__(*args, **kwargs)
+
 
 
 class CategoryField(KeyPropertyField):

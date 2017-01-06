@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# TODO CategoryAjaxWidget CategoryLinkWidget
+# TODO CategoryAjaxWidget BackendLinkWidget
 """
 # 由 Model 轉換為表單的過程
 # Scaffold 呼叫 argeweb.core.gaeforms.model_form (實際是使用 argeweb.libs.wtforms_appengine.ndb.model_form)
@@ -12,7 +12,7 @@
   | Property subclass  | in wtforms_appengine  | in gaeforms               | widget                                |
   +====================+=======================+===========================+=======================================+
   | CategoryProperty   | ----                  | CategoryField        or   | gaeforms.widgets.CategorySelectWidget |
-  |                    |                       | CategoryLinkField    or   | gaeforms.widgets.CategoryLinkWidget   |
+  |                    |                       | BackendLinkField    or   | gaeforms.widgets.BackendLinkWidget   |
   |                    |                       | CategoryAjaxField         | gaeforms.widgets.CategoryAjaxWidget   |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | RichTextProperty   | ----                  | RichTextField             | gaeforms.widgets.RichTextWidget       |

@@ -45,14 +45,11 @@ class RichTextProperty(TextProperty):
 
 class CategoryProperty(KeyProperty):
     __property_name__ = 'category'
-    _link = None
     _ajax = None
 
     @utils.positional(2 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'link' in kwds and self._link is None:
-            self._link = kwds.pop('link')
-        if 'ajax' in kwds and self._link is None:
+        if 'ajax' in kwds:
             self._ajax = kwds.pop('ajax')
 
         super(CategoryProperty, self).__init__(*args, **kwds)
@@ -69,6 +66,25 @@ class CategoryProperty(KeyProperty):
 
 class LinkProperty(StringProperty):
     __property_name__ = 'link'
+
+
+class BackendLinkProperty(StringProperty):
+    _link = None
+    _link_text = None
+    _link_target = None
+    __property_name__ = 'backend_link'
+
+    @utils.positional(1 + Property._positional)
+    def __init__(self, *args, **kwds):
+        if 'url' in kwds and self._link is None:
+            self._link = kwds.pop('url')
+        if 'text' in kwds and self._link_text is None:
+            self._link_text = kwds.pop('text')
+        if 'target' in kwds and self._link_target is None:
+            self._link_target = kwds.pop('target')
+        else:
+            self._link_target = 'aside_iframe'
+        super(BackendLinkProperty, self).__init__(*args, **kwds)
 
 
 class ImageProperty(StringProperty):
