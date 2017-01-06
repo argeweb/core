@@ -370,12 +370,15 @@ def add(controller, **kwargs):
     return parser_action(controller, item)
 
 
-def edit(controller, key):
+def edit(controller, key, **kwargs):
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
     controller.context['last_record_date'] = item.modified
     controller.scaffold.redirect = False
+    for i in kwargs:
+        if hasattr(item, i):
+            setattr(item, i, kwargs[i])
     return parser_action(controller, item)
 
 
