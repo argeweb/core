@@ -9,6 +9,8 @@ from protorpc.message_types import VoidMessage
 from events import ViewEvents
 
 _views = {}
+_function_list = {}
+_datastore_commands = {}
 
 
 def factory(name):
@@ -17,6 +19,111 @@ def factory(name):
     """
     global _views
     return _views.get(name.lower(), _views.get((name + 'View').lower()))
+
+
+class ViewFunction(object):
+    _controller = None
+
+    def __init__(self, controller):
+        self._controller = controller
+
+    @staticmethod
+    def register(function_object=None, prefix=u'global'):
+        name = prefix + ':' + function_object.__name__
+        if name in _function_list:
+            return
+        _function_list[name] = function_object
+
+    def get_run(self):
+        def run(common_name, *args, **kwargs):
+            prefix = u'global'
+            if kwargs.has_key('prefix'):
+                prefix = kwargs['prefix']
+            name = prefix + ':' + common_name
+            kwargs['controller'] = self._controller
+            if name in _function_list:
+                r = _function_list[name](*args, **kwargs)
+                return r
+        return run
+
+
+class ViewDatastore(object):
+    _controller = None
+
+    def __init__(self, controller):
+        self._controller = controller
+
+    @staticmethod
+    def register(name, common_object=None, prefix=u'global'):
+        name = prefix + ':' + name
+        if name in _datastore_commands:
+            return
+        _datastore_commands[name] = common_object
+
+    def get(self, *args, **kwargs):
+        query_name = None
+        if len(args) > 0:
+            query_name = str(args[0])
+            args = args[1:]
+            if len(args) + len(kwargs) == 0 and query_name:
+                args = [query_name]
+        if 'query_name' in kwargs:
+            query_name = str(kwargs['query_name'])
+        prefix = u'global'
+        if kwargs.has_key('prefix'):
+            prefix = kwargs['prefix']
+            del kwargs['prefix']
+        query_name = prefix + ':' + query_name
+        if query_name and query_name in _datastore_commands:
+            rv = _datastore_commands[query_name](*args, **kwargs)
+            try:
+                return rv.get()
+            except:
+                return rv
+
+    def query(self, query_name, *args, **kwargs):
+        prefix = u'global'
+        if kwargs.has_key('prefix'):
+            prefix = kwargs['prefix']
+        query_name = prefix + ':' + query_name
+        if query_name in _datastore_commands:
+            query = _datastore_commands[query_name](*args, **kwargs)
+            use_pager = False
+            if 'use_pager' in kwargs:
+                use_pager = kwargs['use_pager']
+            if use_pager is True:
+                if 'size' not in kwargs:
+                    kwargs['size'] = self._controller.params.get_integer('size', 10)
+                if 'page' not in kwargs:
+                    kwargs['page'] = self._controller.params.get_integer('page', 1)
+                if 'near' not in kwargs:
+                    kwargs['near'] = self._controller.params.get_integer('near', 10)
+                if 'data_only' not in kwargs:
+                    kwargs['data_only'] = False
+            else:
+                if 'size' not in kwargs:
+                    kwargs['size'] = 10
+                if 'page' not in kwargs:
+                    kwargs['page'] = 1
+                if 'near' not in kwargs:
+                    kwargs['near'] = 10
+                if 'data_only' not in kwargs:
+                    kwargs['data_only'] = True
+            return self._controller.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
+
+    def random(self, cls_name, common_name, size=3, *args, **kwargs):
+        import random
+        return_lst = []
+        cls_name = cls_name + ':' + common_name
+        if cls_name not in _datastore_commands:
+            return return_lst
+        query = _datastore_commands[cls_name](*args, **kwargs)
+        lst = query.fetch(size * 10)
+        if len(lst) >= size:
+            return_lst = random.sample(lst, size)
+        else:
+            return_lst = lst
+        return return_lst
 
 
 class ViewContext(dict):
@@ -79,6 +186,7 @@ class TemplateView(View):
             'encode_key': self.controller.util.encode_key,
             'decode_key': self.controller.util.decode_key,
         })
+
         self.context.update({
             'controller_name': self.controller.name,
             'events': self.events,
@@ -94,8 +202,8 @@ class TemplateView(View):
             'namespace': self.controller.namespace,
             'print_key': self.controller.util.encode_key,
             'print_setting': self.controller.settings.print_setting,
-            'datastore': self.controller.datastore,
-            'function': self.controller.function
+            'datastore': ViewDatastore(self.controller),
+            'function': ViewFunction(self.controller).get_run()
         })
         r = self.controller.route
         self.controller.events.setup_template_variables(controller=self.controller)

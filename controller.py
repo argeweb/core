@@ -17,8 +17,6 @@ from argeweb.core import routing
 from argeweb.core import scaffold, auth
 from argeweb.core import settings
 from argeweb.core import time_util
-from argeweb.core.datastore import Datastore
-from argeweb.core.function import Function
 from argeweb.core.bunch import Bunch
 from argeweb.core.params import ParamInfo
 from argeweb.core.ndb import encode_key, decode_key
@@ -318,8 +316,6 @@ class Controller(webapp2.RequestHandler, Uri):
         self.params = ParamInfo(self.request)
         self.logging = logging
         self.plugins = plugins_information
-        self.datastore = Datastore(self)
-        self.function = Function(self).get_run()
         namespace_manager.set_namespace(self.namespace)
 
     def _build_components(self):
