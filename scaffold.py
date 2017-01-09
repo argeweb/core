@@ -4,18 +4,7 @@ from argeweb.core import inflector
 from argeweb.core.gaeforms import model_form
 from argeweb.components.flash_messages import FlashMessages
 from google.appengine.ext.ndb.google_imports import datastore_errors
-#, autoadmin
-#(autoadmin)  # load autoadmin here, if any controller use scaffold it'll be included and initialized
 
-def generate_upload_url(success_path):
-    from google.appengine.ext import blobstore
-    from argeweb import settings
-    cloud_storage_bucket = ''
-    if settings.get('upload').get('use_cloud_storage'):
-        cloud_storage_bucket = settings.get('upload', {}).get('bucket')
-    return blobstore.create_upload_url(
-            success_path= success_path,
-            gs_bucket_name=cloud_storage_bucket)
 
 class Scaffolding(object):
     """
@@ -50,7 +39,6 @@ class Scaffolding(object):
                 setattr(self.controller.Scaffold, 'title', titles)
             except:
                 setattr(self.controller.Scaffold, 'title', u'Unknown')
-
 
         if not issubclass(self.controller.Scaffold, Scaffold):
             self.controller.Scaffold = type('Scaffold', (self.controller.Scaffold, Scaffold), {})
@@ -262,43 +250,6 @@ def _flash(controller, *args, **kwargs):
         controller.components.flash_messages(*args, **kwargs)
 
 
-# controller Methods
-def list(controller):
-    plural = None
-    if 'query' in controller.request.params:
-        try:
-            plural = controller.components.search()
-        except:
-            plural = controller.scaffold.query_factory(controller)
-    else:
-        try:
-            plural = controller.scaffold.query_factory(controller)
-        except:
-            pass
-    controller.context.set(**{controller.scaffold.plural: plural})
-    if controller.scaffold.plural in controller.context:
-        try:
-            last_record = None
-            lst = controller.context[controller.scaffold.plural]
-            if lst.__class__.__name__ == 'list':
-                last_record = lst[-1]
-            else:
-                lst_record = lst.fetch()
-                if len(lst_record) > 0:
-                    last_record = lst_record[-1]
-            if last_record:
-                controller.context['last_record_date'] = last_record.modified
-        except:
-            pass
-
-
-def view(controller, key):
-    item = controller.util.decode_key(key).get()
-    if not item:
-        return 404
-    controller.context['last_record_date'] = item.modified
-    controller.context.set(**{
-        controller.scaffold.singular: item})
 
 
 def save_callback(controller, item, parser):
@@ -359,6 +310,45 @@ def parser_action(controller, item, callback=save_callback):
         controller.scaffold.singular: item})
     if controller.params.get_string('returnType') == u'json' or controller.request.content_type == 'application/json':
         controller.meta.change_view('json')
+
+
+# controller Methods
+def list(controller):
+    plural = None
+    if 'query' in controller.request.params:
+        try:
+            plural = controller.components.search()
+        except:
+            plural = controller.scaffold.query_factory(controller)
+    else:
+        try:
+            plural = controller.scaffold.query_factory(controller)
+        except:
+            pass
+    controller.context.set(**{controller.scaffold.plural: plural})
+    if controller.scaffold.plural in controller.context:
+        try:
+            last_record = None
+            lst = controller.context[controller.scaffold.plural]
+            if lst.__class__.__name__ == 'list':
+                last_record = lst[-1]
+            else:
+                lst_record = lst.fetch()
+                if len(lst_record) > 0:
+                    last_record = lst_record[-1]
+            if last_record:
+                controller.context['last_record_date'] = last_record.modified
+        except:
+            pass
+
+
+def view(controller, key):
+    item = controller.util.decode_key(key).get()
+    if not item:
+        return 404
+    controller.context['last_record_date'] = item.modified
+    controller.context.set(**{
+        controller.scaffold.singular: item})
 
 
 def add(controller, **kwargs):
