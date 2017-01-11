@@ -251,7 +251,6 @@ class TemplateView(View):
         else:
             # 使用隨機字串可以避開 Jinja2 樣版系統的快取
             random_string = "?random_string=" + str(random.random())
-
         templates = []
 
         template_path = '%s/' % self.controller.name

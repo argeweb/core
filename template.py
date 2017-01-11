@@ -272,21 +272,37 @@ def _is_datetime(obj):
 #
 import datetime as cdt
 
+
 def format_datetime(x, format=None):
     if format is None:
         return time_util.localize(x).strftime('%Y-%m-%d %H:%M:%S')
     return time_util.localize(x).strftime(format)
+
 
 def format_date(x, format=None):
     if format is None:
         return x.strftime('%Y-%m-%d')
     return x.strftime(format)
 
+
+def format_key(x, format=None):
+    i = x.get()
+    if i is None:
+        return '---'
+    try:
+        if format is not None and hasattr(i, format):
+            return format_value(getattr(i, format))
+        elif hasattr(i, 'title'):
+            return format_value(i.title)
+    except:
+        pass
+    return format_value(i)
+
 formatters = {
     datetime.datetime: format_datetime,
     #datetime.datetime: lambda x: x.strftime('%b %d, %Y at %I:%M%p %Z'),
     datetime.date: format_date,
-    ndb.Key: lambda x: format_value(x.get())
+    ndb.Key: format_key
 }
 
 
@@ -326,4 +342,3 @@ def format_value_with_lang(item, field_name, lang=None):
         return format_value(getattr(item, lang_field))
     else:
         return ''
-
