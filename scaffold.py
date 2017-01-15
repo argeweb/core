@@ -109,6 +109,8 @@ class Scaffolding(object):
             'plural': controller.scaffold.plural,
             'singular': controller.scaffold.singular,
             'form_action': controller.scaffold.form_action,
+            'form_tab_pages': controller.scaffold.form_tab_pages,
+            'form_tab_pages_fields': controller.scaffold.form_tab_pages_fields,
             'form_encoding': controller.scaffold.form_encoding,
             'excluded_properties_in_from': controller.scaffold.excluded_properties_in_from,
             'display_properties': controller.scaffold.display_properties,
@@ -124,25 +126,48 @@ class Scaffold(object):
     Scaffold Meta Object Base Class
     """
     def __init__(self, controller):
-        display_properties, model_form_data, redirect_url = None, None, None
+        display_properties, model_form_data, redirect_url, tab_pages = None, None, None, None
         field_name = {
             'created': u'建立時間',
             'modified': u'修改時間',
             'sort': u'排序值',
             'is_enable': u'啟用'
         }
+        tab_pages_list = {}
+        max_tab_pages = 0
         if hasattr(controller.meta, 'Model'):
             display_properties = []
             for name, property in controller.meta.Model._properties.items():
                 display_properties.append(name)
                 if property._verbose_name is not None:
                     field_name[name] = property._verbose_name
+                if property._tab_page_index is None:
+                    tab_pages_list["0"].append(name)
+                else:
+                    if str(property._tab_page_index) not in tab_pages_list:
+                        tab_pages_list[str(property._tab_page_index)] = []
+                    tab_pages_list[str(property._tab_page_index)].append(name)
+                    if int(property._tab_page_index) > max_tab_pages:
+                        max_tab_pages = int(property._tab_page_index)
             display_properties = sorted(display_properties)
             model_form_data = model_form(controller.meta.Model)
         try:
             redirect_url = controller.uri(action='list') if controller.uri_exists(action='list') else None
         except KeyError:
             pass
+        try:
+            tab_pages = controller.meta.Model.Meta.tab_pages
+            if max_tab_pages < len(tab_pages) - 1:
+                max_tab_pages = len(tab_pages) - 1
+            for i in xrange(0, max_tab_pages + 1):
+                if str(i) not in tab_pages_list:
+                    tab_pages_list[str(i)] = []
+        except AttributeError:
+            pass
+
+        tab_pages_list_real = range(0, max_tab_pages+1)
+        for item in tab_pages_list:
+            tab_pages_list_real[int(item)] = tab_pages_list[item]
 
         defaults = dict(
             query_factory=default_query_factory,
@@ -156,7 +181,10 @@ class Scaffold(object):
             hidden_properties_in_edit=(),
             redirect=redirect_url,
             form_action=None,
-            form_encoding='application/x-www-form-urlencoded',
+            form_encoding='application/json',
+            # form_encoding='application/x-www-form-urlencoded',
+            form_tab_pages=tab_pages,
+            form_tab_pages_fields=tab_pages_list_real,
             excluded_properties_in_from=(),
             flash_messages=True,
             layouts={
@@ -270,10 +298,15 @@ def parser_action(controller, item, callback=save_callback):
             controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=item)
             callback(controller, item, parser)
             controller.events.scaffold_after_apply(controller=controller, container=parser.container, item=item)
+            default_message = controller.meta.default_message if hasattr(controller.meta, 'default_message') else None
+
             response_data = {
                 'response_info': 'success',
-                'response_method': controller.params.get_string('routeAction'),
+                'request_method': controller.request.route.handler_method,
+                'method_default_message': default_message,
+                'item': controller.util.encode_key(item)
             }
+
             if 'data' in controller.context:
                 controller.context['data'].update(response_data)
             else:
@@ -289,7 +322,6 @@ def parser_action(controller, item, callback=save_callback):
             controller.context['errors'] = parser.errors
             response_data = {
                 'errors': parser.errors,
-                'method': controller.params.get_string('routeAction'),
             }
             if 'data' in controller.context:
                 controller.context['data'].update(response_data)

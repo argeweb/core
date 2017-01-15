@@ -7,7 +7,6 @@ import types
 import time
 from argeweb.behaviors.searchable import Searchable
 
-
 class ModelMeta(ndb.model.MetaModel):
     """
     Augments Models by adding the class methods find_all_by_x
@@ -203,11 +202,12 @@ class BasicModel(Model):
     """
     Adds the common properties created, created_by, modified, and modified_by to :class:`Model`
     """
-    created = ndb.DateTimeProperty(auto_now_add=True)
+    from argeweb.core.property import DateProperty, DateTimeProperty, FloatProperty
+    created = DateTimeProperty(auto_now_add=True)
     #created_by = ndb.UserProperty(auto_current_user_add=True)
-    modified = ndb.DateTimeProperty(auto_now=True)
+    modified = DateTimeProperty(auto_now=True)
     #modified_by = ndb.UserProperty(auto_current_user=True)
-    sort = ndb.FloatProperty(default=0.0)
+    sort = FloatProperty(default=0.0)
 
     def before_put(self):
         """

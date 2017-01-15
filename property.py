@@ -34,191 +34,195 @@ __all__ = (
 
 
 class StringProperty(ndb.StringProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(StringProperty, self).__init__(*args, **kwds)
 
 
 class BooleanProperty(ndb.BooleanProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(BooleanProperty, self).__init__(*args, **kwds)
 
 
 class IntegerProperty(ndb.IntegerProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(IntegerProperty, self).__init__(*args, **kwds)
 
 
 class FloatProperty(ndb.FloatProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(FloatProperty, self).__init__(*args, **kwds)
 
 
 class DateTimeProperty(ndb.DateTimeProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(DateTimeProperty, self).__init__(*args, **kwds)
 
 
 class DateProperty(ndb.DateProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(DateProperty, self).__init__(*args, **kwds)
 
 
 class TimeProperty(ndb.TimeProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(TimeProperty, self).__init__(*args, **kwds)
 
 
 class BlobKeyProperty(ndb.BlobKeyProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(BlobKeyProperty, self).__init__(*args, **kwds)
 
 
 class TextProperty(ndb.TextProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(TextProperty, self).__init__(*args, **kwds)
 
 
 class GeoPtProperty(ndb.GeoPtProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(GeoPtProperty, self).__init__(*args, **kwds)
 
 
 class JsonProperty(ndb.JsonProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(JsonProperty, self).__init__(*args, **kwds)
 
 
 class KeyProperty(ndb.KeyProperty):
-    _group_index = 0
-    _page_index = 0
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(2 + Property._positional)
     def __init__(self, *args, **kwds):
-        if 'group' in kwds:
-            self._group_index = kwds.pop('group')
+        if 'field_group' in kwds:
+            self._field_group_index = kwds.pop('field_group')
 
-        if 'page' in kwds:
-            self._page_index = kwds.pop('page')
+        if 'tab_page' in kwds:
+            self._tab_page_index = kwds.pop('tab_page')
 
         super(KeyProperty, self).__init__(*args, **kwds)
 
 
 class RichTextProperty(TextProperty):
     __property_name__ = 'richtext'
+    _field_group_index = 0
+    _tab_page_index = 0
 
 
 class CategoryProperty(KeyProperty):
     __property_name__ = 'category'
+    _field_group_index = 0
+    _tab_page_index = 0
     _ajax = None
 
     @utils.positional(2 + Property._positional)
@@ -240,6 +244,8 @@ class CategoryProperty(KeyProperty):
 
 class LinkProperty(StringProperty):
     __property_name__ = 'link'
+    _field_group_index = 0
+    _tab_page_index = 0
 
 
 class BackendLinkProperty(StringProperty):
@@ -247,6 +253,8 @@ class BackendLinkProperty(StringProperty):
     _link_text = None
     _link_target = None
     __property_name__ = 'backend_link'
+    _field_group_index = 0
+    _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
     def __init__(self, *args, **kwds):
@@ -263,15 +271,23 @@ class BackendLinkProperty(StringProperty):
 
 class ImageProperty(StringProperty):
     __property_name__ = 'image'
+    _field_group_index = 0
+    _tab_page_index = 0
 
 
 class ImagesProperty(TextProperty):
     __property_name__ = 'images'
+    _field_group_index = 0
+    _tab_page_index = 0
 
 
 class HiddenProperty(StringProperty):
     __property_name__ = 'hidden'
+    _field_group_index = 0
+    _tab_page_index = 0
 
 
 class FileProperty(StringProperty):
     __property_name__ = 'file'
+    _field_group_index = 0
+    _tab_page_index = 0
