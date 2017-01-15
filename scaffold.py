@@ -112,6 +112,7 @@ class Scaffolding(object):
             'form_tab_pages': controller.scaffold.form_tab_pages,
             'form_tab_pages_fields': controller.scaffold.form_tab_pages_fields,
             'form_encoding': controller.scaffold.form_encoding,
+            'form_return_encoding': controller.scaffold.form_return_encoding,
             'excluded_properties_in_from': controller.scaffold.excluded_properties_in_from,
             'display_properties': controller.scaffold.display_properties,
             'display_properties_in_list': controller.scaffold.display_properties_in_list,
@@ -181,8 +182,8 @@ class Scaffold(object):
             hidden_properties_in_edit=(),
             redirect=redirect_url,
             form_action=None,
-            form_encoding='application/json',
-            # form_encoding='application/x-www-form-urlencoded',
+            form_return_encoding='application/json',
+            form_encoding='application/x-www-form-urlencoded',
             form_tab_pages=tab_pages,
             form_tab_pages_fields=tab_pages_list_real,
             excluded_properties_in_from=(),
@@ -298,19 +299,6 @@ def parser_action(controller, item, callback=save_callback):
             controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=item)
             callback(controller, item, parser)
             controller.events.scaffold_after_apply(controller=controller, container=parser.container, item=item)
-            default_message = controller.meta.default_message if hasattr(controller.meta, 'default_message') else None
-
-            response_data = {
-                'response_info': 'success',
-                'request_method': controller.request.route.handler_method,
-                'method_default_message': default_message,
-                'item': controller.util.encode_key(item)
-            }
-
-            if 'data' in controller.context:
-                controller.context['data'].update(response_data)
-            else:
-                controller.context['data'] = response_data
             controller.context.set(**{
                 controller.scaffold.singular: item,
             })
@@ -340,7 +328,8 @@ def parser_action(controller, item, callback=save_callback):
     controller.context.set(**{
         'form': parser.container,
         controller.scaffold.singular: item})
-    if controller.params.get_string('returnType') == u'json' or controller.request.content_type == 'application/json':
+    if controller.params.get_string('response_return_encode') == 'application/json' \
+            or controller.request.content_type == 'application/json':
         controller.meta.change_view('json')
 
 

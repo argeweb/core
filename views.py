@@ -290,6 +290,21 @@ class JsonView(View):
         super(JsonView, self).__init__(controller, context)
         self.variable_name = ('data',)
 
+        default_message = controller.meta.default_message if hasattr(self, 'default_message') else None
+        response_data = {
+            'response_info': 'success',
+            'request_method': controller.request.route.handler_method,
+            'method_default_message': default_message,
+        }
+        if hasattr(controller, 'context'):
+            if 'data' in controller.context:
+                data = controller.context['data']
+                for json_message in ['response_info', 'request_method', 'method_default_message']:
+                    if json_message not in data:
+                        data['response_info'] = response_data[json_message]
+            else:
+                controller.context['data'] = response_data
+
     def _get_data(self, default=None):
         self.variable_name = self.variable_name if isinstance(self.variable_name, (list, tuple)) else (self.variable_name,)
 
