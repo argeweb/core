@@ -10,27 +10,10 @@ from google.appengine.ext import ndb
 from google.appengine.ext.ndb import Property, utils
 from argeweb.core.ndb.model import Model
 
-__all__ = (
-    'StringProperty',
-    'BooleanProperty',
-    'IntegerProperty',
-    'FloatProperty',
-    'DateTimeProperty',
-    'DateProperty',
-    'TimeProperty',
-    'BlobKeyProperty',
-    'TextProperty',
-    'GeoPtProperty',
-    'LinkProperty',
-    'JsonProperty',
-    'KeyProperty',
-    'RichTextProperty',
-    'CategoryProperty',
-    'HiddenProperty',
-    'ImageProperty',
-    'ImagesProperty',
-    'FileProperty',
-)
+# TODO 驗証屬性設置
+# TODO helper 屬性設置
+
+# ArgeWeb Base Property
 
 
 class StringProperty(ndb.StringProperty):
@@ -38,14 +21,10 @@ class StringProperty(ndb.StringProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(StringProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(StringProperty, self).__init__(*args, **kwargs)
 
 
 class BooleanProperty(ndb.BooleanProperty):
@@ -53,14 +32,10 @@ class BooleanProperty(ndb.BooleanProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(BooleanProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(BooleanProperty, self).__init__(*args, **kwargs)
 
 
 class IntegerProperty(ndb.IntegerProperty):
@@ -68,14 +43,10 @@ class IntegerProperty(ndb.IntegerProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(IntegerProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(IntegerProperty, self).__init__(*args, **kwargs)
 
 
 class FloatProperty(ndb.FloatProperty):
@@ -83,14 +54,11 @@ class FloatProperty(ndb.FloatProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
 
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(FloatProperty, self).__init__(*args, **kwds)
+        super(FloatProperty, self).__init__(*args, **kwargs)
 
 
 class DateTimeProperty(ndb.DateTimeProperty):
@@ -98,14 +66,10 @@ class DateTimeProperty(ndb.DateTimeProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(DateTimeProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0,*args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(DateTimeProperty, self).__init__(*args, **kwargs)
 
 
 class DateProperty(ndb.DateProperty):
@@ -113,14 +77,10 @@ class DateProperty(ndb.DateProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(DateProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0,*args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(DateProperty, self).__init__(*args, **kwargs)
 
 
 class TimeProperty(ndb.TimeProperty):
@@ -128,14 +88,10 @@ class TimeProperty(ndb.TimeProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(TimeProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(TimeProperty, self).__init__(*args, **kwargs)
 
 
 class BlobKeyProperty(ndb.BlobKeyProperty):
@@ -143,14 +99,10 @@ class BlobKeyProperty(ndb.BlobKeyProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(BlobKeyProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(BlobKeyProperty, self).__init__(*args, **kwargs)
 
 
 class TextProperty(ndb.TextProperty):
@@ -158,14 +110,10 @@ class TextProperty(ndb.TextProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(TextProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(TextProperty, self).__init__(*args, **kwargs)
 
 
 class GeoPtProperty(ndb.GeoPtProperty):
@@ -173,14 +121,10 @@ class GeoPtProperty(ndb.GeoPtProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(GeoPtProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(GeoPtProperty, self).__init__(*args, **kwargs)
 
 
 class JsonProperty(ndb.JsonProperty):
@@ -188,14 +132,10 @@ class JsonProperty(ndb.JsonProperty):
     _tab_page_index = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
-
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
-
-        super(JsonProperty, self).__init__(*args, **kwds)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(JsonProperty, self).__init__(*args, **kwargs)
 
 
 class KeyProperty(ndb.KeyProperty):
@@ -203,34 +143,34 @@ class KeyProperty(ndb.KeyProperty):
     _tab_page_index = 0
 
     @utils.positional(2 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'field_group' in kwds:
-            self._field_group_index = kwds.pop('field_group')
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        self._field_group_index = field_group
+        self._tab_page_index = tab_page
+        super(KeyProperty, self).__init__(*args, **kwargs)
 
-        if 'tab_page' in kwds:
-            self._tab_page_index = kwds.pop('tab_page')
 
-        super(KeyProperty, self).__init__(*args, **kwds)
-
+# ArgeWeb Extended Property
 
 class RichTextProperty(TextProperty):
+    """ 文字編輯器 專用欄位
+        將使用 js 的套件
+        """
     __property_name__ = 'richtext'
-    _field_group_index = 0
-    _tab_page_index = 0
 
 
 class CategoryProperty(KeyProperty):
+    """ 分類 專用欄位
+        用於綁定於另一個 ndb.Key
+        """
     __property_name__ = 'category'
-    _field_group_index = 0
-    _tab_page_index = 0
     _ajax = None
 
     @utils.positional(2 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'ajax' in kwds:
-            self._ajax = kwds.pop('ajax')
+    def __init__(self, *args, **kwargs):
+        if 'ajax' in kwargs:
+            self._ajax = kwargs.pop('ajax')
 
-        super(CategoryProperty, self).__init__(*args, **kwds)
+        super(CategoryProperty, self).__init__(*args, **kwargs)
 
     def _fix_up(self, cls, code_name):
         super(CategoryProperty, self)._fix_up(cls, code_name)
@@ -244,50 +184,48 @@ class CategoryProperty(KeyProperty):
 
 class LinkProperty(StringProperty):
     __property_name__ = 'link'
-    _field_group_index = 0
-    _tab_page_index = 0
 
 
-class BackendLinkProperty(StringProperty):
-    _link = None
-    _link_text = None
-    _link_target = None
-    __property_name__ = 'backend_link'
-    _field_group_index = 0
-    _tab_page_index = 0
+class FieldSwitchProperty(BooleanProperty):
+    """ 欄位切換 專用欄位
+        用來決定特定組別的欄位是否顯示
+
+        """
+    _group_index_on_enable = 0
+    _group_index_on_disable = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, *args, **kwds):
-        if 'url' in kwds and self._link is None:
-            self._link = kwds.pop('url')
-        if 'text' in kwds and self._link_text is None:
-            self._link_text = kwds.pop('text')
-        if 'target' in kwds and self._link_target is None:
-            self._link_target = kwds.pop('target')
-        else:
-            self._link_target = 'aside_iframe'
-        super(BackendLinkProperty, self).__init__(*args, **kwds)
+    def __init__(self, group_index_on_enable=0, group_index_on_disable=0, target='aside_iframe', *args, **kwargs):
+        self._group_index_on_enable = group_index_on_enable
+        self._group_index_on_disable = group_index_on_disable
+        super(BooleanProperty, self).__init__(*args, **kwargs)
+
+
+class SidePanelProperty(StringProperty):
+    _uri = None
+    _uri_text = None
+    _target = None
+    __property_name__ = 'backend_link'
+
+    @utils.positional(1 + Property._positional)
+    def __init__(self, uri=None, text=None, target='aside_iframe', *args, **kwargs):
+        self._uri = uri
+        self._uri_text = text
+        self._target = target
+        super(SidePanelProperty, self).__init__(*args, **kwargs)
 
 
 class ImageProperty(StringProperty):
     __property_name__ = 'image'
-    _field_group_index = 0
-    _tab_page_index = 0
 
 
 class ImagesProperty(TextProperty):
     __property_name__ = 'images'
-    _field_group_index = 0
-    _tab_page_index = 0
 
 
 class HiddenProperty(StringProperty):
     __property_name__ = 'hidden'
-    _field_group_index = 0
-    _tab_page_index = 0
 
 
 class FileProperty(StringProperty):
     __property_name__ = 'file'
-    _field_group_index = 0
-    _tab_page_index = 0

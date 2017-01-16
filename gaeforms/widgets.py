@@ -4,7 +4,7 @@
 # Created with YooLiang Technology (侑良科技).
 # Author: Qi-Liang Wen (温啓良）
 # Web: http://www.yooliang.com/
-# Date: 2015/7/12.
+# Date: 2017/01/16.
 from argeweb.libs import wtforms
 from cgi import escape
 from argeweb.core.template import pure_text
@@ -188,7 +188,7 @@ class CategorySelectWidget(object):
             return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label.title)))))
 
 
-class BackendLinkWidget(object):
+class SidePanelWidget(object):
     """
     Renders a select field.
 
@@ -207,13 +207,9 @@ class BackendLinkWidget(object):
         kwargs['class'] = kwargs.get('class', '').replace('form-control', '')
         if field.data == "None" or field.data is None:
             field.data = ""
-        if field.data:
-            field_data = field.data
-        else:
-            field_data = field._link
         html = [
-            '<a %s href="%s" target="%s">' % (html_params(name=field.name, **kwargs), field_data, field._link_target)]
-        html.append(field._link_text)
+            '<a %s href="%s" target="%s">' % (html_params(name=field.name, **kwargs), field.data, field._target)]
+        html.append(field._uri_text)
 
         html.append('</a>')
         return HTMLString(''.join(html))

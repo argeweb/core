@@ -1,19 +1,61 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Created with YooLiang Technology (侑良科技).
+# Author: Qi-Liang Wen (温啓良）
+# Web: http://www.yooliang.com/
+# Date: 2017/01/16.
 import operator
 import warnings
 import decimal
+import datetime
+import json
 
 from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api.users import User
+from argeweb.libs.wtforms import widgets as wtforms_widgets
 from argeweb.libs.wtforms.compat import text_type, string_types
-from argeweb.libs import wtforms
 from argeweb.libs.wtforms.widgets import html5 as html5_widgets
+from argeweb.libs import wtforms
 from argeweb.core.gaeforms import widgets
-import datetime
+
 
 TextField = wtforms.StringField
 
 
-class DatePropertyFiled(wtforms.DateField):
+class BooleanField(wtforms.BooleanField):
+    _field_group_index = 0
+
+
+class FloatField(wtforms.FloatField):
+    _field_group_index = 0
+
+
+class DateTimeField(wtforms.DateTimeField):
+    _field_group_index = 0
+
+
+class TextAreaField(wtforms.TextAreaField):
+    _field_group_index = 0
+
+class JsonPropertyField(wtforms.StringField):
+    """
+    This field is the base for most of the more complicated fields, and
+    represents an ``<input type="text">``.
+    """
+    widget = wtforms_widgets.TextArea()
+
+    def process_formdata(self, valuelist):
+        if valuelist is not "":
+            self.data = json.loads(valuelist[0])
+        else:
+            self.data = None
+
+    def _value(self):
+        return json.dumps(self.data) if self.data is not None else ''
+
+
+class DateField(wtforms.DateField):
     widget = html5_widgets.DateInput()
 
     def _value(self):
@@ -186,25 +228,26 @@ class CategoryAjaxField(KeyPropertyField):
     widget = widgets.CategorySelectWidget()
 
 
-class BackendLinkField(wtforms.StringField):
+class SidePanelField(wtforms.StringField):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
-    _link = None
-    _link_text = None
-    _link_target = None
-    widget = widgets.BackendLinkWidget()
+    _uri = None
+    _uri_text = None
+    _target = None
+    widget = widgets.SidePanelWidget()
 
     def __init__(self, *args, **kwargs):
-        if 'link' in kwargs:
-            self._link = kwargs.pop('link')
-        if 'link_text' in kwargs:
-            self._link_text = kwargs.pop('link_text')
-        if 'link_target' in kwargs:
-            self._link_target = kwargs.pop('link_target')
-        super(BackendLinkField, self).__init__(*args, **kwargs)
+        self._uri = kwargs.pop('uri')
+        self._uri_text = kwargs.pop('uri_text')
+        self._target = kwargs.pop('target')
+        super(SidePanelField, self).__init__(*args, **kwargs)
 
-
+    def process_data(self, value):
+        if value is None:
+            self.data = value
+        else:
+            self.data = self._uri + value
 
 class CategoryField(KeyPropertyField):
     """

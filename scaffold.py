@@ -138,18 +138,18 @@ class Scaffold(object):
         max_tab_pages = 0
         if hasattr(controller.meta, 'Model'):
             display_properties = []
-            for name, property in controller.meta.Model._properties.items():
+            for name, model_property in controller.meta.Model._properties.items():
                 display_properties.append(name)
-                if property._verbose_name is not None:
-                    field_name[name] = property._verbose_name
-                if property._tab_page_index is None:
+                if model_property._verbose_name is not None:
+                    field_name[name] = model_property._verbose_name
+                if model_property._tab_page_index is None:
                     tab_pages_list["0"].append(name)
                 else:
-                    if str(property._tab_page_index) not in tab_pages_list:
-                        tab_pages_list[str(property._tab_page_index)] = []
-                    tab_pages_list[str(property._tab_page_index)].append(name)
-                    if int(property._tab_page_index) > max_tab_pages:
-                        max_tab_pages = int(property._tab_page_index)
+                    if str(model_property._tab_page_index) not in tab_pages_list:
+                        tab_pages_list[str(model_property._tab_page_index)] = []
+                    tab_pages_list[str(model_property._tab_page_index)].append(name)
+                    if int(model_property._tab_page_index) > max_tab_pages:
+                        max_tab_pages = int(model_property._tab_page_index)
             display_properties = sorted(display_properties)
             model_form_data = model_form(controller.meta.Model)
         try:
@@ -270,15 +270,12 @@ def _load_model(controller):
             module = __import__(s, fromlist=['*'])
             setattr(controller.Meta, 'Model', getattr(module, model_name))
         except (ImportError, AttributeError, ValueError):
-            import logging
-            logging.debug("Scaffold coudn't automatically determine a model class for controller %s, please assign it a Meta.Model class variable." % controller.__class__.__name__)
+            controller.logging.debug("Scaffold coudn't automatically determine a model class for controller %s, please assign it a Meta.Model class variable." % controller.__class__.__name__)
 
 
 def _flash(controller, *args, **kwargs):
     if 'flash_messages' in controller.components and controller.scaffold.flash_messages:
         controller.components.flash_messages(*args, **kwargs)
-
-
 
 
 def save_callback(controller, item, parser):

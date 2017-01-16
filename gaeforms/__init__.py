@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# TODO CategoryAjaxWidget BackendLinkWidget
+# TODO CategoryAjaxWidget SidePanelWidget
 """
 # 由 Model 轉換為表單的過程
 # Scaffold 呼叫 argeweb.core.gaeforms.model_form (實際是使用 argeweb.libs.wtforms_appengine.ndb.model_form)
@@ -12,7 +12,7 @@
   | Property subclass  | in wtforms_appengine  | in gaeforms               | widget                                |
   +====================+=======================+===========================+=======================================+
   | CategoryProperty   | ----                  | CategoryField        or   | gaeforms.widgets.CategorySelectWidget |
-  |                    |                       | BackendLinkField    or   | gaeforms.widgets.BackendLinkWidget   |
+  |                    |                       | SidePanelField    or      | gaeforms.widgets.SidePanelWidget      |
   |                    |                       | CategoryAjaxField         | gaeforms.widgets.CategoryAjaxWidget   |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | RichTextProperty   | ----                  | RichTextField             | gaeforms.widgets.RichTextWidget       |
@@ -37,7 +37,7 @@
   | DateTimeProperty   | DateTimeField         |                           |                                       |
   |                    |                       |                           |                                       |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
-  | DateProperty       | DateField             | DatePropertyFiled         | html5_widgets.DateInput               |
+  | DateProperty       | DateField             | DateField                 | html5_widgets.DateInput               |
   +--------------------+-----------------------+---------------------------+---------------------------------------+
   | TimeProperty       | DateTimeField         |                           |                                       |
   |                    |                       |                           |                                       |
