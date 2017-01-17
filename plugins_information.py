@@ -31,21 +31,21 @@ def register_controller(controller_name, target_list):
     target_list.append(controller_name)
 
 
-def register_template(plugin_name, templating=True):
+def register_template(template_dir_name, templating=True):
     """
-        將 plugin 的樣版目錄加至樣版列表
-        """
-    if plugin_name in _plugin_installed_list:
+    將 plugin 的樣版目錄加至樣版列表
+    """
+    if template_dir_name in _plugin_installed_list:
         return
     import template
-    _plugin_installed_list.append(plugin_name)
+    _plugin_installed_list.append(template_dir_name)
 
     if templating:
         path = os.path.normpath(os.path.join(
             os.path.dirname(argeweb.__file__),
-            '../plugins/%s/templates' % plugin_name))
+            '../plugins/%s/templates' % template_dir_name))
         template.add_template_path(path)
-        template.add_template_path(path, prefix=plugin_name)
+        template.add_template_path(path, prefix=template_dir_name)
 
 
 def get_prohibited_controllers(server_name, namespace):

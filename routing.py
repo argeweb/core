@@ -78,6 +78,7 @@ def route_controllers(app_router, controller_path=None):
     """
     sp = ('%s' % controller_path).split('.')
     type_name = sp[0]
+    plugin_name = sp[1]
     controller_name = sp[-1]
     try:
         module = __import__('%s' % controller_path, fromlist=['*'])
@@ -85,6 +86,7 @@ def route_controllers(app_router, controller_path=None):
             cls = getattr(module, inflector.camelize(controller_name))
             route_controller(cls, app_router)
             if type_name == 'plugins':
+                plugins_information.register_template(plugin_name)
                 plugins_information.register_template(controller_name)
         except AttributeError:
             logging.debug('Controller %s not found, skipping' % inflector.camelize(controller_name))
