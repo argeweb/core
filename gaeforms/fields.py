@@ -243,11 +243,6 @@ class SidePanelField(wtforms.StringField):
         self._target = kwargs.pop('target')
         super(SidePanelField, self).__init__(*args, **kwargs)
 
-    def process_data(self, value):
-        if value is None:
-            self.data = value
-        else:
-            self.data = self._uri + value
 
 class CategoryField(KeyPropertyField):
     """

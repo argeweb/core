@@ -214,6 +214,13 @@ class SidePanelProperty(StringProperty):
         self._target = target
         super(SidePanelProperty, self).__init__(*args, **kwargs)
 
+    def process(self, controller, fallback):
+        try:
+            url = controller.uri(self._uri, target=controller.util.encode_key(fallback))
+        except:
+            url = controller.uri(self._uri, target='--no-record--')
+        setattr(fallback, self._name, url)
+
 
 class ImageProperty(StringProperty):
     __property_name__ = 'image'

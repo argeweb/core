@@ -549,6 +549,13 @@ class Controller(webapp2.RequestHandler, Uri):
                 raise AttributeError('Meta has no %s class, can not parse request' % container_name)
             container = getattr(self.meta, container_name)
 
+        # 欄位資料介入
+        if hasattr(self.meta, 'Model'):
+            for property in self.meta.Model._properties:
+                if hasattr(fallback, property):
+                    field = getattr(self.meta.Model, property)
+                    if field is not None and hasattr(field, 'process'):
+                        field.process(self, fallback)
         return parser.process(self.request, container, fallback)
 
     def paging(self, query, size=None, page=None, near=None, data_only=None):
