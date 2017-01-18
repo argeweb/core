@@ -295,7 +295,17 @@ class JsonView(View):
             'response_info': 'success',
             'request_method': controller.request.route.handler_method,
             'method_default_message': default_message,
+            'method_data_key': None,
+            'method_record_edit_url': None
         }
+        data = self._get_data()
+        if data is not None:
+            try:
+                response_data['method_data_key'] = controller.util.encode_key(data)
+                response_data['method_record_edit_url'] = controller.uri(action='edit',
+                                                                         key=response_data['method_data_key'])
+            except:
+                pass
         if hasattr(controller, 'context'):
             if 'data' in controller.context:
                 data = controller.context['data']
