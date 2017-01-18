@@ -82,7 +82,7 @@ class LinkPropertyField(wtforms.StringField):
             self.data = valuelist[0]
 
 
-class IntegerField(wtforms.StringField):
+class IntegerField(wtforms.IntegerField):
     widget = html5_widgets.NumberInput()
 
 
