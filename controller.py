@@ -254,7 +254,6 @@ class Controller(webapp2.RequestHandler, Uri):
             self.view = None
             self.change_view(self.View)
             
-
         def change_view(self, view, persist_context=True):
             """
             Swaps the view, and by default keeps context between the two views.
@@ -309,6 +308,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.proper_name = self.__class__.__name__
         self.util = self.Util(weakref.proxy(self))
         self.route = None
+        self.scaffold = None
         self.application_user = None
         self.application_user_level = 0
         self.prohibited_actions = []

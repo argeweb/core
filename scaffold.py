@@ -109,14 +109,14 @@ class Scaffolding(object):
             'plural': controller.scaffold.plural,
             'singular': controller.scaffold.singular,
             'form_action': controller.scaffold.form_action,
-            'form_tab_pages': controller.scaffold.form_tab_pages,
-            'form_tab_pages_fields': controller.scaffold.form_tab_pages_fields,
+            'get_tab_pages': controller.scaffold.get_tab_pages,
+            'get_tab_pages_fields': controller.scaffold.get_tab_pages_fields,
             'form_encoding': controller.scaffold.form_encoding,
             'form_return_encoding': controller.scaffold.form_return_encoding,
-            'excluded_properties_in_from': controller.scaffold.excluded_properties_in_from,
-            'display_properties': controller.scaffold.display_properties,
-            'display_properties_in_list': controller.scaffold.display_properties_in_list,
-            'hidden_properties_in_edit': controller.scaffold.hidden_properties_in_edit,
+            'display_in_form': controller.scaffold.display_in_form,
+            'display_in_list': controller.scaffold.display_in_list,
+            'excluded_in_form': controller.scaffold.excluded_in_form,
+            'hidden_in_form': controller.scaffold.hidden_in_form,
             'layouts': controller.scaffold.layouts,
             'navigation': controller.scaffold.navigation
         }
@@ -127,48 +127,13 @@ class Scaffold(object):
     Scaffold Meta Object Base Class
     """
     def __init__(self, controller):
-        display_properties, model_form_data, redirect_url, tab_pages = None, None, None, None
-        field_name = {
-            'created': u'建立時間',
-            'modified': u'修改時間',
-            'sort': u'排序值',
-            'is_enable': u'啟用'
-        }
-        tab_pages_list = {}
-        max_tab_pages = 0
+        display_in_form, redirect_url, get_tab_pages = None, None, None
+        field_name, model_form_tabs, model_form_data = {}, [], None
         if hasattr(controller.meta, 'Model'):
-            display_properties = []
-            for name, model_property in controller.meta.Model._properties.items():
-                display_properties.append(name)
-                if model_property._verbose_name is not None:
-                    field_name[name] = model_property._verbose_name
-                if model_property._tab_page_index is None:
-                    tab_pages_list["0"].append(name)
-                else:
-                    if str(model_property._tab_page_index) not in tab_pages_list:
-                        tab_pages_list[str(model_property._tab_page_index)] = []
-                    tab_pages_list[str(model_property._tab_page_index)].append(name)
-                    if int(model_property._tab_page_index) > max_tab_pages:
-                        max_tab_pages = int(model_property._tab_page_index)
-            display_properties = sorted(display_properties)
+            field_name, display_in_form = controller.meta.Model.get_default_display_in_form()
             model_form_data = model_form(controller.meta.Model)
-        try:
-            redirect_url = controller.uri(action='list') if controller.uri_exists(action='list') else None
-        except KeyError:
-            pass
-        try:
-            tab_pages = controller.meta.Model.Meta.tab_pages
-            if max_tab_pages < len(tab_pages) - 1:
-                max_tab_pages = len(tab_pages) - 1
-            for i in xrange(0, max_tab_pages + 1):
-                if str(i) not in tab_pages_list:
-                    tab_pages_list[str(i)] = []
-        except AttributeError:
-            pass
-
-        tab_pages_list_real = range(0, max_tab_pages+1)
-        for item in tab_pages_list:
-            tab_pages_list_real[int(item)] = tab_pages_list[item]
+            get_tab_pages = controller.meta.Model.get_tab_pages
+            get_tab_pages_fields = controller.meta.Model.get_tab_pages_fields
 
         defaults = dict(
             query_factory=default_query_factory,
@@ -177,16 +142,16 @@ class Scaffold(object):
             plural=inflector.underscore(controller.name),
             singular=inflector.underscore(inflector.singularize(controller.name)),
             ModelForm=model_form_data,
-            display_properties=display_properties,
-            display_properties_in_list=display_properties,
-            hidden_properties_in_edit=(),
+            display_in_form=display_in_form,
+            display_in_list=display_in_form,
+            hidden_in_form=(),
+            excluded_in_form=(),
             redirect=redirect_url,
             form_action=None,
             form_return_encoding='application/json',
             form_encoding='application/x-www-form-urlencoded',
-            form_tab_pages=tab_pages,
-            form_tab_pages_fields=tab_pages_list_real,
-            excluded_properties_in_from=(),
+            get_tab_pages=get_tab_pages,
+            get_tab_pages_fields=get_tab_pages_fields,
             flash_messages=True,
             layouts={
                 None: 'layouts/default.html',

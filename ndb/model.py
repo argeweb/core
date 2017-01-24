@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Classes that extend the basic ndb.Model classes
 """
@@ -291,3 +293,57 @@ class BasicModel(Model):
             return True
         else:
             return False
+
+    @classmethod
+    def get_default_display_in_form(cls):
+        field_name = {
+            'created': u'建立時間',
+            'modified': u'修改時間',
+            'sort': u'排序值',
+            'is_enable': u'啟用'
+        }
+        display_in_form = []
+        for name, model_property in cls._properties.items():
+            display_in_form.append(name)
+            if model_property._verbose_name is not None:
+                field_name[name] = model_property._verbose_name
+        return field_name, sorted(display_in_form)
+
+    @classmethod
+    def get_tab_pages(cls):
+        try:
+            if hasattr(cls.Meta, 'tab_pages'):
+                return cls.Meta.tab_pages
+        except AttributeError:
+            pass
+        return []
+
+    @classmethod
+    def get_tab_pages_fields(cls):
+        tab_pages_list = {}
+        max_tab_pages = 0
+        tab_pages = cls.get_tab_pages()
+        for name, model_property in cls._properties.items():
+            if model_property._tab_page_index is None:
+                tab_pages_list["0"].append(name)
+            else:
+                if str(model_property._tab_page_index) not in tab_pages_list:
+                    tab_pages_list[str(model_property._tab_page_index)] = []
+                tab_pages_list[str(model_property._tab_page_index)].append(name)
+                if int(model_property._tab_page_index) > max_tab_pages:
+                    max_tab_pages = int(model_property._tab_page_index)
+
+        try:
+            if hasattr(cls.Meta, 'tab_pages'):
+                if max_tab_pages < len(tab_pages) - 1:
+                    max_tab_pages = len(tab_pages) - 1
+                for i in xrange(0, max_tab_pages + 1):
+                    if str(i) not in tab_pages_list:
+                        tab_pages_list[str(i)] = []
+        except AttributeError:
+            pass
+
+        tab_pages_list_real = range(0, max_tab_pages+1)
+        for item in tab_pages_list:
+            tab_pages_list_real[int(item)] = tab_pages_list[item]
+        return tab_pages_list_real
