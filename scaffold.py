@@ -127,7 +127,7 @@ class Scaffold(object):
     Scaffold Meta Object Base Class
     """
     def __init__(self, controller):
-        display_in_form, redirect_url, get_tab_pages = None, None, None
+        display_in_form, redirect_url, get_tab_pages, get_tab_pages_fields = None, None, None, None
         field_name, model_form_tabs, model_form_data = {}, [], None
         if hasattr(controller.meta, 'Model'):
             field_name, display_in_form = controller.meta.Model.get_default_display_in_form()

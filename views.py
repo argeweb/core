@@ -290,37 +290,11 @@ class JsonView(View):
         super(JsonView, self).__init__(controller, context)
         self.variable_name = ('data',)
 
-        default_message = controller.meta.default_message if hasattr(self, 'default_message') else None
-        response_data = {
-            'response_info': 'success',
-            'request_method': controller.request.route.handler_method,
-            'method_default_message': default_message,
-            'method_data_key': None,
-            'method_record_edit_url': None
-        }
-        data = self._get_data()
-        if data is not None:
-            try:
-                response_data['method_data_key'] = controller.util.encode_key(data)
-                response_data['method_record_edit_url'] = controller.uri(action='edit',
-                                                                         key=response_data['method_data_key'])
-            except:
-                pass
-        if hasattr(controller, 'context'):
-            if 'data' in controller.context:
-                data = controller.context['data']
-                for json_message in ['response_info', 'request_method', 'method_default_message']:
-                    if json_message not in data:
-                        data['response_info'] = response_data[json_message]
-            else:
-                controller.context['data'] = response_data
-
     def _get_data(self, default=None):
         self.variable_name = self.variable_name if isinstance(self.variable_name, (list, tuple)) else (self.variable_name,)
 
         if hasattr(self.controller, 'scaffold'):
             self.variable_name += (self.controller.scaffold.singular, self.controller.scaffold.plural)
-
         for v in self.variable_name:
             if v in self.context:
                 return self.context.get(v)
@@ -330,7 +304,24 @@ class JsonView(View):
         self.controller.events.before_render(controller=self.controller)
         self.controller.response.charset = 'utf-8'
         self.controller.response.content_type = 'application/json'
-        result = unicode(json_util.stringify(self._get_data()))
+        data = self._get_data()
+        scaffold_data = {}
+        if hasattr(self.controller, 'scaffold'):
+            scaffold_data = {
+                'response_info': 'success',
+                'request_method': self.controller.request.route.handler_method,
+                'method_default_message': self.controller.meta.default_message if hasattr(self, 'default_message') else None,
+                'method_data_key': None,
+                'method_record_edit_url': None
+            }
+            if data is not None:
+                try:
+                    scaffold_data['method_data_key'] = self.controller.util.encode_key(data)
+                    scaffold_data['method_record_edit_url'] = self.controller.uri(action='edit',
+                                                                             key=scaffold_data['method_data_key'])
+                except:
+                    pass
+        result = unicode(json_util.stringify({'data': data, 'scaffold': scaffold_data}))
         self.controller.response.unicode_body = result
         self.controller.events.after_render(controller=self.controller, result=result)
         return self.controller.response
