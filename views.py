@@ -305,23 +305,29 @@ class JsonView(View):
         self.controller.response.charset = 'utf-8'
         self.controller.response.content_type = 'application/json'
         data = self._get_data()
-        scaffold_data = {}
+        result = unicode(json_util.stringify({'data': data}))
         if hasattr(self.controller, 'scaffold'):
-            scaffold_data = {
-                'response_info': 'success',
-                'request_method': self.controller.request.route.handler_method,
-                'method_default_message': self.controller.meta.default_message if hasattr(self, 'default_message') else None,
-                'method_data_key': None,
-                'method_record_edit_url': None
-            }
-            if data is not None:
-                try:
-                    scaffold_data['method_data_key'] = self.controller.util.encode_key(data)
-                    scaffold_data['method_record_edit_url'] = self.controller.uri(action='edit',
-                                                                             key=scaffold_data['method_data_key'])
-                except:
-                    pass
-        result = unicode(json_util.stringify({'data': data, 'scaffold': scaffold_data}))
+            request_method = str(self.controller.request.route.handler_method)
+            result_data = {}
+            if request_method.startswith('admin_'):
+                scaffold_data = {
+                    'response_info': 'success',
+                    'request_method': request_method,
+                    'method_default_message': self.controller.meta.default_message if hasattr(self, 'default_message') else None,
+                    'method_data_key': None,
+                    'method_record_edit_url': None
+                }
+                if data is not None:
+                    try:
+                        scaffold_data['method_data_key'] = self.controller.util.encode_key(data)
+                        scaffold_data['method_record_edit_url'] = self.controller.uri(action='edit',
+                                                                                 key=scaffold_data['method_data_key'])
+                    except:
+                        pass
+                    result_data['data'] = data
+                result_data['scaffold'] = scaffold_data
+            result_data['message'] = self.controller.context['message'] if 'message' in self.controller.context else 'undefined'
+            result = unicode(json_util.stringify(result_data))
         self.controller.response.unicode_body = result
         self.controller.events.after_render(controller=self.controller, result=result)
         return self.controller.response
