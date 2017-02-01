@@ -117,6 +117,7 @@ class Scaffolding(object):
             'display_in_list': controller.scaffold.display_in_list,
             'excluded_in_form': controller.scaffold.excluded_in_form,
             'hidden_in_form': controller.scaffold.hidden_in_form,
+            'disabled_in_form': controller.scaffold.disabled_in_form,
             'layouts': controller.scaffold.layouts,
             'navigation': controller.scaffold.navigation
         }
@@ -146,6 +147,7 @@ class Scaffold(object):
             display_in_list=display_in_form,
             hidden_in_form=(),
             excluded_in_form=(),
+            disabled_in_form=(),
             redirect=redirect_url,
             form_action=None,
             form_return_encoding='application/json',
