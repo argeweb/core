@@ -142,7 +142,7 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
-    widget = wtforms.widgets.Select()
+    widget = wtforms.widgets.TextInput()
 
     def __init__(self, label=None, validators=None, kind=None,
                  label_attr=None, get_label=None, allow_blank=False,

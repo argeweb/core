@@ -325,6 +325,7 @@ def list(controller):
                 controller.context['last_record_date'] = last_record.modified
         except:
             pass
+    controller.scaffold.scaffold_type = 'list'
 
 
 def view(controller, key):
@@ -334,6 +335,7 @@ def view(controller, key):
     controller.context['last_record_date'] = item.modified
     controller.context.set(**{
         controller.scaffold.singular: item})
+    controller.scaffold.scaffold_type = 'view'
 
 
 def add(controller, **kwargs):
@@ -342,6 +344,7 @@ def add(controller, **kwargs):
     for i in kwargs:
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
+    controller.scaffold.scaffold_type = 'add'
     return parser_action(controller, item)
 
 
@@ -354,6 +357,7 @@ def edit(controller, key, **kwargs):
     for i in kwargs:
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
+    controller.scaffold.scaffold_type = 'edit'
     return parser_action(controller, item)
 
 
@@ -364,6 +368,7 @@ def delete(controller, key):
     key.delete()
     controller.events.scaffold_after_delete(controller=controller, key=key)
     _flash(controller, u'此項目已成功的刪除', 'success')
+    controller.scaffold.scaffold_type = 'delete'
     if controller.scaffold.redirect:
         import time
         controller.response.headers['Command-Redirect'] = controller.scaffold.redirect + "?rnid=" + str(time.time())
@@ -394,6 +399,7 @@ def sort_up(controller, key):
         item.put()
     controller.meta.change_view('json')
     controller.response.headers['Command-Redirect'] = redirect_path
+    controller.scaffold.scaffold_type = 'sort_up'
     controller.context['data'] = {'info': 'success'}
 
 
@@ -419,6 +425,7 @@ def sort_down(controller, key):
         item.put()
     controller.meta.change_view('json')
     controller.response.headers['Command-Redirect'] = redirect_path
+    controller.scaffold.scaffold_type = 'sort_down'
     controller.context['data'] = {'info': 'success'}
 
 
@@ -428,6 +435,7 @@ def set_boolean_field(controller, key):
     field_name = controller.params.get_string('field')
     field_value = controller.params.get_boolean('value')
     controller.context['data'] = {'info': 'failure'}
+    controller.scaffold.scaffold_type = 'set_boolean_field'
     if not item:
         return
 
@@ -442,6 +450,7 @@ def set_boolean_field(controller, key):
 
 def plugins_check(controller):
     controller.meta.change_view('jsonp')
+    controller.scaffold.scaffold_type = 'plugins_check'
     controller.context['data'] = {
         'status': 'enable'
     }
