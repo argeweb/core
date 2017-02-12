@@ -293,7 +293,7 @@ class JsonView(View):
     def _get_data(self, default=None):
         self.variable_name = self.variable_name if isinstance(self.variable_name, (list, tuple)) else (self.variable_name,)
 
-        if hasattr(self.controller, 'scaffold'):
+        if hasattr(self.controller, 'scaffold') and self.controller.scaffold is not None:
             self.variable_name += (self.controller.scaffold.singular, self.controller.scaffold.plural)
         for v in self.variable_name:
             if v in self.context:
@@ -308,7 +308,7 @@ class JsonView(View):
         if 'message' in self.controller.context:
             result = unicode(json_util.stringify({'data': data, 'message': self.controller.context['message']}))
         else:
-            result = unicode(json_util.stringify({'data': data}))
+            result = unicode(json_util.stringify(data))
 
         if hasattr(self.controller, 'scaffold') and hasattr(self.controller.scaffold, 'scaffold_type'):
             request_method = str(self.controller.request.route.handler_method)
