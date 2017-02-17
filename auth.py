@@ -14,6 +14,9 @@ def check_user(controller):
             check_target = 'application_user_key'
         else:
             return True
+    if controller.session[check_target] is None:
+            return True
+
     application_user = controller.session[check_target].get()
     if application_user is None:
         return True
@@ -27,6 +30,7 @@ def check_user(controller):
     controller.prohibited_actions = str(role.prohibited_actions).split(',')
     controller.context['application_user_level'] = controller.application_user_level
     controller.context['application_user_key'] = application_user.key
+    controller.context['user'] = application_user
     return True
 
 

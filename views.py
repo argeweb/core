@@ -91,25 +91,56 @@ class ViewDatastore(object):
             use_pager = False
             if 'use_pager' in kwargs:
                 use_pager = kwargs['use_pager']
-            if use_pager is True:
-                if 'size' not in kwargs:
-                    kwargs['size'] = self._controller.params.get_integer('size', 10)
-                if 'page' not in kwargs:
-                    kwargs['page'] = self._controller.params.get_integer('page', 1)
-                if 'near' not in kwargs:
-                    kwargs['near'] = self._controller.params.get_integer('near', 10)
-                if 'data_only' not in kwargs:
-                    kwargs['data_only'] = False
+            if 'size' not in kwargs:
+                kwargs['size'] = 10
+            if 'page' not in kwargs:
+                kwargs['page'] = 1
+            if 'near' not in kwargs:
+                kwargs['near'] = 10
+            if 'data_only' not in kwargs:
+                kwargs['data_only'] = not use_pager
+            kwargs['size'] = self._controller.params.get_integer('size', kwargs['size'])
+            kwargs['page'] = self._controller.params.get_integer('page', kwargs['page'])
+            kwargs['near'] = self._controller.params.get_integer('near', kwargs['near'])
+            return self.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
+
+    def paging(self, query, size=None, page=None, near=None, data_only=None, **kwargs):
+        data = query.fetch_async(size, offset=size*(page-1))
+        if data_only is True:
+            c = data.get_result()
+            return c
+        near_2 = near // 2
+        pager = {
+            'prev': 0,
+            'next': 0,
+            'near_list': [],
+            'current': page,
+            'data': None
+        }
+        if page > 1:
+            pager['prev'] = page - 1
+        if page > near_2:
+            start = page - near_2
+            end = page + near_2
+        else:
+            start = 1
+            end = near
+        has_next = False
+        all_pages = end - start + 1
+        all_pages = all_pages <= 0 and 1 or all_pages
+        q = query.fetch_async(size * all_pages, offset=size*(start-1), keys_only=True)
+        q_result_len = len(q.get_result())
+        if q_result_len > size:
+            has_next = True
+        for i in xrange(0, all_pages):
+            if q_result_len > i * size:
+                pager['near_list'].append(start + i)
             else:
-                if 'size' not in kwargs:
-                    kwargs['size'] = 10
-                if 'page' not in kwargs:
-                    kwargs['page'] = 1
-                if 'near' not in kwargs:
-                    kwargs['near'] = 10
-                if 'data_only' not in kwargs:
-                    kwargs['data_only'] = True
-            return self._controller.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
+                break
+        pager['data'] = data.get_result()
+        if has_next:
+            pager['next'] = page + 1
+        return pager
 
     def random(self, cls_name, common_name, size=3, *args, **kwargs):
         import random
@@ -194,7 +225,7 @@ class TemplateView(View):
             'uri_exists': self.controller.uri_exists,
             'uri_action_link': self.controller.uri_action_link,
             'uri_exists_with_permission': self.controller.uri_exists_with_permission,
-            'user': self.controller.user,
+            'user': self.controller.application_user,
             'on_uri': self.controller.on_uri,
             'request': self.controller.request,
             'route': self.controller.route,

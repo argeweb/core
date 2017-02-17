@@ -6,7 +6,6 @@ import webapp2
 import logging
 import base64
 from argeweb.core import plugins_information
-from google.appengine.api import users
 from google.appengine.api import namespace_manager
 from webapp2 import cached_property
 from webapp2_extras import sessions
@@ -205,9 +204,6 @@ class Controller(webapp2.RequestHandler, Uri):
     # The name of this class, lowercase (automatically determined)
     name = 'controller'
 
-    #: The current user as determined by ``google.appengine.api.users.get_current_user()``.
-    user = None
-
     #: View Context, all these variables will be passed to the view.
     context = property(lambda self: self.meta.view.context)
 
@@ -354,7 +350,6 @@ class Controller(webapp2.RequestHandler, Uri):
             kwargs=self.request.route_kwargs)
 
     def _init_meta(self):
-        self.user = users.get_current_user()
         self._init_route()
 
         self.events = events.NamedBroadcastEvents(prefix='controller_')
@@ -557,53 +552,6 @@ class Controller(webapp2.RequestHandler, Uri):
                     if field is not None and hasattr(field, 'process'):
                         field.process(self, fallback)
         return parser.process(self.request, container, fallback)
-
-    def paging(self, query, size=None, page=None, near=None, data_only=None):
-        if page is None:
-            page = int(self.params.get_integer('page', 1))
-        if size is None:
-            size = int(self.params.get_integer('size', 10))
-        if near is None:
-            near = int(self.params.get_integer('near', 10))
-        if data_only is None:
-            data_only = int(self.params.get_boolean('data_only', True))
-        data = query.fetch_async(size, offset=size*(page-1))
-        if data_only is True:
-            c = data.get_result()
-            return c
-        near_2 = near // 2
-        pager = {
-            'prev': 0,
-            'next': 0,
-            'near_list': [],
-            'current': page,
-            'data': None
-        }
-        if page > 1:
-            pager['prev'] = page - 1
-        if page > near_2:
-            start = page - near_2
-            end = page + near_2
-        else:
-            start = 1
-            end = near
-        has_next = False
-        async_list = []
-        for i in xrange(start, end):
-            q = query.fetch_async(size, offset=size*(i-1), keys_only=True)
-            async_list.append({'q': q, 'i': i})
-        for item in async_list:
-            if page < item['i']:
-                has_next = True
-            q_result = len(item['q'].get_result())
-            if q_result > 0:
-                pager['near_list'].append(item['i'])
-            if q_result < size:
-                break
-        pager['data'] = data.get_result()
-        if has_next:
-            pager['next'] = page + 1
-        return pager
 
     @staticmethod
     def get_file_name(file):

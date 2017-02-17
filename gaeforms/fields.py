@@ -38,6 +38,7 @@ class DateTimeField(wtforms.DateTimeField):
 class TextAreaField(wtforms.TextAreaField):
     _field_group_index = 0
 
+
 class JsonPropertyField(wtforms.StringField):
     """
     This field is the base for most of the more complicated fields, and
