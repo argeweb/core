@@ -7,15 +7,12 @@ def check_user(controller):
     Requires that a user is logged in
     """
     check_target = ''
-    if 'application_admin_user_key' in controller.session:
-        check_target = 'application_admin_user_key'
+    if 'application_user_key' in controller.session:
+        check_target = 'application_user_key'
     else:
-        if 'application_user_key' in controller.session:
-            check_target = 'application_user_key'
-        else:
-            return True
+        return True
     if controller.session[check_target] is None:
-            return True
+        return True
 
     application_user = controller.session[check_target].get()
     if application_user is None:
