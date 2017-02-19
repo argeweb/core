@@ -368,12 +368,14 @@ def delete(controller, key):
     key.delete()
     controller.events.scaffold_after_delete(controller=controller, key=key)
     _flash(controller, u'此項目已成功的刪除', 'success')
-    controller.scaffold.scaffold_type = 'delete'
+    import time
+    controller.meta.change_view('json')
     if controller.scaffold.redirect:
-        import time
         controller.response.headers['Command-Redirect'] = controller.scaffold.redirect + "?rnid=" + str(time.time())
-        controller.meta.change_view('json')
-        controller.context['data'] = {'info': 'success'}
+    else:
+        controller.response.headers['Command-Redirect'] = ''
+    controller.scaffold.scaffold_type = 'delete'
+    controller.context['data'] = {'info': 'success'}
 
 
 def sort_up(controller, key):
