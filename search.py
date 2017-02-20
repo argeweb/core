@@ -2,7 +2,7 @@ import logging
 import inspect
 from google.appengine.api import search as search_api
 from google.appengine.ext import ndb
-
+from argeweb.core.property import IntegerProperty, FloatProperty, BooleanProperty, StringProperty, TextProperty, DateTimeProperty, DateProperty, TimeProperty, GeoPtProperty
 
 def _datetime_coverter(n, v):
     date = search_api.DateField(name=n, value=v)
@@ -11,19 +11,29 @@ def _datetime_coverter(n, v):
 
 
 property_to_field_map = {
+    IntegerProperty: lambda n, v: search_api.NumberField(name=n, value=v),
+    FloatProperty: lambda n, v: search_api.NumberField(name=n, value=v),
+    BooleanProperty: lambda n, v: search_api.AtomField(name=n, value='true' if v else 'false'),
+    StringProperty: lambda n, v: search_api.TextField(name=n, value=v),
+    TextProperty: lambda n, v: search_api.TextField(name=n, value=v),
+    DateTimeProperty: _datetime_coverter,
+    DateProperty: lambda n, v: search_api.DateField(name=n, value=v),
+    TimeProperty: lambda n, v: search_api.TextField(name=n, value=v.isoformat()),
+    GeoPtProperty: lambda n, v: search_api.GeoField(name=n, value=search_api.GeoPoint(v.lat, v.lon)),
+
     ndb.IntegerProperty: lambda n, v: search_api.NumberField(name=n, value=v),
     ndb.FloatProperty: lambda n, v: search_api.NumberField(name=n, value=v),
     ndb.BooleanProperty: lambda n, v: search_api.AtomField(name=n, value='true' if v else 'false'),
     ndb.StringProperty: lambda n, v: search_api.TextField(name=n, value=v),
     ndb.TextProperty: lambda n, v: search_api.TextField(name=n, value=v),
-    # BlobProperty explicitly unindexable
     ndb.DateTimeProperty: _datetime_coverter,
     ndb.DateProperty: lambda n, v: search_api.DateField(name=n, value=v),
     ndb.TimeProperty: lambda n, v: search_api.TextField(name=n, value=v.isoformat()),
     ndb.GeoPtProperty: lambda n, v: search_api.GeoField(name=n, value=search_api.GeoPoint(v.lat, v.lon)),
+    ndb.UserProperty: lambda n, v: search_api.TextField(name=n, value=unicode(v)),
+    # BlobProperty explicitly unindexable
     # KeyProperty explicity unindexable
     # BlobKeyProperty explicitly unindexable
-    ndb.UserProperty: lambda n, v: search_api.TextField(name=n, value=unicode(v)),
     # StructuredProperty explicitly unindexable
     # LocalStructuredProperty explicitly unindexable
     # JsonProperty explicitly unindexable

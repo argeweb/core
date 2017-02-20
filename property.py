@@ -8,7 +8,7 @@
 
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import Property, utils
-from argeweb.core.ndb.model import Model
+
 
 # TODO 驗証屬性設置
 # TODO helper 屬性設置
@@ -174,6 +174,7 @@ class CategoryProperty(KeyProperty):
 
     def _fix_up(self, cls, code_name):
         super(CategoryProperty, self)._fix_up(cls, code_name)
+        from argeweb.core.ndb.model import Model
         modelclass = Model._kind_map[self._kind]
         collection_name = '%s_ref_%s_to_%s' % (cls.__name__,
                                                code_name,

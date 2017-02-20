@@ -373,7 +373,7 @@ def delete(controller, key):
     if controller.scaffold.redirect:
         controller.response.headers['Command-Redirect'] = controller.scaffold.redirect + "?rnid=" + str(time.time())
     else:
-        controller.response.headers['Command-Redirect'] = ''
+        controller.response.headers['Command-Redirect'] = controller.scaffold.redirect + "?rnid=" + str(time.time())
     controller.scaffold.scaffold_type = 'delete'
     controller.context['data'] = {'info': 'success'}
 
