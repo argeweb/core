@@ -101,21 +101,23 @@ class Uri(object):
 
         return routing.route_name_exists(route_name), route_name
 
-    def uri_exists_with_permission(self, route_name=None, *args, **kwargs):
+    def uri_exists_with_permission(self, route_name=None, item=None, *args, **kwargs):
         if 'namespace' in kwargs:
             namespace_manager.set_namespace(kwargs['namespace'])
-        if 'item' in kwargs:
-            item = kwargs['item']
-            try:
-                uri = self.uri(route_name, key=self.util.encode_key(item))
-                returnVal = True
-                return_name = route_name
-            except:
-                returnVal = False
-                return_name = route_name
-        else:
-            uri = self.uri(route_name, kwargs=kwargs)
-            returnVal, return_name = self.uri_exists(route_name=route_name, *args, **kwargs)
+
+
+        returnVal = False
+        try:
+            if 'item' in kwargs:
+                item = kwargs['item']
+            if item is None:
+                self.uri(route_name, *args, **kwargs)
+            else:
+                self.uri(route_name, key=self.util.encode_key(item))
+
+            returnVal = True
+        except:
+            pass
         uri_sn = str(self.uri).split("<")[2].split(' ')[0].lower().split('.')
         if 'controller' in kwargs:
             uri_s = '.'.join(uri_sn[:-2]) + '.' + kwargs['controller']
