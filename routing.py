@@ -12,7 +12,7 @@ import argeweb
 import inflector
 from webapp2 import Route
 from webapp2_extras import routes
-import plugins_information
+
 
 
 def get_true_name_and_argspec(method):
@@ -52,6 +52,7 @@ def auto_route(app_router, debug=True, version=u''):
     """
     Automatically routes all controllers in main app and plugins
     """
+    import plugins_information
     plugins = sorted(plugins_information.get_all_controller(debug, version))
     for item in plugins:
         try:
@@ -76,6 +77,7 @@ def route_controllers(app_router, controller_path=None):
     Called in app.routes to automatically route all controllers in the app/controllers
     folder
     """
+    import plugins_information
     sp = ('%s' % controller_path).split('.')
     type_name = sp[0]
     plugin_name = sp[1]

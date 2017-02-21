@@ -336,6 +336,7 @@ def view(controller, key):
     controller.context.set(**{
         controller.scaffold.singular: item})
     controller.scaffold.scaffold_type = 'view'
+    controller.context['change_view_to_edit_function'] = 'goEditPage'
 
 
 def add(controller, **kwargs):
@@ -358,6 +359,7 @@ def edit(controller, key, **kwargs):
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
     controller.scaffold.scaffold_type = 'edit'
+    controller.context['change_view_to_view_function'] = 'goViewPage'
     return parser_action(controller, item)
 
 
@@ -436,7 +438,9 @@ def set_boolean_field(controller, key):
     item = controller.util.decode_key(key).get()
     field_name = controller.params.get_string('field')
     field_value = controller.params.get_boolean('value')
+    val_word = field_value and u'啟用' or u'停用'
     controller.context['data'] = {'info': 'failure'}
+    controller.context['message'] = u'%s失敗' % val_word
     controller.scaffold.scaffold_type = 'set_boolean_field'
     if not item:
         return
@@ -447,6 +451,7 @@ def set_boolean_field(controller, key):
         except:
             return
         item.put()
+        controller.context['message'] = u'%s成功' % val_word
         controller.context['data'] = {'info': 'success'}
 
 
