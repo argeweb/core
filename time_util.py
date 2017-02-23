@@ -3,6 +3,7 @@
 import pytz
 from argeweb.core import settings
 
+
 def utc_tz():
     return pytz.timezone('UTC')
 

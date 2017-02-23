@@ -237,7 +237,7 @@ def _load_model(controller):
             module = __import__(s, fromlist=['*'])
             setattr(controller.Meta, 'Model', getattr(module, model_name))
         except (ImportError, AttributeError, ValueError):
-            controller.logging.debug("Scaffold coudn't automatically determine a model class for controller %s, please assign it a Meta.Model class variable." % controller.__class__.__name__)
+            controller.logging.debug('Scaffold coudn\'t automatically determine a model class for controller %s, please assign it a Meta.Model class variable.' % controller.__class__.__name__)
 
 
 def _flash(controller, *args, **kwargs):
@@ -336,7 +336,8 @@ def view(controller, key):
     controller.context.set(**{
         controller.scaffold.singular: item})
     controller.scaffold.scaffold_type = 'view'
-    controller.context['change_view_to_edit_function'] = 'goEditPage'
+    if 'change_view_to_edit_function' not in controller.context:
+        controller.context['change_view_to_edit_function'] = 'goEditPage'
 
 
 def add(controller, **kwargs):
@@ -359,7 +360,8 @@ def edit(controller, key, **kwargs):
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
     controller.scaffold.scaffold_type = 'edit'
-    controller.context['change_view_to_view_function'] = 'goViewPage'
+    if 'change_view_to_view_function' not in controller.context:
+        controller.context['change_view_to_view_function'] = 'goViewPage'
     return parser_action(controller, item)
 
 
@@ -372,10 +374,6 @@ def delete(controller, key):
     _flash(controller, u'此項目已成功的刪除', 'success')
     import time
     controller.meta.change_view('json')
-    if controller.scaffold.redirect:
-        controller.response.headers['Command-Redirect'] = controller.scaffold.redirect + "?rnid=" + str(time.time())
-    else:
-        controller.response.headers['Command-Redirect'] = controller.scaffold.redirect + "?rnid=" + str(time.time())
     controller.scaffold.scaffold_type = 'delete'
     controller.context['data'] = {'info': 'success'}
 
@@ -390,10 +388,8 @@ def sort_up(controller, key):
     if 'category' in controller.request.params:
         cat_str = controller.request.params.get('category')
         prev_item = controller.meta.Model.get_prev_one_with_category(item, cat_str)
-        redirect_path = controller.uri(action='list', category=cat_str, cursor=cursor)
     else:
         prev_item = controller.meta.Model.get_prev_one(item)
-        redirect_path = controller.uri(action='list', cursor=cursor)
 
     if prev_item is not None:
         sort = prev_item.sort
@@ -402,7 +398,6 @@ def sort_up(controller, key):
         prev_item.put()
         item.put()
     controller.meta.change_view('json')
-    controller.response.headers['Command-Redirect'] = redirect_path
     controller.scaffold.scaffold_type = 'sort_up'
     controller.context['data'] = {'info': 'success'}
 
@@ -417,10 +412,8 @@ def sort_down(controller, key):
     if 'category' in controller.request.params:
         cat_str = controller.request.params.get('category')
         next_item = controller.meta.Model.get_next_one_with_category(item, cat_str)
-        redirect_path = controller.uri(action='list', category=cat_str, cursor=cursor)
     else:
         next_item = controller.meta.Model.get_next_one(item)
-        redirect_path = controller.uri(action='list', cursor=cursor)
     if next_item is not None:
         sort = next_item.sort
         next_item.sort = item.sort
@@ -428,7 +421,6 @@ def sort_down(controller, key):
         next_item.put()
         item.put()
     controller.meta.change_view('json')
-    controller.response.headers['Command-Redirect'] = redirect_path
     controller.scaffold.scaffold_type = 'sort_down'
     controller.context['data'] = {'info': 'success'}
 
