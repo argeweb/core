@@ -240,6 +240,7 @@ class Controller(webapp2.RequestHandler, Uri):
         #: authorization chain.
         authorizations = (auth.require_admin_for_prefix(prefix=('admin',)),)
         #: Which :class:`~argeweb.core.views.View` class to use by default. use :meth:`change_view` to switch views.
+        default_view = None
         View = views.TemplateView
 
         #: Which :class:`RequestParser` class to use by default. See :meth:`Controller.parse_request`.
@@ -285,7 +286,7 @@ class Controller(webapp2.RequestHandler, Uri):
         decode_base64 = staticmethod(base64.urlsafe_b64decode)
 
         @classmethod
-        def localize_time(cls, datetime, strftime='%Y/%m/%d %H:%M:%S'):
+        def localize_time(cls, datetime=None, strftime='%Y/%m/%d %H:%M:%S'):
             return time_util.localize(datetime).strftime(strftime)
 
         def get_menu(self, list_name):
@@ -326,7 +327,7 @@ class Controller(webapp2.RequestHandler, Uri):
                     name = inflector.underscore(cls.__name__)
                 self.components[name] = cls(weakref.proxy(self))
         else:
-            if hasattr(self.Meta, 'model'):
+            if hasattr(self.Meta, 'Model'):
                 self.components = (scaffold.Scaffolding, )
             else:
                 self.components = Bunch()
@@ -403,6 +404,9 @@ class Controller(webapp2.RequestHandler, Uri):
         This is the main point in which to listen for events or change dynamic configuration.
         """
         self.startup()
+        if hasattr(self.Meta, 'default_view') and self.Meta.default_view is not None:
+            if isinstance(self.Meta.default_view, basestring):
+                self.meta.change_view(self.Meta.default_view)
         self.prohibited_controllers = plugins_information.get_prohibited_controllers(self.server_name, self.host_information.namespace)
         name = '.'.join(str(self).split(' object')[0][1:].split('.')[0:-1])
         if name in self.prohibited_controllers and name.startswith('plugins.') and name.find('.controller.'):
