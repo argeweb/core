@@ -18,6 +18,9 @@ class ParamInfo(object):
         """
         self.request = request
 
+    def has(self, key):
+        return key in self.request.params
+
     def get_ndb_record(self, key='', default_value=None):
         """ get from request and try to parse to a int
 

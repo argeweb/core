@@ -14,7 +14,6 @@ from webapp2 import Route
 from webapp2_extras import routes
 
 
-
 def get_true_name_and_argspec(method):
     """
     Drills through layers of decorators attempting to locate
