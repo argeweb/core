@@ -337,9 +337,8 @@ class JsonView(View):
         self.controller.response.content_type = 'application/json'
         data = self._get_data()
         if 'message' in self.controller.context:
-            result = unicode(json_util.stringify({'data': data, 'message': self.controller.context['message']}))
-        else:
-            result = unicode(json_util.stringify(data))
+            data['message'] = self.controller.context['message']
+        result = unicode(json_util.stringify(data))
 
         if hasattr(self.controller, 'scaffold') and hasattr(self.controller.scaffold, 'scaffold_type'):
             request_method = str(self.controller.request.route.handler_method)
