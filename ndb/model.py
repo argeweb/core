@@ -211,6 +211,18 @@ class BasicModel(Model):
     #modified_by = ndb.UserProperty(auto_current_user=True)
     sort = FloatProperty(default=0.0)
 
+    @staticmethod
+    def _get_dict_md5_(content):
+        import hashlib
+        import random
+        try:
+            m2 = hashlib.md5()
+            m2.update(content)
+            random.seed(m2.hexdigest())
+        except:
+            pass
+        return str(int(time.time()*100) + random.randint(1, 799999999999))
+
     def before_put(self):
         """
         Called before an item is saved.
@@ -222,7 +234,7 @@ class BasicModel(Model):
             self.sort = time.time()
         if hasattr(self, 'name'):
             if self.name == None or self.name == u'':
-                self.name = str(int(time.time()))
+                self.name = self._get_dict_md5_(str(self.__dict__))
         super(BasicModel, self).before_put()
 
     @classmethod
