@@ -77,6 +77,8 @@ def get_route_menu(list_name=u'', controller=None):
             url = controller.uri(uri)
         except:
             continue
+        if 'parameter' in menu:
+            url += '?' + menu['parameter']
 
         if (u'%s' % menu['text']).startswith(u'gt:'):
             text = u'gt'
