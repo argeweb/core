@@ -113,7 +113,7 @@ class Uri(object):
             if item is None:
                 self.uri(route_name, *args, **kwargs)
             else:
-                self.uri(route_name, key=self.util.encode_key(item))
+                self.uri(route_name, key=self.util.encode_key(item), *args, **kwargs)
 
             returnVal = True
         except:
