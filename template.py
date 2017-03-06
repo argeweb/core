@@ -172,8 +172,8 @@ class TemplateEngine(object):
             'print_text': pure_text,
             'isinstance': isinstance,
             'math': math,
-            'int': int,
-            'float': float,
+            'int': format_int,
+            'float': format_float,
             'round': round,
             'list': list,
             'str': str,
@@ -315,6 +315,17 @@ def pure_text(text, length=50, more=u'...'):
     else:
         return s
 
+def format_int(val):
+    try:
+        return int(val)
+    except:
+        return 0
+
+def format_float(val):
+    try:
+        return float(val)
+    except:
+        return 0.0
 
 def format_value(val, format=None):
     if isinstance(val, types.StringTypes):
