@@ -104,6 +104,9 @@ class ViewDatastore(object):
             kwargs['near'] = self._controller.params.get_integer('near', kwargs['near'])
             return self.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
 
+    def search(self, *args, **kwargs):
+        return self._controller.components.search(*args, **kwargs)
+
     def paging(self, query, size=None, page=None, near=None, data_only=None, **kwargs):
         data = query.fetch_async(size, offset=size*(page-1))
         if data_only is True:
