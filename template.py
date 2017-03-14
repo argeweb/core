@@ -177,6 +177,7 @@ class TemplateEngine(object):
             'round': round,
             'list': list,
             'str': str,
+            'getattr': getattr,
             'unicode': unicode,
             'datetime': datetime,
             'localize': time_util.localize,
