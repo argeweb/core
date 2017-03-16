@@ -22,8 +22,6 @@ def factory(name):
 
 
 class ViewFunction(object):
-    _controller = None
-
     def __init__(self, controller):
         self._controller = controller
 
@@ -45,6 +43,21 @@ class ViewFunction(object):
                 r = _function_list[name](*args, **kwargs)
                 return r
         return run
+
+
+class ViewFunctionProxy:
+    def __init__(self, name, controller):
+        self.name = name
+        self._controller = controller
+
+    def run(self, *args, **kwargs):
+        kwargs['controller'] = self._controller
+        prefix = u'global'
+        if kwargs.has_key('prefix'):
+            prefix = kwargs['prefix']
+        name = prefix + ':' + self.name
+        if name in _function_list:
+            return _function_list[name](*args, **kwargs)
 
 
 class ViewDatastore(object):
@@ -239,6 +252,10 @@ class TemplateView(View):
             'datastore': ViewDatastore(self.controller),
             'function': ViewFunction(self.controller).get_run()
         })
+        for key in _function_list.keys():
+            if key.startswith("global"):
+                name = key.split(":")[1]
+                self.context.update({name: ViewFunctionProxy(name, self.controller).run})
         r = self.controller.route
         self.controller.events.setup_template_variables(controller=self.controller)
 
