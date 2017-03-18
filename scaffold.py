@@ -311,7 +311,7 @@ def list(controller):
         except:
             pass
     controller.context.set(**{controller.scaffold.plural: plural})
-    if controller.scaffold.plural in controller.context:
+    if controller.scaffold.plural in controller.context and plural is not None:
         try:
             last_record = None
             lst = controller.context[controller.scaffold.plural]

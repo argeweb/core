@@ -105,7 +105,6 @@ class Uri(object):
         if 'namespace' in kwargs:
             namespace_manager.set_namespace(kwargs['namespace'])
 
-
         returnVal = False
         try:
             if 'item' in kwargs:
@@ -114,7 +113,6 @@ class Uri(object):
                 self.uri(route_name, *args, **kwargs)
             else:
                 self.uri(route_name, key=self.util.encode_key(item), *args, **kwargs)
-
             returnVal = True
         except:
             pass

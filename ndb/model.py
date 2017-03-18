@@ -8,6 +8,7 @@ from google.appengine.ext import ndb
 import types
 import time
 from argeweb.behaviors.searchable import Searchable
+from ..property import SearchingHelperProperty, KeyProperty, CategoryProperty
 
 class ModelMeta(ndb.model.MetaModel):
     """
@@ -235,6 +236,19 @@ class BasicModel(Model):
         if hasattr(self, 'name'):
             if self.name == None or self.name == u'':
                 self.name = self._get_dict_md5_(str(self.__dict__))
+        for i in self._properties:
+            item = self._properties[i]
+            if isinstance(item, SearchingHelperProperty):
+                target = self._properties[item._target]
+                t = None
+                target_ndb = None
+                if isinstance(target, KeyProperty) or isinstance(target, CategoryProperty):
+                    t = getattr(self, item._target)
+                if t:
+                    target_ndb = t.get()
+                if target_ndb:
+                    field = getattr(target_ndb, item._target_field_name)
+                    setattr(self, i, field)
         super(BasicModel, self).before_put()
 
     @classmethod

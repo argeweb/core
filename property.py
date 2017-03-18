@@ -235,5 +235,15 @@ class HiddenProperty(StringProperty):
     __property_name__ = 'hidden'
 
 
+class SearchingHelperProperty(StringProperty):
+    __property_name__ = 'hidden'
+
+    @utils.positional(1 + Property._positional)
+    def __init__(self, target=None, target_field_name=None, *args, **kwargs):
+        self._target = target
+        self._target_field_name = target_field_name
+        super(SearchingHelperProperty, self).__init__(*args, **kwargs)
+
+
 class FileProperty(StringProperty):
     __property_name__ = 'file'
