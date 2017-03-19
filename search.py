@@ -3,7 +3,8 @@ import inspect
 from google.appengine.api import search as search_api
 from google.appengine.ext import ndb
 from argeweb.core.property import IntegerProperty, FloatProperty, BooleanProperty, StringProperty, TextProperty, \
-    DateTimeProperty, DateProperty, TimeProperty, GeoPtProperty, RichTextProperty
+    DateTimeProperty, DateProperty, TimeProperty, GeoPtProperty, RichTextProperty, SearchingHelperProperty
+
 
 def _datetime_coverter(n, v):
     date = search_api.DateField(name=n, value=v)
@@ -16,6 +17,7 @@ property_to_field_map = {
     FloatProperty: lambda n, v: search_api.NumberField(name=n, value=v),
     BooleanProperty: lambda n, v: search_api.AtomField(name=n, value='true' if v else 'false'),
     StringProperty: lambda n, v: search_api.TextField(name=n, value=v),
+    SearchingHelperProperty: lambda n, v: search_api.TextField(name=n, value=v),
     TextProperty: lambda n, v: search_api.TextField(name=n, value=v),
     RichTextProperty: lambda n, v: search_api.HtmlField(name=n, value=v),
     DateTimeProperty: _datetime_coverter,
