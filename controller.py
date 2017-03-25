@@ -18,6 +18,8 @@ from argeweb.core import settings
 from argeweb.core import time_util
 from argeweb.core.bunch import Bunch
 from argeweb.core.params import ParamInfo
+from argeweb.components.search import Search
+from argeweb.components.pagination import Pagination
 from argeweb.core.ndb import encode_key, decode_key
 from argeweb.core.json_util import parse as json_parse, stringify as json_stringify
 
@@ -70,7 +72,7 @@ def get_route_menu(list_name=u'', controller=None):
             continue
         if menu['controller'] in controller.prohibited_controllers:
             continue
-        if str(menu['controller'] + '.' + menu['action']) in controller.prohibited_actions:
+        if controller.application_user.has_permission(str(menu['controller'] + '.' + menu['action'])) is False:
             continue
         uri = menu['uri']
         try:
@@ -228,7 +230,8 @@ class Controller(webapp2.RequestHandler, Uri):
         #: When declaring a controller, this must be a list or tuple of classes.
         #: When the controller is constructed, ``controller.components`` will
         #: be populated with instances of these classes.
-        components = (scaffold.Scaffolding,)
+        # components = (scaffold.Scaffolding,)
+        components = (scaffold.Scaffolding, Pagination, Search)
 
         #: Prefixes are added in from of controller (like admin_list) and will cause routing
         #: to produce a url such as '/admin/plugin/name/list' and a name such as 'admin:plugin:name:list'

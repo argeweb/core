@@ -123,7 +123,7 @@ class Uri(object):
             uri_s = '.'.join(uri_sn[:-1])
         if 'action' in kwargs:
             uri_s = uri_s + '.' + kwargs['action']
-        if returnVal and uri_s not in self.prohibited_actions:
+        if returnVal and self.application_user.has_permission(uri_s):
             return True
         else:
             return False
