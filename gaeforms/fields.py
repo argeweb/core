@@ -203,6 +203,7 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
                 label = self.get_label(obj)
                 yield (key, label, self.data and (self.data == obj.key))
         elif self.data:
+            key = self.data.key.urlsafe()
             yield(key, self.get_label(key.get()), True)
 
     def process_formdata(self, valuelist):

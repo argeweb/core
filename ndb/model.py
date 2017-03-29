@@ -313,6 +313,15 @@ class BasicModel(Model):
             return None
 
     @classmethod
+    def find_or_create_by_name(cls, name):
+        item = cls.find_by_name(name)
+        if item is None:
+            item = cls()
+            item.name = name
+            item.put()
+        return item
+
+    @classmethod
     def has_record(cls):
         r = cls.query().get()
         if r is not None:
