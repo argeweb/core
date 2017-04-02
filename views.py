@@ -380,7 +380,7 @@ class JsonView(View):
                         pass
                     result_data['data'] = data
                 result_data['scaffold'] = scaffold_data
-            result_data['message'] = self.controller.context['message'] if 'message' in self.controller.context else 'undefined'
+            result_data['message'] = self.controller.context['message'] if 'message' in self.controller.context else ''
             result = unicode(json_util.stringify(result_data))
         self.controller.response.unicode_body = result
         self.controller.events.after_render(controller=self.controller, result=result)

@@ -245,6 +245,33 @@ def _flash(controller, *args, **kwargs):
         controller.components.flash_messages(*args, **kwargs)
 
 
+def _check_view(controller, default=False):
+    if controller.params.get_string('response_content_type') == 'application/json' \
+            or controller.request.content_type == 'application/json' or default:
+        controller.meta.change_view('json')
+        if controller.scaffold.plural in controller.context and (
+                        'data' not in controller.context or controller.context['data'] is None):
+            controller.context['data'] = controller.context[controller.scaffold.plural]
+
+
+def _get_last_record_date(controller, item=None):
+    plural = controller.scaffold.plural
+    if item is None:
+        if plural in controller.context and controller.context[plural] is not None:
+            try:
+                lst = controller.context[plural]
+                if lst.__class__.__name__ == 'list':
+                    item = lst[-1]
+                else:
+                    lst_record = lst.fetch()
+                    if len(lst_record) > 0:
+                        item = lst_record[-1]
+            except:
+                pass
+    if item:
+        controller.context['last_record_date'] = item.modified
+
+
 def save_callback(controller, item, parser):
     parser.update(item)
     controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
@@ -292,13 +319,13 @@ def parser_action(controller, item, callback=save_callback):
     controller.context.set(**{
         'form': parser.container,
         controller.scaffold.singular: item})
-    if controller.params.get_string('response_return_encode') == 'application/json' \
-            or controller.request.content_type == 'application/json':
-        controller.meta.change_view('json')
+    _get_last_record_date(controller, item)
+    _check_view(controller)
 
 
 # controller Methods
 def list(controller):
+    controller.scaffold.scaffold_type = 'list'
     plural = None
     if 'query' in controller.request.params:
         try:
@@ -311,46 +338,35 @@ def list(controller):
         except:
             pass
     controller.context.set(**{controller.scaffold.plural: plural})
-    if controller.scaffold.plural in controller.context and plural is not None:
-        try:
-            last_record = None
-            lst = controller.context[controller.scaffold.plural]
-            if lst.__class__.__name__ == 'list':
-                last_record = lst[-1]
-            else:
-                lst_record = lst.fetch()
-                if len(lst_record) > 0:
-                    last_record = lst_record[-1]
-            if last_record:
-                controller.context['last_record_date'] = last_record.modified
-        except:
-            pass
-    controller.scaffold.scaffold_type = 'list'
+    _get_last_record_date(controller)
+    _check_view(controller, False)
 
 
 def view(controller, key):
+    controller.scaffold.scaffold_type = 'view'
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
-    controller.context['last_record_date'] = item.modified
     controller.context.set(**{
         controller.scaffold.singular: item})
-    controller.scaffold.scaffold_type = 'view'
+    _get_last_record_date(controller)
     if 'change_view_to_edit_function' not in controller.context:
         controller.context['change_view_to_edit_function'] = 'goEditPage'
 
 
 def add(controller, **kwargs):
+    controller.scaffold.scaffold_type = 'add'
     item = controller.scaffold.create_factory(controller)
     controller.scaffold.redirect = False
     for i in kwargs:
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
-    controller.scaffold.scaffold_type = 'add'
+    _get_last_record_date(controller, item)
     return parser_action(controller, item)
 
 
 def edit(controller, key, **kwargs):
+    controller.scaffold.scaffold_type = 'edit'
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
@@ -359,26 +375,26 @@ def edit(controller, key, **kwargs):
     for i in kwargs:
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
-    controller.scaffold.scaffold_type = 'edit'
+    _get_last_record_date(controller, item)
     if 'change_view_to_view_function' not in controller.context:
         controller.context['change_view_to_view_function'] = 'goViewPage'
     return parser_action(controller, item)
 
 
 def delete(controller, key):
+    controller.scaffold.scaffold_type = 'delete'
     controller.response.headers['Request-Method'] = 'DELETE'
     key = controller.util.decode_key(key)
     controller.events.scaffold_before_delete(controller=controller, key=key)
     key.delete()
     controller.events.scaffold_after_delete(controller=controller, key=key)
     _flash(controller, u'此項目已成功的刪除', 'success')
-    import time
-    controller.meta.change_view('json')
-    controller.scaffold.scaffold_type = 'delete'
     controller.context['data'] = {'info': 'success'}
+    _check_view(controller, True)
 
 
 def sort_up(controller, key):
+    controller.scaffold.scaffold_type = 'sort_up'
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
@@ -397,12 +413,12 @@ def sort_up(controller, key):
         item.sort = sort
         prev_item.put()
         item.put()
-    controller.meta.change_view('json')
-    controller.scaffold.scaffold_type = 'sort_up'
     controller.context['data'] = {'info': 'success'}
+    _check_view(controller, True)
 
 
 def sort_down(controller, key):
+    controller.scaffold.scaffold_type = 'sort_down'
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
@@ -420,20 +436,18 @@ def sort_down(controller, key):
         item.sort = sort
         next_item.put()
         item.put()
-    controller.meta.change_view('json')
-    controller.scaffold.scaffold_type = 'sort_down'
     controller.context['data'] = {'info': 'success'}
+    _check_view(controller, True)
 
 
 def set_boolean_field(controller, key):
-    controller.meta.change_view('json')
+    controller.scaffold.scaffold_type = 'set_boolean_field'
     item = controller.util.decode_key(key).get()
     field_name = controller.params.get_string('field')
     field_value = controller.params.get_boolean('value')
     val_word = field_value and u'啟用' or u'停用'
     controller.context['data'] = {'info': 'failure'}
     controller.context['message'] = u'%s失敗' % val_word
-    controller.scaffold.scaffold_type = 'set_boolean_field'
     if not item:
         return
 
@@ -445,11 +459,12 @@ def set_boolean_field(controller, key):
         item.put()
         controller.context['message'] = u'%s成功' % val_word
         controller.context['data'] = {'info': 'success'}
+    _check_view(controller, True)
 
 
 def plugins_check(controller):
-    controller.meta.change_view('jsonp')
     controller.scaffold.scaffold_type = 'plugins_check'
+    controller.meta.change_view('jsonp')
     controller.context['data'] = {
         'status': 'enable'
     }
