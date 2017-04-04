@@ -320,11 +320,10 @@ def parser_action(controller, item, callback=save_callback):
         'form': parser.container,
         controller.scaffold.singular: item})
     _get_last_record_date(controller, item)
-    _check_view(controller)
 
 
 # controller Methods
-def list(controller):
+def list(controller, use_json=False):
     controller.scaffold.scaffold_type = 'list'
     plural = None
     if 'query' in controller.request.params:
@@ -339,10 +338,10 @@ def list(controller):
             pass
     controller.context.set(**{controller.scaffold.plural: plural})
     _get_last_record_date(controller)
-    _check_view(controller, False)
+    _check_view(controller, use_json)
 
 
-def view(controller, key):
+def view(controller, key, use_json=False):
     controller.scaffold.scaffold_type = 'view'
     item = controller.util.decode_key(key).get()
     if not item:
@@ -352,20 +351,22 @@ def view(controller, key):
     _get_last_record_date(controller)
     if 'change_view_to_edit_function' not in controller.context:
         controller.context['change_view_to_edit_function'] = 'goEditPage'
+    _check_view(controller, use_json)
 
 
-def add(controller, **kwargs):
+def add(controller, use_json=False, **kwargs):
     controller.scaffold.scaffold_type = 'add'
     item = controller.scaffold.create_factory(controller)
     controller.scaffold.redirect = False
     for i in kwargs:
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
+    parser_action(controller, item)
     _get_last_record_date(controller, item)
-    return parser_action(controller, item)
+    _check_view(controller, use_json)
 
 
-def edit(controller, key, **kwargs):
+def edit(controller, key, use_json=False, **kwargs):
     controller.scaffold.scaffold_type = 'edit'
     item = controller.util.decode_key(key).get()
     if not item:
@@ -378,10 +379,12 @@ def edit(controller, key, **kwargs):
     _get_last_record_date(controller, item)
     if 'change_view_to_view_function' not in controller.context:
         controller.context['change_view_to_view_function'] = 'goViewPage'
-    return parser_action(controller, item)
+    parser_action(controller, item)
+    _get_last_record_date(controller, item)
+    _check_view(controller, use_json)
 
 
-def delete(controller, key):
+def delete(controller, key, use_json=True):
     controller.scaffold.scaffold_type = 'delete'
     controller.response.headers['Request-Method'] = 'DELETE'
     key = controller.util.decode_key(key)
@@ -390,7 +393,7 @@ def delete(controller, key):
     controller.events.scaffold_after_delete(controller=controller, key=key)
     _flash(controller, u'此項目已成功的刪除', 'success')
     controller.context['data'] = {'info': 'success'}
-    _check_view(controller, True)
+    _check_view(controller, use_json)
 
 
 def sort_up(controller, key):
