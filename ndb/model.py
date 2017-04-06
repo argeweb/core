@@ -224,6 +224,9 @@ class BasicModel(Model):
             pass
         return str(int(time.time()*100) + random.randint(1, 799999999999))
 
+    def delete(self):
+        self.key.delete()
+
     def before_put(self):
         """
         Called before an item is saved.
