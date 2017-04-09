@@ -29,13 +29,17 @@ class ParamInfo(object):
             default_value: then value not exits return
         """
         if key is '':
-            return default_value
+            target = default_value
+        else:
+            if key in self.request.params:
+                target = self.request.get(key)
+            else:
+                target = key
         try:
-            if key not in self.request.params:
-                return default_value
-            return decode_key(self.request.get(key)).get()
+            if target is not None:
+                return decode_key(target).get()
         except:
-            return default_value
+            return None
 
     def get_integer(self, key='', default_value=0):
         """ get from request and try to parse to a int
