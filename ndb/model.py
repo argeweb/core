@@ -252,6 +252,8 @@ class BasicModel(Model):
                 if target_ndb:
                     field = getattr(target_ndb, item._target_field_name)
                     setattr(self, i, field)
+                else:
+                    setattr(self, i, None)
         super(BasicModel, self).before_put()
 
     @classmethod
