@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# TODO CategoryAjaxWidget SidePanelWidget
+# TODO CategoryAjaxWidget
 """
 # 由 Model 轉換為表單的過程
 # Scaffold 呼叫 argeweb.core.gaeforms.model_form (實際是使用 argeweb.libs.wtforms_appengine.ndb.model_form)

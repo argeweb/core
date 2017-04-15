@@ -196,7 +196,7 @@ class FieldSwitchProperty(BooleanProperty):
     _group_index_on_disable = 0
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, group_index_on_enable=0, group_index_on_disable=0, target='aside_iframe', *args, **kwargs):
+    def __init__(self, group_index_on_enable=0, group_index_on_disable=0, target='aside_area', *args, **kwargs):
         self._group_index_on_enable = group_index_on_enable
         self._group_index_on_disable = group_index_on_disable
         super(BooleanProperty, self).__init__(*args, **kwargs)
@@ -209,7 +209,7 @@ class SidePanelProperty(StringProperty):
     __property_name__ = 'backend_link'
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, uri=None, text=None, target='aside_iframe', *args, **kwargs):
+    def __init__(self, uri=None, text=None, target='aside_area', *args, **kwargs):
         self._uri = uri
         self._uri_text = text
         self._target = target

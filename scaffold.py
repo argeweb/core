@@ -276,7 +276,7 @@ def save_callback(controller, item, parser):
     parser.update(item)
     controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
     item.put()
-    controller.events. scaffold_after_save(controller=controller, container=parser.container, item=item)
+    controller.events.scaffold_after_save(controller=controller, container=parser.container, item=item)
 
 
 def parser_action(controller, item, callback=save_callback):
