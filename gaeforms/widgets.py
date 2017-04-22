@@ -34,8 +34,8 @@ class MultipleReferenceCheckboxWidget(object):
 
 class RichTextWidget(object):
     html_params = staticmethod(html_params)
-    """
-    Widget for MultipleReferenceField. Displays options as checkboxes"""
+    '''
+    Widget for MultipleReferenceField. Displays options as checkboxes'''
     def __init__(self, html_tag='textarea'):
         super(RichTextWidget, self).__init__()
         self.html_tag = html_tag
@@ -43,9 +43,9 @@ class RichTextWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('name', field.id)
-        kwargs['class'] = kwargs.get('class', '').replace('span6', '') + " editor"
-        if field.data == "None" or field.data is None:
-            field.data = ""
+        kwargs['class'] = kwargs.get('class', '').replace('span6', '') + ' editor'
+        if field.data == 'None' or field.data is None:
+            field.data = ''
         html = u'<%s %s>%s</%s>'% (
             self.html_tag, html_params(**kwargs),
             field.data, self.html_tag
@@ -55,8 +55,8 @@ class RichTextWidget(object):
 
 class FileSelectWidget(object):
     html_params = staticmethod(html_params)
-    """
-    Widget for MultipleReferenceField. Displays options as checkboxes"""
+    '''
+    Widget for MultipleReferenceField. Displays options as checkboxes'''
     def __init__(self, html_tag='input'):
         super(FileSelectWidget, self).__init__()
         self.html_tag = html_tag
@@ -64,16 +64,16 @@ class FileSelectWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('name', field.id)
-        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + " file"
-        if field.data == "None" or field.data is None:
-            field.data = ""
+        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + ' file'
+        if field.data == 'None' or field.data is None:
+            field.data = ''
         if field.data:
             field_data = field.data
         else:
-            field_data = ""
-        ext = field_data.split(".")[-1]
+            field_data = ''
+        ext = field_data.split('.')[-1]
         if len(ext) > 5:
-            ext = "---"
+            ext = '---'
         html = u"""
         <div class="file_picker_div input-group">
             <%s type="text" %s value="%s" />
@@ -88,8 +88,8 @@ class FileSelectWidget(object):
 
 class ImageSelectWidget(object):
     html_params = staticmethod(html_params)
-    """
-    Widget for MultipleReferenceField. Displays options as checkboxes"""
+    '''
+    Widget for MultipleReferenceField. Displays options as checkboxes'''
     def __init__(self, html_tag='input'):
         super(ImageSelectWidget, self).__init__()
         self.html_tag = html_tag
@@ -97,13 +97,13 @@ class ImageSelectWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('name', field.id)
-        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + " image"
-        if field.data == "None" or field.data is None:
-            field.data = ""
+        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + ' image'
+        if field.data == 'None' or field.data is None:
+            field.data = ''
         if field.data:
             field_data = field.data
         else:
-            field_data = ""
+            field_data = ''
         html = u"""
         <div class="file_picker_div input-group">
             <%s type="text" %s value="%s" />
@@ -118,8 +118,8 @@ class ImageSelectWidget(object):
 
 class ImagesSelectWidget(object):
     html_params = staticmethod(html_params)
-    """
-    Widget for MultipleReferenceField. Displays options as checkboxes"""
+    '''
+    Widget for MultipleReferenceField. Displays options as checkboxes'''
     def __init__(self, html_tag='textarea'):
         super(ImagesSelectWidget, self).__init__()
         self.html_tag = html_tag
@@ -127,10 +127,10 @@ class ImagesSelectWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('name', field.id)
-        kwargs['class'] = kwargs.get('class', '').replace('span6', '') + " images"
-        if field.data == "None" or field.data is None:
-            field.data = ""
-        list = field.data.split(";")
+        kwargs['class'] = kwargs.get('class', '').replace('span6', '') + ' images'
+        if field.data == 'None' or field.data is None:
+            field.data = ''
+        list = field.data.split(';')
         html = u'<div class="imgs_selector_div">' \
                u'<%s %s style="display:none" >%s</%s>' \
                u'<a data-target="%s" class="btn-images-open-dropbox">Dropbox</a>'\
@@ -139,9 +139,9 @@ class ImagesSelectWidget(object):
                u'<div class="img_selector_sp"></div>'\
                % (self.html_tag, html_params(**kwargs), field.data, self.html_tag, field.id, field.id, field.id,)
         for item in list:
-            if item != u"":
+            if item != u'':
                 html += u'<div class="file_picker_item" data-link="%s" style="background-image: url(%s);" />' % (item, item)
-        return HTMLString(html + "</div>")
+        return HTMLString(html + '</div>')
 
 
 class CategorySelectWidget(object):
@@ -182,7 +182,7 @@ class CategorySelectWidget(object):
         if value == '__None':
             return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label)))))
         else:
-            if hasattr(label, "level") and hasattr(label, "name"):
+            if hasattr(label, 'level') and hasattr(label, 'name'):
                 if label.level == 9999 and label.name == u'super_user' and (selected is False or selected is None):
                     return None
             return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label.title)))))
@@ -205,10 +205,11 @@ class SidePanelWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs['class'] = kwargs.get('class', '').replace('form-control', '')
-        if field.data == "None" or field.data is None:
-            field.data = ""
-        html = [
-            '<a %s href="%s" target="%s">' % (html_params(name=field.name, **kwargs), field.data, field._target)]
+        if field.data == 'None' or field.data is None:
+            field.data = ''
+        if field._auto_open is True:
+            kwargs['class'] = kwargs['class'] + ' side_panel_open_auto'
+        html = ['<a %s href="%s" target="%s">' % (html_params(name=field.name, **kwargs), field.data, field._target)]
         html.append(field._uri_text)
 
         html.append('</a>')
@@ -236,13 +237,13 @@ class HiddenWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         kwargs.setdefault('name', field.id)
-        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + " image"
-        if field.data == "None" or field.data is None:
-            field.data = ""
+        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + ' image'
+        if field.data == 'None' or field.data is None:
+            field.data = ''
         if field.data:
             field_data = field.data
         else:
-            field_data = ""
+            field_data = ''
         html = u"""
         <div class="file_picker_div input-group">
             <%s type="text" %s value="%s" />

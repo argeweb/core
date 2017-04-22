@@ -130,6 +130,7 @@ class Convert(object):
         kwargs['uri'] = prop._uri
         kwargs['uri_text'] = prop._uri_text
         kwargs['target'] = prop._target
+        kwargs['auto_open'] = prop._auto_open
         return fields.SidePanelField(**kwargs)
 
     def convert_BlobKeyProperty(self, model, prop, kwargs):

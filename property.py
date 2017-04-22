@@ -206,20 +206,24 @@ class SidePanelProperty(StringProperty):
     _uri = None
     _uri_text = None
     _target = None
+    _auto_open = None
     __property_name__ = 'backend_link'
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, uri=None, text=None, target='aside_area', *args, **kwargs):
+    def __init__(self, uri=None, text=None, target='aside_area', auto_open=False, *args, **kwargs):
         self._uri = uri
         self._uri_text = text
         self._target = target
+        self._auto_open = auto_open
         super(SidePanelProperty, self).__init__(*args, **kwargs)
 
     def process(self, controller, fallback):
-        try:
-            url = controller.uri(self._uri, target=controller.util.encode_key(fallback))
-        except:
-            url = controller.uri(self._uri, target='--no-record--')
+        url = getattr(fallback, self._name)
+        if url is None:
+            try:
+                url = controller.uri(self._uri, target=controller.util.encode_key(fallback))
+            except:
+                url = controller.uri(self._uri, target='--no-record--')
         setattr(fallback, self._name, url)
 
 

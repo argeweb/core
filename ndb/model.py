@@ -289,14 +289,27 @@ class BasicModel(Model):
 
     @classmethod
     def all_enable(cls, *args, **kwargs):
+        import logging
         if hasattr(cls, 'is_enable') is False:
             return None
+        cat = None
+        if hasattr(cls, 'category') and 'category' in kwargs:
+            category = kwargs['category']
+            if isinstance(category, basestring):
+                cat = cls.find_by_name(category)
+            else:
+                cat = kwargs['category']
         if hasattr(cls, 'category') and 'category_key' in kwargs:
-            cat = ndb.Key(urlsafe=kwargs['category_key'])
-            if cat is not None:
-                return cls.query(cls.category == cat.key, cls.is_enable == True).order(-cls.sort)
-        else:
-            return cls.query(cls.is_enable == True).order(-cls.sort)
+            category_key = kwargs['category_key']
+            if isinstance(category_key, basestring):
+                cat = ndb.Key(urlsafe=category_key)
+            if isinstance(category_key, ndb.Key):
+                cat = category_key.get()
+        if cat is not None:
+            if hasattr(cls, 'category') is False:
+                return None
+            return cls.query(cls.category == cat.key, cls.is_enable == True).order(-cls.sort)
+        return cls.query(cls.is_enable == True).order(-cls.sort)
 
     @classmethod
     def find_by_name(cls, *args, **kwargs):

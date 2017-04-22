@@ -237,12 +237,14 @@ class SidePanelField(wtforms.StringField):
     _uri = None
     _uri_text = None
     _target = None
+    _auto_open = None
     widget = widgets.SidePanelWidget()
 
     def __init__(self, *args, **kwargs):
         self._uri = kwargs.pop('uri')
         self._uri_text = kwargs.pop('uri_text')
         self._target = kwargs.pop('target')
+        self._auto_open = kwargs.pop('auto_open')
         super(SidePanelField, self).__init__(*args, **kwargs)
 
 
