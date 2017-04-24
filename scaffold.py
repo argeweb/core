@@ -268,7 +268,7 @@ def _get_last_record_date(controller, item=None):
                         item = lst_record[-1]
             except:
                 pass
-    if item:
+    if item and hasattr(item, 'modified'):
         controller.context['last_record_date'] = item.modified
 
 

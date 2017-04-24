@@ -218,12 +218,14 @@ class SidePanelProperty(StringProperty):
         super(SidePanelProperty, self).__init__(*args, **kwargs)
 
     def process(self, controller, fallback):
-        url = getattr(fallback, self._name)
-        if url is None:
+        target = getattr(fallback, self._name)
+        if target is None or target == u'':
             try:
                 url = controller.uri(self._uri, target=controller.util.encode_key(fallback))
             except:
                 url = controller.uri(self._uri, target='--no-record--')
+        else:
+            url = controller.uri(self._uri, target=target)
         setattr(fallback, self._name, url)
 
 

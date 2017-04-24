@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytz
 from argeweb.core import settings
-
+import pytz
 
 def utc_tz():
     return pytz.timezone('UTC')
