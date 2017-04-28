@@ -26,7 +26,7 @@ from argeweb.core.json_util import parse as json_parse, stringify as json_string
 
 _temporary_route_storage = []
 _temporary_menu_storage = []
-_prefixes = ('admin', 'console', 'dashboard')
+_prefixes = ('admin', 'console', 'dashboard', 'taskqueue')
 
 
 def route_menu(*args, **kwargs):
