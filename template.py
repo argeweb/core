@@ -329,6 +329,7 @@ def format_float(val):
     except:
         return 0.0
 
+
 def format_value(val, format=None):
     if isinstance(val, types.StringTypes):
         return val

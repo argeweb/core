@@ -289,14 +289,17 @@ class BasicModel(Model):
 
     @classmethod
     def all_enable(cls, *args, **kwargs):
-        import logging
         if hasattr(cls, 'is_enable') is False:
             return None
         cat = None
         if hasattr(cls, 'category') and 'category' in kwargs:
             category = kwargs['category']
             if isinstance(category, basestring):
-                cat = cls.find_by_name(category)
+                try:
+                    cat_kind = eval(cls.category._kind)
+                    cat = cat_kind.find_by_name(category)
+                except:
+                    return None
             else:
                 cat = kwargs['category']
         if hasattr(cls, 'category') and 'category_key' in kwargs:
