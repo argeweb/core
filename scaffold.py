@@ -237,7 +237,8 @@ def _load_model(controller):
             module = __import__(s, fromlist=['*'])
             setattr(controller.Meta, 'Model', getattr(module, model_name))
         except (ImportError, AttributeError, ValueError):
-            controller.logging.debug('Scaffold coudn\'t automatically determine a model class for controller %s, please assign it a Meta.Model class variable.' % controller.__class__.__name__)
+            if controller.__class__.__name__ not in ['Data', 'Form', 'Api']:
+                controller.logging.debug('Scaffold coudn\'t automatically determine a model class for controller %s, please assign it a Meta.Model class variable.' % controller.__class__.__name__)
 
 
 def _flash(controller, *args, **kwargs):

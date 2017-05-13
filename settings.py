@@ -45,7 +45,7 @@ def load_settings(app_settings=None, refresh=False):
                 # except ImportError:
                 #     raise ConfigurationError("Settings not found. Please create /application/settings.py")
                 appdefaults = appsettings.settings
-                logging.debug('Static settings loaded from argeweb.settings.py')
+                logging.debug('Static settings loaded from argeweb.base_settings.py')
             except AttributeError:
                 raise ConfigurationError("No dictionary 'settings' found in settings.py")
     else:
