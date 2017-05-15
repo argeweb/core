@@ -3,7 +3,7 @@
 """
 Classes that extend the basic ndb.Model classes
 """
-
+from google.appengine.api.datastore_errors import BadValueError
 from google.appengine.ext import ndb
 import types
 import time
@@ -250,8 +250,13 @@ class BasicModel(Model):
                 if t:
                     target_ndb = t.get()
                 if target_ndb:
-                    field = getattr(target_ndb, item._target_field_name)
-                    setattr(self, i, field)
+                    try:
+                        field = getattr(target_ndb, item._target_field_name)
+                        if isinstance(field, int) or isinstance(field, float):
+                            field = str(field)
+                        setattr(self, i, field)
+                    except BadValueError:
+                        pass
                 else:
                     setattr(self, i, None)
         super(BasicModel, self).before_put()

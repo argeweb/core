@@ -83,7 +83,7 @@ class ViewDatastore(object):
         if 'query_name' in kwargs:
             query_name = str(kwargs['query_name'])
         prefix = u'global'
-        if kwargs.has_key('prefix'):
+        if 'prefix' in kwargs:
             prefix = kwargs['prefix']
             del kwargs['prefix']
         query_name = prefix + ':' + query_name
@@ -96,14 +96,20 @@ class ViewDatastore(object):
 
     def query(self, query_name, *args, **kwargs):
         prefix = u'global'
-        if kwargs.has_key('prefix'):
+        if 'prefix' in kwargs:
             prefix = kwargs['prefix']
+            del kwargs['prefix']
+        use_pager = False
+        if 'use_pager' in kwargs:
+            use_pager = kwargs['use_pager']
+            del kwargs['use_pager']
+        data_only = not use_pager
+        if 'data_only' in kwargs:
+            data_only = kwargs['data_only']
+            del kwargs['data_only']
         query_name = prefix + ':' + query_name
         if query_name in _datastore_commands:
             query = _datastore_commands[query_name](*args, **kwargs)
-            use_pager = False
-            if 'use_pager' in kwargs:
-                use_pager = kwargs['use_pager']
             if 'size' not in kwargs:
                 kwargs['size'] = 10
             if 'page' not in kwargs:
@@ -111,7 +117,7 @@ class ViewDatastore(object):
             if 'near' not in kwargs:
                 kwargs['near'] = 10
             if 'data_only' not in kwargs:
-                kwargs['data_only'] = not use_pager
+                kwargs['data_only'] = data_only
             kwargs['size'] = self._controller.params.get_integer('size', kwargs['size'])
             kwargs['page'] = self._controller.params.get_integer('page', kwargs['page'])
             kwargs['near'] = self._controller.params.get_integer('near', kwargs['near'])

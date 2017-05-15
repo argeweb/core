@@ -29,8 +29,6 @@ def require_user(controller):
     application_user = controller.session['application_user_key'].get()
     if application_user is None:
         return False, 'require_user'
-    if application_user.role is None:
-        return False, 'require_user'
     controller.application_user = application_user
     controller.context['application_user_key'] = application_user.key
     action_name = '.'.join(str(controller).split(' object')[0][1:].split('.')[0:-1]) + '.' + controller.route.action
