@@ -3,7 +3,6 @@
 """
 Classes that extend the basic ndb.Model classes
 """
-from google.appengine.api.datastore_errors import BadValueError
 from google.appengine.ext import ndb
 import types
 import time
@@ -243,22 +242,7 @@ class BasicModel(Model):
             item = self._properties[i]
             if isinstance(item, SearchingHelperProperty):
                 target = self._properties[item._target]
-                t = None
-                target_ndb = None
-                if isinstance(target, KeyProperty) or isinstance(target, CategoryProperty):
-                    t = getattr(self, item._target)
-                if t:
-                    target_ndb = t.get()
-                if target_ndb:
-                    try:
-                        field = getattr(target_ndb, item._target_field_name)
-                        if isinstance(field, int) or isinstance(field, float):
-                            field = str(field)
-                        setattr(self, i, field)
-                    except BadValueError:
-                        pass
-                else:
-                    setattr(self, i, None)
+                item.process_before_put(target, self, i)
         super(BasicModel, self).before_put()
 
     @classmethod

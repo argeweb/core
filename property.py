@@ -8,6 +8,7 @@
 
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import Property, utils
+from google.appengine.api.datastore_errors import BadValueError
 
 
 # TODO 驗証屬性設置
@@ -245,10 +246,29 @@ class SearchingHelperProperty(StringProperty):
     __property_name__ = 'hidden'
 
     @utils.positional(1 + Property._positional)
-    def __init__(self, target=None, target_field_name=None, *args, **kwargs):
+    def __init__(self, target=None, target_field_name=None, field_type=None, *args, **kwargs):
         self._target = target
         self._target_field_name = target_field_name
+        self._field_type = field_type
         super(SearchingHelperProperty, self).__init__(*args, **kwargs)
+
+    def process_before_put(self, target, model, i):
+        t = None
+        target_ndb = None
+        if isinstance(target, KeyProperty) or isinstance(target, CategoryProperty):
+            t = getattr(model, self._target)
+        if t:
+            target_ndb = t.get()
+        if target_ndb:
+            try:
+                field = getattr(target_ndb, self._target_field_name)
+                if isinstance(field, int) or isinstance(field, float):
+                    field = str(field)
+                setattr(model, i, field)
+            except BadValueError:
+                pass
+        else:
+            setattr(model, i, None)
 
 
 class FileProperty(StringProperty):
