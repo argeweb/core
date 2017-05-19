@@ -241,8 +241,7 @@ class BasicModel(Model):
         for i in self._properties:
             item = self._properties[i]
             if isinstance(item, SearchingHelperProperty):
-                target = self._properties[item._target]
-                item.process_before_put(target, self, i)
+                item.process_before_put(self, i)
         super(BasicModel, self).before_put()
 
     @classmethod
@@ -304,12 +303,12 @@ class BasicModel(Model):
         return cls.query(cls.is_enable == True).order(-cls.sort)
 
     @classmethod
-    def find_by_name(cls, *args, **kwargs):
-        name = None
-        if len(args) > 0:
-            name = str(args[0])
-        if 'name' in kwargs:
-            name = str(kwargs['name'])
+    def find_by_name(cls, name=None, *args, **kwargs):
+        if name is None:
+            if len(args) > 0:
+                name = str(args[0])
+            if 'name' in kwargs:
+                name = str(kwargs['name'])
         if hasattr(cls, 'name') and name is not None:
             return cls.query(cls.name == name).get()
         else:

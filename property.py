@@ -252,7 +252,8 @@ class SearchingHelperProperty(StringProperty):
         self._field_type = field_type
         super(SearchingHelperProperty, self).__init__(*args, **kwargs)
 
-    def process_before_put(self, target, model, i):
+    def process_before_put(self, model, field_name):
+        target = model._properties[self._target]
         t = None
         target_ndb = None
         if isinstance(target, KeyProperty) or isinstance(target, CategoryProperty):
@@ -261,14 +262,14 @@ class SearchingHelperProperty(StringProperty):
             target_ndb = t.get()
         if target_ndb:
             try:
-                field = getattr(target_ndb, self._target_field_name)
-                if isinstance(field, int) or isinstance(field, float):
-                    field = str(field)
-                setattr(model, i, field)
+                field_value = getattr(target_ndb, self._target_field_name)
+                if isinstance(field_value, int) or isinstance(field_value, float):
+                    field_value = str(field_value)
+                setattr(model, field_name, field_value)
             except BadValueError:
                 pass
         else:
-            setattr(model, i, None)
+            setattr(model, field_name, None)
 
 
 class FileProperty(StringProperty):
