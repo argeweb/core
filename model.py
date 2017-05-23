@@ -18,6 +18,8 @@ class HostInformationModel(BasicModel):
     plugins = Fields.TextProperty(verbose_name=u'模組')
     theme = Fields.StringProperty(verbose_name=u'主題樣式')
     is_lock = Fields.BooleanProperty(default=True, verbose_name=u'是否鎖定')
+    authorization_check = Fields.StringProperty(verbose_name=u'驗証檢查方式', choices=(u'', u'all', u'theme'), default=u'')
+    authorization_redirect = Fields.StringProperty(verbose_name=u'驗証設定', default=u'''{'require_member': '/', 'require_admin': '/admin/login', 'require_user': '/login.html'}''')
 
     @property
     def plugins_list(self):
