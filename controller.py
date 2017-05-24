@@ -569,9 +569,13 @@ class Controller(webapp2.RequestHandler, Uri):
         l = dri_path.split(os.path.sep)[-1].split('.')[0]
         return l
 
-    def json(self, data):
+    def json(self, data, code=200):
         self.meta.change_view('json')
         self.context['data'] = data
+        if 'code' in data:
+            self.response.status = data['code']
+        else:
+            self.response.status = code
 
     admin_list = scaffold.list
     admin_view = scaffold.view

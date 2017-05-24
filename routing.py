@@ -123,7 +123,7 @@ def current_route_name():
     return name
 
 
-def canonical_parts_from_method(controller, method):
+def canonical_parts_from_method(controller, method, pass_plugin_name=False):
     """
     Returns the canonical parts (prefix, controller, action, named arguments)
     from a controller's method
@@ -146,13 +146,21 @@ def canonical_parts_from_method(controller, method):
     plugins_name = ''
     if str(controller).find('plugins.') > 0:
         plugins_name = str(controller).split('.')[1]
-    return {
-        'prefix': prefix,
-        'controller': method_class_name,
-        'plugin': plugins_name,
-        'action': method_name,
-        'args': method_args.args[1:]  # exclude self
-    }
+    if pass_plugin_name:
+        return {
+            'prefix': prefix,
+            'controller': method_class_name,
+            'action': method_name,
+            'args': method_args.args[1:]  # exclude self
+        }
+    else:
+        return {
+            'prefix': prefix,
+            'controller': method_class_name,
+            'plugin': plugins_name,
+            'action': method_name,
+            'args': method_args.args[1:]  # exclude self
+        }
 
 
 def path_from_canonical_parts(prefix, controller, action, args, plugin=''):
@@ -200,8 +208,12 @@ def build_routes_for_controller(controllercls):
         method = entry[0]
         args = entry[1]
         kwargs = entry[2]
+        pass_plugin_name = False
+        if 'pass_plugin_name' in kwargs:
+            pass_plugin_name = kwargs['pass_plugin_name']
+            del kwargs['pass_plugin_name']
 
-        parts = canonical_parts_from_method(controllercls, method)
+        parts = canonical_parts_from_method(controllercls, method, pass_plugin_name)
         route_path = path_from_canonical_parts(**parts)
         route_name = name_from_canonical_parts(**parts)
 
