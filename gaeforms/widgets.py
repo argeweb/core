@@ -53,6 +53,28 @@ class RichTextWidget(object):
         return HTMLString(html)
 
 
+class CodeWidget(object):
+    html_params = staticmethod(html_params)
+    '''
+    Widget for MultipleReferenceField. Displays options as checkboxes'''
+    def __init__(self, html_tag='textarea', code_type='json'):
+        super(CodeWidget, self).__init__()
+        self.html_tag = html_tag
+        self.code_type = code_type
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('name', field.id)
+        kwargs['class'] = kwargs.get('class', '').replace('span6', '') + ' editor ' + self.code_type
+        if field.data == 'None' or field.data is None:
+            field.data = ''
+        html = u'<%s %s>%s</%s>'% (
+            self.html_tag, html_params(**kwargs),
+            field.data, self.html_tag
+        )
+        return HTMLString(html)
+
+
 class FileSelectWidget(object):
     html_params = staticmethod(html_params)
     '''

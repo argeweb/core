@@ -451,6 +451,21 @@ class RichTextField(wtforms.Field):
             self.data = self.__temporary_data
 
 
+class CodeJSONField(RichTextField):
+    widget = widgets.CodeWidget(code_type='json')
+    __temporary_data = None
+
+
+class CodeJSField(RichTextField):
+    widget = widgets.CodeWidget(code_type='javascript')
+    __temporary_data = None
+
+
+class CodeCSSField(RichTextField):
+    widget = widgets.CodeWidget(code_type='css')
+    __temporary_data = None
+
+
 class CategoryReferenceField(wtforms.Field):
     widget = widgets.RichTextWidget()
     __temporary_data = None

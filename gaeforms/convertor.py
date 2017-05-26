@@ -143,6 +143,15 @@ class Convert(object):
     def convert_RichTextProperty(self, model, prop, kwargs):
         return fields.RichTextField(**kwargs)
 
+    def convert_CodeJSONProperty(self, model, prop, kwargs):
+        return fields.CodeJSONField(**kwargs)
+
+    def convert_CodeJSProperty(self, model, prop, kwargs):
+        return fields.CodeJSField(**kwargs)
+
+    def convert_CodeCSSProperty(self, model, prop, kwargs):
+        return fields.CodeCSSField(**kwargs)
+
     def convert_HiddenProperty(self, model, prop, kwargs):
         return fields.HiddenField(**kwargs)
 

@@ -153,10 +153,23 @@ class KeyProperty(ndb.KeyProperty):
 # ArgeWeb Extended Property
 
 class RichTextProperty(TextProperty):
-    """ 文字編輯器 專用欄位
-        將使用 js 的套件
-        """
+    """ 文字編輯器 專用欄位"""
     __property_name__ = 'richtext'
+
+
+class CodeJSONProperty(TextProperty):
+    """ json 專用欄位"""
+    __property_name__ = 'jsontext'
+
+
+class CodeJSProperty(TextProperty):
+    """ JavaScript 專用欄位"""
+    __property_name__ = 'javascripttext'
+
+
+class CodeCSSProperty(TextProperty):
+    """ CSS 專用欄位"""
+    __property_name__ = 'csstext'
 
 
 class CategoryProperty(KeyProperty):
