@@ -409,6 +409,9 @@ class Controller(webapp2.RequestHandler, Uri):
         This is the main point in which to listen for events or change dynamic configuration.
         """
         self.startup()
+        if self.theme == u'install' and self.request.path == '/':
+            return self.redirect('/admin/setup')
+
         if hasattr(self.Meta, 'default_view') and self.Meta.default_view is not None:
             if isinstance(self.Meta.default_view, basestring):
                 self.meta.change_view(self.Meta.default_view)
