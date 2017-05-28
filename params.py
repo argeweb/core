@@ -6,6 +6,7 @@
 # Web: http://www.yooliang.com/
 # Date: 2016/1/28.
 from argeweb.core.ndb import decode_key
+from datetime import datetime
 
 
 class ParamInfo(object):
@@ -96,6 +97,15 @@ class ParamInfo(object):
         if rv is None or rv is '' or rv is u'':
             rv = u''
         return rv
+
+    def get_datetime(self, key='', default_vaule=None, format='%Y-%m-%d %H:%M:%S'):
+        str_date = self.get_string(key, u'')
+        if str_date is u'':
+            if default_vaule is None:
+                return datetime.today()
+            return default_vaule
+        else:
+            datetime.strptime(str_date, format=format)
 
     def get_header(self, key='', default_value=u''):
         """ get from request and try to parse to a str(unicode)

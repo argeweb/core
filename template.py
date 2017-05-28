@@ -170,6 +170,7 @@ class TemplateEngine(object):
             'print_value': format_value,
             'print_value_with_lang': format_value_with_lang,
             'print_text': pure_text,
+            'print_datetime': format_datetime_without_localize,
             'isinstance': isinstance,
             'math': math,
             'int': format_int,
@@ -279,6 +280,12 @@ def format_datetime(x, format=None):
     if format is None:
         return time_util.localize(x).strftime('%Y-%m-%d %H:%M:%S')
     return time_util.localize(x).strftime(format)
+
+
+def format_datetime_without_localize(x, format=None):
+    if format is None:
+        return x.strftime('%Y-%m-%d %H:%M:%S')
+    return x.strftime(format)
 
 
 def format_date(x, format=None):
