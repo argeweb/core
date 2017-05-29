@@ -105,7 +105,7 @@ class ParamInfo(object):
                 return datetime.today()
             return default_vaule
         else:
-            datetime.strptime(str_date, format=format)
+            return datetime.strptime(str_date, format=format)
 
     def get_header(self, key='', default_value=u''):
         """ get from request and try to parse to a str(unicode)
