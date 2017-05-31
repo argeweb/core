@@ -111,16 +111,13 @@ class ViewDatastore(object):
         if query_name in _datastore_commands:
             query = _datastore_commands[query_name](*args, **kwargs)
             if 'size' not in kwargs:
-                kwargs['size'] = 10
+                kwargs['size'] = self._controller.params.get_integer('size', 10)
             if 'page' not in kwargs:
-                kwargs['page'] = 1
+                kwargs['page'] = self._controller.params.get_integer('page', 1)
             if 'near' not in kwargs:
-                kwargs['near'] = 10
+                kwargs['near'] = self._controller.params.get_integer('near', 10)
             if 'data_only' not in kwargs:
                 kwargs['data_only'] = data_only
-            kwargs['size'] = self._controller.params.get_integer('size', kwargs['size'])
-            kwargs['page'] = self._controller.params.get_integer('page', kwargs['page'])
-            kwargs['near'] = self._controller.params.get_integer('near', kwargs['near'])
             return self.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
 
     def search(self, *args, **kwargs):
