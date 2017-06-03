@@ -17,18 +17,6 @@ class HostInformationModel(BasicModel):
     plugins = Fields.TextProperty(verbose_name=u'模組')
     theme = Fields.StringProperty(verbose_name=u'主題樣式')
     is_lock = Fields.BooleanProperty(default=True, verbose_name=u'是否鎖定')
-    authorization_check = Fields.CodeJSONProperty(verbose_name=u'驗証檢查', default=u'''
-        {
-            "anonymous": ["*"],
-            "user": [],
-            "member": []
-        }
-    ''')
-    authorization_redirect = Fields.CodeJSONProperty(verbose_name=u'驗証重新導向路徑', default=u'''
-        {
-            "user": "/login.html"
-        }
-    ''')
 
     @property
     def plugins_list(self):
