@@ -279,27 +279,31 @@ class BasicModel(Model):
     def all_enable(cls, *args, **kwargs):
         if hasattr(cls, 'is_enable') is False:
             return None
-        cat = None
+        cat_key = None
         if hasattr(cls, 'category') and 'category' in kwargs:
             category = kwargs['category']
             if isinstance(category, basestring):
                 try:
                     cat_kind = eval(cls.category._kind)
                     cat = cat_kind.find_by_name(category)
+                    cat_key = cat.key
                 except:
                     return None
             else:
-                cat = kwargs['category']
+                try:
+                    cat_key = category.key
+                except:
+                    cat_key = category
         if hasattr(cls, 'category') and 'category_key' in kwargs:
             category_key = kwargs['category_key']
             if isinstance(category_key, basestring):
-                cat = ndb.Key(urlsafe=category_key)
+                cat_key = ndb.Key(urlsafe=category_key)
             if isinstance(category_key, ndb.Key):
-                cat = category_key.get()
-        if cat is not None:
+                cat_key = category_key.get()
+        if cat_key is not None:
             if hasattr(cls, 'category') is False:
                 return None
-            return cls.query(cls.category == cat.key, cls.is_enable == True).order(-cls.sort)
+            return cls.query(cls.category == cat_key, cls.is_enable == True).order(-cls.sort)
         return cls.query(cls.is_enable == True).order(-cls.sort)
 
     @classmethod
