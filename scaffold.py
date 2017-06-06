@@ -28,6 +28,8 @@ class Scaffolding(object):
 
         if not hasattr(self.controller.Meta, 'Model'):
             _load_model(self.controller)
+        # else:
+        #     setattr(self.controller.Meta, 'Model', getattr(self.controller.Meta, 'model'))
 
         if not hasattr(self.controller, 'Scaffold'):
             setattr(self.controller, 'Scaffold', Scaffold)
@@ -178,7 +180,7 @@ def default_query_factory(controller):
     """
     The default factory just returns Model.query(), sorted by created if it's available.
     """
-    Model = controller.meta.Model
+    Model = controller.Meta.Model
     query = Model.query()
     if 'sort' in Model._properties and Model._properties['sort']._indexed:
         query = query.order(-Model.sort)
