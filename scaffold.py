@@ -28,8 +28,6 @@ class Scaffolding(object):
 
         if not hasattr(self.controller.Meta, 'Model'):
             _load_model(self.controller)
-        # else:
-        #     setattr(self.controller.Meta, 'Model', getattr(self.controller.Meta, 'model'))
 
         if not hasattr(self.controller, 'Scaffold'):
             setattr(self.controller, 'Scaffold', Scaffold)

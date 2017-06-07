@@ -18,7 +18,6 @@ from argeweb.core import settings
 from argeweb.core import time_util
 from argeweb.core.bunch import Bunch
 from argeweb.core.params import ParamInfo
-from argeweb.components.csrf import CSRF
 from argeweb.components.search import Search
 from argeweb.components.pagination import Pagination
 from argeweb.core.ndb import encode_key, decode_key
@@ -200,6 +199,8 @@ class Controller(webapp2.RequestHandler, Uri):
                 # Make sure the metaclass as a proper inheritence chain
                 if not issubclass(cls.Meta, Controller.Meta):
                     cls.Meta = type('Meta', (cls.Meta, Controller.Meta), {})
+                else:
+                    cls.Meta = type('Meta', (cls.Meta, ), {})
 
                 cls._route_list = _temporary_route_storage
                 _temporary_route_storage = []
