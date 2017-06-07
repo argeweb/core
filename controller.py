@@ -18,6 +18,7 @@ from argeweb.core import settings
 from argeweb.core import time_util
 from argeweb.core.bunch import Bunch
 from argeweb.core.params import ParamInfo
+from argeweb.components.csrf import CSRF
 from argeweb.components.search import Search
 from argeweb.components.pagination import Pagination
 from argeweb.core.ndb import encode_key, decode_key
@@ -233,7 +234,7 @@ class Controller(webapp2.RequestHandler, Uri):
         #: When the controller is constructed, ``controller.components`` will
         #: be populated with instances of these classes.
         # components = (scaffold.Scaffolding,)
-        components = (scaffold.Scaffolding, Pagination, Search)
+        components = (scaffold.Scaffolding, Pagination, Search, CSRF)
 
         #: Prefixes are added in from of controller (like admin_list) and will cause routing
         #: to produce a url such as '/admin/plugin/name/list' and a name such as 'admin:plugin:name:list'
