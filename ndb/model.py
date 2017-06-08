@@ -307,12 +307,12 @@ class BasicModel(Model):
         return cls.query(cls.is_enable == True).order(-cls.sort)
 
     @classmethod
-    def find_by_name(cls, name=None, *args, **kwargs):
-        if name is None:
-            if len(args) > 0:
-                name = str(args[0])
-            if 'name' in kwargs:
-                name = str(kwargs['name'])
+    def find_by_name(cls, *args, **kwargs):
+        name = None
+        if len(args) > 0:
+            name = str(args[0])
+        if 'name' in kwargs:
+            name = str(kwargs['name'])
         if hasattr(cls, 'name') and name is not None:
             return cls.query(cls.name == name).get()
         else:

@@ -97,7 +97,7 @@ def get_route_menu(list_name=u'', controller=None):
             'need_hr_parent': menu['need_hr_parent'] if 'need_hr_parent' in menu else False,
             'group_title': group_title,
             'icon': menu['icon'] if 'icon' in menu else 'list',
-            'sort': menu['sort'] if 'sort' in menu else 1,
+            'sort': float(menu['sort']) if 'sort' in menu else 1.0,
             'level': 1
         }
         if 'group' in menu:
