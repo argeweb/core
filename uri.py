@@ -82,11 +82,36 @@ class Uri(object):
 
         return webapp2.uri_for(route_name, *args, **tkwargs)
 
-    def uri_action_link(self, action, item=None, *varargs, **kwargs):
-        if item is None:
-            return self.uri(action=action, *varargs, **kwargs)
-        else:
-            return self.uri(action=action, key=item.key.urlsafe(), *varargs, **kwargs)
+    def uri_action_link(self, action, item=None, uri=None, *varargs, **kwargs):
+        if isinstance(action, basestring):
+            if item is None:
+                return self.uri(action=action, *varargs, **kwargs)
+            else:
+                return self.uri(action=action, key=item.key.urlsafe(), *varargs, **kwargs)
+        if isinstance(action, dict):
+            if 'uri' not in action:
+                return ''
+            uri = action['uri']
+            query_list = []
+            if 'query' in action:
+                for q in action['query']:
+                    n = self.process_query_with_item(q, item)
+                    if n is not None:
+                        query_list.append(n)
+                kwargs['query'] = u'&'.join(query_list)
+            else:
+                if item is not None:
+                    kwargs['source'] = item.key.urlsafe()
+            return self.uri(uri, *varargs, **kwargs)
+
+    @staticmethod
+    def process_query_with_item(q, item):
+        name = q['name']
+        value = q['value']
+        if value.startswith(':'):
+            if value == ':key':
+                value = item.key.urlsafe()
+        return u'%s=%s' % (name, value)
 
     def uri_exists(self, route_name=None,
                    prefix=route_sentinel,

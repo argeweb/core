@@ -87,7 +87,7 @@ class Model(ndb.Model):
         return query
 
     @classmethod
-    def find_by_properties(cls, **kwargs):
+    def find_by_properties(cls, *args, **kwargs):
         """
         Similar to find_all_by_properties, but returns either None or a single ndb.Model instance.
 
@@ -96,6 +96,8 @@ class Model(ndb.Model):
             User.find_by_properties(first_name='Jon',role='Admin')
 
         """
+        if len(args) > 0 and 'name' not in kwargs:
+            kwargs['name'] = args[0]
         return cls.find_all_by_properties(**kwargs).get()
 
     def before_put(self):
