@@ -321,6 +321,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.params = ParamInfo(self.request)
         self.logging = logging
         self.plugins = plugins_information
+        self.session_store = sessions.get_store(request=self.request)
         namespace_manager.set_namespace(self.namespace)
 
     def _build_components(self):
@@ -494,7 +495,6 @@ class Controller(webapp2.RequestHandler, Uri):
         # Setup everything, the session, etc.
         self._init_meta()
 
-        self.session_store = sessions.get_store(request=self.request)
         self.context.set_dotted('this.session', self.session)
 
         self.events.before_startup(controller=self)
@@ -539,6 +539,13 @@ class Controller(webapp2.RequestHandler, Uri):
         Sessions are backed by an encrypted cookie and datastore.
         """
         return self.session_store.get_session(backend='datastore')
+
+    def get_session(self, key):
+        return self.session[key]
+
+    def set_session(self, key, value):
+        self.session[key] = value
+        return ''
 
     def parse_request(self, container=None, fallback=None, parser=None):
         """

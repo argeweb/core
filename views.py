@@ -249,6 +249,8 @@ class TemplateView(View):
             'request': self.controller.request,
             'route': self.controller.route,
             'params': self.controller.params,
+            'get_session': self.controller.get_session,
+            'set_session': self.controller.set_session,
             'namespace': self.controller.namespace,
             'print_key': self.controller.util.encode_key,
             'print_setting': self.controller.settings.print_setting,
