@@ -29,7 +29,7 @@ class Uri(object):
         controller = controller if controller != route_sentinel else self.route.controller
         action = action if action != route_sentinel else self.route.action
         plugin = ''
-        if str(self).find('plugins.') > 0:
+        if str(self).find('application.') > 0 or str(self).find('plugins.') > 0:
             plugin = str(self).split('.')[1]
         return routing.name_from_canonical_parts(prefix, controller, action, plugin=plugin)
 

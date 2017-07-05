@@ -84,11 +84,10 @@ def route_controllers(app_router, controller_path=None):
     try:
         module = __import__('%s' % controller_path, fromlist=['*'])
         try:
-            cls = getattr(module, inflector.camelize(controller_name))
-            route_controller(cls, app_router)
-            if type_name == 'plugins':
-                plugins_information.register_template(plugin_name)
-                plugins_information.register_template(controller_name)
+            controller_cls = getattr(module, inflector.camelize(controller_name))
+            controller_cls._build_routes(app_router)
+            plugins_information.register_template(plugin_name, type_name=type_name)
+            plugins_information.register_template(controller_name, type_name=type_name)
         except AttributeError:
             logging.debug('Controller %s not found, skipping' % inflector.camelize(controller_name))
     except ImportError as e:
@@ -96,15 +95,6 @@ def route_controllers(app_router, controller_path=None):
     except AttributeError as e:
         logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (controller_name, e))
         raise
-
-
-def route_controller(controller_cls, app_router=None):
-    """
-    Adds all of the routes for the given controller
-    """
-    if not app_router:
-        app_router = router()
-    return controller_cls._build_routes(app_router)
 
 
 def route_name_exists(name, *args, **kwargs):

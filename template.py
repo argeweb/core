@@ -29,7 +29,7 @@ class TemplateEngine(object):
     def __init__(self, theme=None, extra_globals=None, extra_paths=None):
         self.theme = theme
         jinja2_env_kwargs = {
-            'loader':      self._build_loader(extra_paths=extra_paths),
+            'loader': self._build_loader(extra_paths=extra_paths),
             'auto_reload': False,
             # 'cache_size':  0 if debug else 50,
             'cache_size':  400,

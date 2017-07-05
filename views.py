@@ -121,6 +121,9 @@ class ViewDatastore(object):
             return self.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
 
     def search(self, *args, **kwargs):
+        for name in ['use_pager', 'data_only', 'prefix']:
+            if name in kwargs:
+                del kwargs[name]
         return self._controller.components.search(*args, **kwargs)
 
     def paging(self, query, size=None, page=None, near=None, data_only=None, **kwargs):

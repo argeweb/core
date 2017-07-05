@@ -301,7 +301,7 @@ class BasicModel(Model):
             if isinstance(category_key, basestring):
                 cat_key = ndb.Key(urlsafe=category_key)
             if isinstance(category_key, ndb.Key):
-                cat_key = category_key.get()
+                cat_key = category_key
         if cat_key is not None:
             if hasattr(cls, 'category') is False:
                 return None
