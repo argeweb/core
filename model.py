@@ -46,6 +46,16 @@ class HostInformationModel(BasicModel):
             item.put()
         return item
 
+    def before_put(self):
+        super(HostInformationModel, self).before_put()
+        sn = []
+        for n in self.plugins.split(','):
+            if n.find('.') < 0:
+                sn.append('plugins.%s' % n)
+            else:
+                sn.append(n)
+        self.plugins = ','.join(sn)
+
 
 class WebSettingModel(BasicModel):
     setting_name = Fields.StringProperty(verbose_name=u'名稱')

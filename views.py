@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import random
+import logging
 import time
 import template
 import json_util
@@ -11,7 +12,6 @@ from events import ViewEvents
 _views = {}
 _function_list = {}
 _datastore_commands = {}
-
 
 def factory(name):
     """
@@ -68,7 +68,10 @@ class ViewDatastore(object):
 
     @staticmethod
     def register(name, common_object=None, prefix=u'global'):
-        name = prefix + ':' + name
+        if isinstance(prefix, basestring):
+            name = prefix + ':' + name
+        else:
+            name = prefix.__module__ + ':' + name
         if name in _datastore_commands:
             return
         _datastore_commands[name] = common_object
@@ -88,11 +91,15 @@ class ViewDatastore(object):
             del kwargs['prefix']
         query_name = prefix + ':' + query_name
         if query_name and query_name in _datastore_commands:
-            rv = _datastore_commands[query_name](*args, **kwargs)
+            common_object= _datastore_commands[query_name]
+            query = common_object(*args, **kwargs)
+            target_module = common_object.im_self
+            common_object.im_self._kind_map[target_module.__name__] = target_module
             try:
-                return rv.get()
+                return_value = query.get()
             except:
-                return rv
+                return_value = query
+            return return_value
 
     def query(self, query_name, *args, **kwargs):
         prefix = u'global'
@@ -109,7 +116,11 @@ class ViewDatastore(object):
             del kwargs['data_only']
         query_name = prefix + ':' + query_name
         if query_name in _datastore_commands:
-            query = _datastore_commands[query_name](*args, **kwargs)
+            common_object= _datastore_commands[query_name]
+            query = common_object(*args, **kwargs)
+            target_module = common_object.im_self
+            common_object.im_self._kind_map[target_module.__name__] = target_module
+
             if 'size' not in kwargs:
                 kwargs['size'] = self._controller.params.get_integer('size', 10)
             if 'page' not in kwargs:
@@ -119,6 +130,7 @@ class ViewDatastore(object):
             if 'data_only' not in kwargs:
                 kwargs['data_only'] = data_only
             return self.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
+        return []
 
     def search(self, *args, **kwargs):
         for name in ['use_pager', 'data_only', 'prefix']:

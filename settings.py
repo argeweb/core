@@ -179,11 +179,15 @@ def get_host_information_item(server_name=None):
     namespace_manager.set_namespace('shared')
     memcache_key = 'host.information.' + server_name
     host_item = memcache.get(memcache_key)
+    sn = []
     if host_item is None:
+        for n in 'application_user,backend_ui_material,scaffold,themes,' \
+                 'file,user_file,code,plugin_manager,zz_last_path'.split(','):
+            sn.append('plugins.%s' % n)
         host_item = HostInformationModel.get_or_insert(
             host=server_name,
             theme='install',
-            plugins='application_user,backend_ui_material,scaffold,themes,file,user_file,code,plugin_manager,zz_last_path',
+            plugins=','.join(sn),
             is_lock=True
         )
         host_item = update_host_information_in_memcache(server_name, host_item)

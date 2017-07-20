@@ -51,13 +51,18 @@ def register_template(template_dir_name, templating=True, type_name='plugins'):
 
 def get_prohibited_controllers(server_name, namespace):
     """
-    取得沒有被啟用的 plugin
-    """
-    a = set(get_all_controller_with_type())
+        取得沒有被啟用的 plugin
+        """
+    a = set(get_all_controller_with_type(target_type='application') + get_all_controller_with_type(target_type='plugins'))
     b = []
     for plugin in get_enable_plugins_from_db(server_name, namespace):
-        for item in get_controller_with_type(plugin):
-            b.append(item)
+        if plugin.find('.') > 0:
+            sp = plugin.split('.')
+            for item in get_controller_with_type(sp[1], target_type=sp[0]):
+                b.append(item)
+        else:
+            for item in get_controller_with_type(plugin):
+                b.append(item)
     return a - set(b)
 
 
@@ -89,11 +94,11 @@ def get_helper(plugin_name_or_controller, base_type='application'):
         return None
 
 
-def get_all_plugin(use_cache=True):
+def get_plugin_name_list_with_type(use_cache=True, target_type='plugins'):
     """
-    取得所有的 controller
-    """
-    c = get_all_controller_with_type(use_cache)
+        取得所有的 controller
+        """
+    c = get_all_controller_with_type(use_cache, target_type)
     b = [item.split('.')[1] if item.find('.') > 0 else item for item in c]
     c = list(set(b))
     c.sort(key=b.index)
@@ -105,12 +110,10 @@ def get_all_controller(debug, version):
         取得所有的 controller
         """
     if debug is True:
-        return get_all_controller_with_type(False, 'application') + get_all_controller_with_type()
+        return get_all_controller_with_type(False, 'application') + get_all_controller_with_type(False, 'plugins')
     last_version = memcache.get(key='all.controller.version')
-    if last_version is None:
-        return get_all_controller_with_type(False, 'application') + get_all_controller_with_type()
-    if version != last_version:
-        controllers = get_all_controller_with_type(False, 'application') + get_all_controller_with_type()
+    if version != last_version or last_version is None:
+        controllers = get_all_controller_with_type(False, 'application') + get_all_controller_with_type(False, 'plugins')
         memcache.set(key='all.controller.version', value=version, time=86400)
         memcache.set(key='all.controller', value=controllers, time=86400)
     else:
@@ -221,8 +224,8 @@ def get_all_controller_with_type(use_cache=False, target_type='plugins'):
     
 def get_controller_with_type(target_name, target_type='plugins'):
     """
-    取得特定目錄下所有的 controller
-    """
+        取得特定目錄下所有的 controller
+        """
     directory = os.path.join(target_type, target_name, 'controllers')
     dir_path_list = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', target_type))
     controllers_list = []

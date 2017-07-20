@@ -4,6 +4,7 @@
 Classes that extend the basic ndb.Model classes
 """
 from google.appengine.ext import ndb
+from google.appengine.ext.ndb import KindError
 import types
 import time
 from argeweb.behaviors.searchable import Searchable
@@ -153,6 +154,7 @@ class Model(ndb.Model):
         :arg key: Is the key of the item that was retrieved.
         :arg item: Is the item itself.
         """
+        cls._kind_map[cls.__name__] = cls
         pass
 
     # Impl details
@@ -183,6 +185,7 @@ class Model(ndb.Model):
 
     @classmethod
     def _pre_get_hook(cls, key):
+        cls._kind_map[cls.__name__] = cls
         cls._invoke_behaviors('before_get', key)
         return cls.before_get(key)
 
@@ -206,7 +209,7 @@ class BasicModel(Model):
     """
     Adds the common properties created, created_by, modified, and modified_by to :class:`Model`
     """
-    from argeweb.core.property import DateProperty, DateTimeProperty, FloatProperty
+    from argeweb.core.property import DateProperty, DateTimeProperty, FloatProperty, HiddenProperty
     created = DateTimeProperty(auto_now_add=True)
     #created_by = ndb.UserProperty(auto_current_user_add=True)
     modified = DateTimeProperty(auto_now=True)

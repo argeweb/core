@@ -133,9 +133,7 @@ def canonical_parts_from_method(controller, method, pass_plugin_name=False):
             prefix = tprefix
             method_name = method_name.replace(prefix + '_', '')
 
-    plugins_name = ''
-    if str(controller).find('plugins.') > 0:
-        plugins_name = str(controller).split('.')[1]
+    plugins_name = str(controller).split('.')[1]
     if pass_plugin_name:
         return {
             'prefix': prefix,
