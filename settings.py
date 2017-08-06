@@ -14,7 +14,7 @@ from google.appengine.api import namespace_manager
 from google.appengine.api import memcache
 
 _defaults = {}
-
+_server_name = ''
 
 class ConfigurationError(Exception):
     pass
@@ -106,7 +106,7 @@ def save_to_datastore(setting_key, setting_value, use_memcache=True, prefix=u'')
     item.setting_value = setting_value
     item.put()
     if use_memcache:
-        memcache.set(key=memcache_key, value=setting_value, time=100)
+        memcache.set(key=memcache_key, value=setting_value, time=120)
 
 
 def get_from_datastore(setting_key, default=None, auto_save=True, use_memcache=True, prefix=u''):
@@ -126,14 +126,14 @@ def get_from_datastore(setting_key, default=None, auto_save=True, use_memcache=T
         item = WebSettingModel.get_by_key(key=setting_key)
     if use_memcache:
         if item is None:
-            memcache.add(key=memcache_key, value=default, time=100)
+            memcache.add(key=memcache_key, value=default, time=120)
             return default
         else:
-            memcache.add(key=memcache_key, value=item.setting_value, time=100)
+            memcache.add(key=memcache_key, value=item.setting_value, time=120)
     return item.setting_value
 
 
-def get_host_information(key, memcache_key, host=None, host_item=None, timeout=100):
+def get_host_information(key, memcache_key, host=None, host_item=None, timeout=120):
     if host_item is not None:
         return_string = getattr(host_item, key)
         memcache.set(key=memcache_key, value=return_string, time=timeout)
@@ -159,7 +159,6 @@ def set_theme(server_name, namespace, theme):
     host_item = HostInformationModel.get_by_host(server_name)
     host_item.theme = theme
     host_item.put()
-    update_host_information_in_memcache(server_name, host_item)
     namespace_manager.set_namespace(namespace)
 
 
@@ -176,9 +175,7 @@ def get_server_name():
 def get_host_information_item(server_name=None):
     if server_name is None:
         server_name = get_server_name()
-    namespace_manager.set_namespace('shared')
-    memcache_key = 'host.information.' + server_name
-    host_item = memcache.get(memcache_key)
+    host_item = get_memcache_in_shared('host.information.' + server_name)
     sn = []
     if host_item is None:
         for n in 'application_user,backend_ui_material,scaffold,themes,' \
@@ -190,28 +187,26 @@ def get_host_information_item(server_name=None):
             plugins=','.join(sn),
             is_lock=True
         )
-        host_item = update_host_information_in_memcache(server_name, host_item)
     host_item.plugin_enable_list = str(host_item.plugins).split(',')
     host_item.application_controller_list = []
-    return host_item, host_item.namespace, host_item.theme
+    return host_item, host_item.namespace, host_item.theme, server_name
 
 
-def update_host_information_in_memcache(server_name, host_item=None):
-    memcache_key = 'host.information.' + server_name
-    set_memcache_in_shared(host_item.namespace, memcache_key, host_item)
-    return host_item
-
-
-def get_memcache_in_shared(current_namespace, memcache_key):
+def get_memcache_in_shared(memcache_key, current_namespace=None):
+    if str(memcache_key).startswith('host.information'):
+        a=4
     namespace_manager.set_namespace('shared')
     item = memcache.get(memcache_key)
-    namespace_manager.set_namespace(current_namespace)
+    if current_namespace is not None:
+        namespace_manager.set_namespace(current_namespace)
     return item
 
 
-def set_memcache_in_shared(current_namespace, memcache_key, memcache_value):
+def set_memcache_in_shared(memcache_key, memcache_value, current_namespace):
     namespace_manager.set_namespace('shared')
-    memcache.set(key=memcache_key, value=memcache_value, time=3600)
+    memcache.set(key=memcache_key, value=memcache_value, time=120)
     namespace_manager.set_namespace(current_namespace)
 
 
+server_name = get_server_name()
+theme = get

@@ -56,7 +56,7 @@ def auto_route(app_router, debug=True, version=u''):
     for item in plugins:
         try:
             route_controllers(app_router, item)
-        except ImportError, e:
+        except ImportError as e:
             if debug:
                 logging.error('Plugin %s does not exist, or contains a bad import: %s' % (item, e))
                 raise

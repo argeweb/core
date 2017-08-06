@@ -91,10 +91,10 @@ class ViewDatastore(object):
             del kwargs['prefix']
         query_name = prefix + ':' + query_name
         if query_name and query_name in _datastore_commands:
-            common_object= _datastore_commands[query_name]
+            common_object = _datastore_commands[query_name]
             query = common_object(*args, **kwargs)
-            target_module = common_object.im_self
-            common_object.im_self._kind_map[target_module.__name__] = target_module
+            # target_module = common_object.im_self
+            # common_object.im_self._kind_map[target_module.__name__] = target_module
             try:
                 return_value = query.get()
             except:
@@ -282,12 +282,37 @@ class TemplateView(View):
     def render(self, *args, **kwargs):
         self.controller.events.before_render(controller=self.controller)
         self.context.update({'theme': self.theme})
+        self.controller.logging.debug(self.theme)
         result = template.render_template(self.get_template_names(), self.context, theme=self.theme)
         self.controller.response.content_type = 'text/html'
         self.controller.response.charset = 'utf-8'
         self.controller.response.unicode_body = result
         self.controller.events.after_render(controller=self.controller, result=result)
         return self.controller.response
+
+    def set_template_names_from_path(self, path):
+        if path.startswith('/') is False and path.endswith('.html') is False:
+            path = '/%s.html' % path
+        path_ds = 'assets:/themes/%s%s' % (self.theme, path)
+        config = self.controller.host_information
+        # config = self.meta.Model.get_or_create('zz_last_path_config')
+
+        # 樣版系統的快取
+        self.cache = config.view_cache
+        path_app = '/application/%s/templates%s' % (self.theme, path)
+        path_theme = '/themes/%s%s' % (self.theme, path)
+        if config.use_real_template_first:
+            # 先從 實體檔案 讀取樣版, 再從 Datastore 讀取樣版
+            if config.use_application_template_first:
+                self.template_name = [path_app, path_theme, path_ds]
+            else:
+                self.template_name = [path_theme, path_app, path_ds]
+        else:
+            # 先從 Datastore 讀取樣版, 再從 實體檔案 讀取樣版
+            if config.use_application_template_first:
+                self.template_name = [path_ds, path_app, path_theme]
+            else:
+                self.template_name = [path_ds, path_theme, path_app]
 
     def get_template_names(self):
         """

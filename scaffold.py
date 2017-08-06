@@ -31,7 +31,7 @@ class Scaffolding(object):
 
         if not hasattr(self.controller, 'Scaffold'):
             setattr(self.controller, 'Scaffold', Scaffold)
-        if self.controller.meta.Model:
+        if hasattr(self.controller.meta, 'Model'):
             self.controller.Meta.Model._kind_map[self.controller.meta.Model.__name__] = self.controller.meta.Model
 
         plugins_helper = self.controller.plugins.get_helper(self.controller)
