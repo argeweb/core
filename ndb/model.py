@@ -154,7 +154,6 @@ class Model(ndb.Model):
         :arg key: Is the key of the item that was retrieved.
         :arg item: Is the item itself.
         """
-        cls._kind_map[cls.__name__] = cls
         pass
 
     # Impl details
@@ -210,11 +209,13 @@ class BasicModel(Model):
     Adds the common properties created, created_by, modified, and modified_by to :class:`Model`
     """
     from argeweb.core.property import DateProperty, DateTimeProperty, FloatProperty, HiddenProperty
+    name = HiddenProperty(verbose_name=u'識別名稱')
     created = DateTimeProperty(auto_now_add=True)
     #created_by = ndb.UserProperty(auto_current_user_add=True)
     modified = DateTimeProperty(auto_now=True)
     #modified_by = ndb.UserProperty(auto_current_user=True)
     sort = FloatProperty(default=0.0)
+    kind_name = HiddenProperty(verbose_name=u'Kind Name')
 
     @staticmethod
     def _get_dict_md5_(content):
@@ -240,25 +241,49 @@ class BasicModel(Model):
         """
         if self.sort is None or self.sort == 0.0:
             self.sort = time.time()
-        if hasattr(self, 'name'):
-            if self.name == None or self.name == u'':
-                self.name = self._get_dict_md5_(str(self.__dict__))
+        if self.name == None or self.name == u'':
+            self.name = self._get_dict_md5_(str(self.__dict__))
         for i in self._properties:
             item = self._properties[i]
             if isinstance(item, SearchingHelperProperty):
                 item.process_before_put(self, i)
+        self.kind_name = self._get_kind_name()
         super(BasicModel, self).before_put()
 
     @classmethod
+    def _get_kind_name(cls):
+        return '%s.%s' % (cls.__module__, str(cls._class_name.im_self).split('<')[0])
+
+    @classmethod
+    def _fix_up_kind_map(cls):
+        cls._kind_map[cls.__name__] = cls
+
+    @classmethod
+    def _check_kind_name(cls, key, item):
+        if item and item.kind_name is not None and item.kind_name != cls._get_kind_name():
+            import logging
+            logging.error('kind name error %s' % item.kind_name)
+            TargetConfigModel = cls
+            try:
+                n = item.kind_name.split('.')
+                exec 'from %s import %s as TargetConfigModel' % ('.'.join(n[:-1]), n[-1])
+            except (ImportError, AttributeError):
+                pass
+            cls._fix_up_kind_map()
+
+    @classmethod
     def get_prev_one(cls, item):
+        cls._fix_up_kind_map()
         return cls.query(cls.sort > item.sort).order(cls.sort).get()
 
     @classmethod
     def get_next_one(cls, item):
+        cls._fix_up_kind_map()
         return cls.query(cls.sort < item.sort).order(-cls.sort).get()
 
     @classmethod
     def get_prev_one_with_category(cls, item, cat):
+        cls._fix_up_kind_map()
         c = ndb.Key(urlsafe=cat)
         if hasattr(cls, 'category'):
             return cls.query(cls.category == c, cls.sort > item.sort).order(cls.sort).get()
@@ -267,6 +292,7 @@ class BasicModel(Model):
 
     @classmethod
     def get_next_one_with_category(cls, item, cat):
+        cls._fix_up_kind_map()
         c = ndb.Key(urlsafe=cat)
         if hasattr(cls, 'category'):
             return cls.query(cls.category == c, cls.sort < item.sort).order(-cls.sort).get()
@@ -274,14 +300,16 @@ class BasicModel(Model):
             return None
 
     @classmethod
-    def all(cls):
+    def all(cls, *args, **kwargs):
         """
         Queries all posts in the system, regardless of user, ordered by date created descending.
         """
+        cls._fix_up_kind_map()
         return cls.query().order(-cls.sort)
 
     @classmethod
     def all_enable(cls, *args, **kwargs):
+        cls._fix_up_kind_map()
         if hasattr(cls, 'is_enable') is False:
             return None
         cat_key = None
@@ -313,6 +341,7 @@ class BasicModel(Model):
 
     @classmethod
     def find_by_name(cls, *args, **kwargs):
+        cls._fix_up_kind_map()
         name = None
         if len(args) > 0:
             name = str(args[0])
@@ -325,6 +354,7 @@ class BasicModel(Model):
 
     @classmethod
     def find_by_title(cls, title):
+        cls._fix_up_kind_map()
         if hasattr(cls, 'title'):
             return cls.query(cls.title == title).get()
         else:
@@ -332,6 +362,7 @@ class BasicModel(Model):
 
     @classmethod
     def find_or_create_by_name(cls, name):
+        cls._fix_up_kind_map()
         item = cls.find_by_name(name)
         if item is None:
             item = cls()
@@ -341,6 +372,7 @@ class BasicModel(Model):
 
     @classmethod
     def has_record(cls):
+        cls._fix_up_kind_map()
         r = cls.query().get()
         if r is not None:
             return True
@@ -349,6 +381,7 @@ class BasicModel(Model):
 
     @classmethod
     def get_default_display_in_form(cls):
+        cls._fix_up_kind_map()
         field_name = {
             'created': u'建立時間',
             'modified': u'修改時間',
@@ -364,6 +397,7 @@ class BasicModel(Model):
 
     @classmethod
     def get_tab_pages(cls):
+        cls._fix_up_kind_map()
         try:
             if hasattr(cls.Meta, 'tab_pages'):
                 return cls.Meta.tab_pages
@@ -373,6 +407,7 @@ class BasicModel(Model):
 
     @classmethod
     def get_tab_pages_fields(cls):
+        cls._fix_up_kind_map()
         tab_pages_list = {}
         max_tab_pages = 0
         tab_pages = cls.get_tab_pages()
