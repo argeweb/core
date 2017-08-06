@@ -5,9 +5,9 @@
 # Author: Qi-Liang Wen (温啓良）
 # Web: http://www.yooliang.com/
 # Date: 2016/10/10
-
 from argeweb.core.ndb import Model, BasicModel, ndb
 from argeweb.core import property as Fields
+from datetime import datetime, timedelta
 
 
 class HostInformationModel(BasicModel):
@@ -16,7 +16,16 @@ class HostInformationModel(BasicModel):
     site_name = Fields.StringProperty(verbose_name=u'網站名稱')
     plugins = Fields.TextProperty(verbose_name=u'模組')
     theme = Fields.StringProperty(verbose_name=u'主題樣式')
+    space_rental_level = Fields.StringProperty(verbose_name=u'伺服器等級', choices=(
+        'F1', 'F2', 'F4'
+    ), default='F1')
+    space_rental_price = Fields.StringProperty(verbose_name=u'空間費用', default=u'8000')
+    space_rental_date = Fields.DateProperty(verbose_name=u'空間租借日', default=datetime.today())
+    space_expiration_date = Fields.DateProperty(verbose_name=u'空間到期日', default=datetime.today() + timedelta(days=100))
     is_lock = Fields.BooleanProperty(default=True, verbose_name=u'是否鎖定')
+    use_real_template_first = Fields.BooleanProperty(verbose_name=u'優先使用實體樣版', default=True)
+    use_application_template_first = Fields.BooleanProperty(verbose_name=u'優先使用應用程式樣版', default=False)
+    view_cache = Fields.BooleanProperty(verbose_name=u'緩存虛擬樣版文件', default=True)
 
     @property
     def plugins_list(self):
@@ -56,6 +65,15 @@ class HostInformationModel(BasicModel):
                 sn.append(n)
         self.plugins = ','.join(sn)
 
+    def after_put(self, key):
+        from argeweb.core.settings import set_memcache_in_shared
+        set_memcache_in_shared('host.information.%s' % self.host, self, self.namespace)
+
+    @classmethod
+    def after_get(cls, key, item):
+        cls._check_kind_name(key, item)
+        from argeweb.core.settings import set_memcache_in_shared
+        set_memcache_in_shared('host.information.%s' % item.host, item, item.namespace)
 
 class WebSettingModel(BasicModel):
     setting_name = Fields.StringProperty(verbose_name=u'名稱')
@@ -75,3 +93,4 @@ class WebSettingModel(BasicModel):
             item.setting_value = default
             item.put()
         return item
+
