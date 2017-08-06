@@ -47,8 +47,19 @@ class Event(object):
         """
         #logging.debug('Event %s firing %s listeners' % (self.name, self.handlers))
         results = []
-        for p, handler in self.handlers:
-            results.append(handler(*args, **kargs))
+        controller = None
+        if 'controller' in kargs:
+            controller = kargs['controller']
+            enable_plugins_list = controller.host_information.plugins_list
+            for p, handler in self.handlers:
+                target_plugin_name = '.'.join(str(handler.func_globals['__name__']).split('.')[0:2])
+                if target_plugin_name in enable_plugins_list or (
+                            not target_plugin_name.startswith('application.') and
+                            not target_plugin_name.startswith('plugins.')):
+                    results.append(handler(*args, **kargs))
+        else:
+            for p, handler in self.handlers:
+                results.append(handler(*args, **kargs))
         return results
 
     def getHandlerCount(self):
