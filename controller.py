@@ -5,6 +5,7 @@ import weakref
 import webapp2
 import logging
 import base64
+
 from argeweb.core import plugins_information
 from google.appengine.api import namespace_manager
 from webapp2 import cached_property
@@ -28,7 +29,6 @@ from argeweb.core.json_util import parse as json_parse, stringify as json_string
 _temporary_route_storage = []
 _temporary_menu_storage = []
 _prefixes = ('admin', 'console', 'dashboard', 'taskqueue')
-
 
 def route_menu(*args, **kwargs):
     def inner(f):
@@ -69,11 +69,9 @@ def get_route_menu(list_name=u'', controller=None):
         return []
 
     for menu in _temporary_menu_storage:
-        if menu['list_name'] != list_name:
-            continue
-        if menu['controller'] in controller.prohibited_controllers:
-            continue
-        if controller.application_user.has_permission(str(menu['controller'] + '.' + menu['action'])) is False:
+        if menu['list_name'] != list_name or \
+            menu['controller'] in controller.prohibited_controllers or \
+            controller.application_user.has_permission(str(menu['controller'] + '.' + menu['action'])) is False:
             continue
         uri = menu['uri']
         try:
@@ -303,12 +301,8 @@ class Controller(webapp2.RequestHandler, Uri):
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
         self.settings = settings
-        if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
-            paths = '_'.join(os.path.dirname(os.path.abspath(__file__)).split('\\')[1:-1])
-            self.server_name = os.environ['SERVER_NAME'] + '@' + paths.lower()
-        else:
-            self.server_name = os.environ['SERVER_NAME']
-        self.host_information, self.namespace, self.theme = self.settings.get_host_information_item(self.server_name)
+        # self.server_name = self.settings.server_name
+        self.host_information, self.namespace, self.theme, self.server_name = self.settings.get_host_information_item()
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
         self.util = self.Util(weakref.proxy(self))
@@ -322,7 +316,12 @@ class Controller(webapp2.RequestHandler, Uri):
         self.logging = logging
         self.plugins = plugins_information
         self.session_store = sessions.get_store(request=self.request)
-        namespace_manager.set_namespace(self.namespace)
+        if self.namespace != u'default':
+            namespace_manager.set_namespace(self.namespace)
+
+    def fire(self, event_name, *args, **kwargs):
+        kwargs['controller'] = self
+        events.fire(event_name, *args, **kwargs)
 
     def _build_components(self):
         self.events.before_build_components(controller=self)
@@ -419,7 +418,7 @@ class Controller(webapp2.RequestHandler, Uri):
         if hasattr(self.Meta, 'default_view') and self.Meta.default_view is not None:
             if isinstance(self.Meta.default_view, basestring):
                 self.meta.change_view(self.Meta.default_view)
-        self.prohibited_controllers = plugins_information.get_prohibited_controllers(self.server_name, self.host_information.namespace)
+        self.prohibited_controllers = plugins_information.get_prohibited_controllers(self.host_information.plugins_list)
         name = '.'.join(str(self).split(' object')[0][1:].split('.')[0:-1])
         if name in self.prohibited_controllers and name.startswith('plugins.') and name.find('.controller.'):
             # 組件被停用
