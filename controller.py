@@ -6,7 +6,7 @@ import webapp2
 import logging
 import base64
 
-from argeweb.core import plugins_information
+from argeweb.core import controller_helper
 from google.appengine.api import namespace_manager
 from webapp2 import cached_property
 from webapp2_extras import sessions
@@ -17,115 +17,18 @@ from argeweb.core import routing
 from argeweb.core import scaffold, auth
 from argeweb.core import settings
 from argeweb.core import time_util
+from argeweb.core import params
 from argeweb.core.bunch import Bunch
-from argeweb.core.params import ParamInfo
 from argeweb.components.csrf import CSRF
 from argeweb.components.search import Search
 from argeweb.components.pagination import Pagination
 from argeweb.core.ndb import encode_key, decode_key
 from argeweb.core.json_util import parse as json_parse, stringify as json_stringify
-
+from argeweb.core.menu import get_route_menu
 
 _temporary_route_storage = []
 _temporary_menu_storage = []
 _prefixes = ('admin', 'console', 'dashboard', 'taskqueue')
-
-def route_menu(*args, **kwargs):
-    def inner(f):
-        if 'uri' not in kwargs:
-            plugin = ''
-            prefix = ''
-            f_model_path = f.__module__.split('.')
-            if f_model_path[0] == 'application' or f_model_path[0] == 'plugins':
-                plugin = f_model_path[1]
-            ctrl = f.__module__.split('.')[-1]
-            action = f.__name__
-            if 'prefix' in kwargs:
-                prefix = kwargs['prefix']
-            if 'action' in kwargs:
-                action = kwargs['action']
-            for possible_prefix in _prefixes:
-                if action.startswith(possible_prefix):
-                    prefix = possible_prefix
-                    break
-            if prefix != u'':
-                action = action.replace(prefix + '_', '')
-            kwargs['uri'] = '%s:%s' % (ctrl, action)
-            if plugin is not '':
-                kwargs['uri'] = '%s:%s' % (plugin, kwargs['uri'])
-            if prefix is not '':
-                kwargs['uri'] = '%s:%s' % (prefix, kwargs['uri'])
-            kwargs['plugin'] = plugin
-            kwargs['controller'] = str(f.__module__)
-            kwargs['action'] = action
-        _temporary_menu_storage.append(kwargs)
-        return f
-    return inner
-
-
-def get_route_menu(list_name=u'', controller=None):
-    menus = []
-    if _temporary_menu_storage is None:
-        return []
-
-    for menu in _temporary_menu_storage:
-        if menu['list_name'] != list_name or \
-            menu['controller'] in controller.prohibited_controllers or \
-            controller.application_user.has_permission(str(menu['controller'] + '.' + menu['action'])) is False:
-            continue
-        uri = menu['uri']
-        try:
-            url = controller.uri(uri)
-        except:
-            continue
-        if 'parameter' in menu:
-            url += '?' + menu['parameter']
-
-        if (u'%s' % menu['text']).startswith(u'gt:'):
-            text = u'gt'
-            group_title = (u'%s' % menu['text']).replace(u'gt:', '')
-        else:
-            text = menu['text']
-            group_title = u''
-        insert_item = {
-            'uri': uri,
-            'url': url,
-            'text': text,
-            'need_hr': menu['need_hr'] if 'need_hr' in menu else False,
-            'need_hr_parent': menu['need_hr_parent'] if 'need_hr_parent' in menu else False,
-            'group_title': group_title,
-            'icon': menu['icon'] if 'icon' in menu else 'list',
-            'sort': float(menu['sort']) if 'sort' in menu else 1.0,
-            'level': 1
-        }
-        if 'group' in menu:
-            sub_item = insert_item.copy()
-            sub_item['level'] = 2
-            insert_item['text'] = menu['group']
-            if list_name == u'backend':
-                insert_item['url'] = "#"
-            is_find = None
-            for j in menus:
-                if j['text'] == menu['group'] and j['level'] == 1:
-                    is_find = j
-            if is_find:
-                if 'submenu' in is_find:
-                    if sub_item['need_hr_parent']:
-                        is_find['need_hr_parent'] = True
-                    if is_find['sort'] > sub_item['sort']:
-                        is_find['sort'] = sub_item['sort']
-                    is_find['submenu'].append(sub_item)
-                    is_find['submenu'] = sorted(is_find['submenu'], key=lambda k: k['sort'])
-                else:
-                    is_find['submenu'] = [sub_item]
-            else:
-                insert_item['submenu'] = [sub_item]
-                menus.append(insert_item)
-        else:
-            menus.append(insert_item)
-
-    menus = sorted(menus, key=lambda k: k['sort'])
-    return menus
 
 
 def route(f):
@@ -256,7 +159,7 @@ class Controller(webapp2.RequestHandler, Uri):
             self._controller = controller
             self.view = None
             self.change_view(self.View)
-            
+
         def change_view(self, view, persist_context=True):
             """
             Swaps the view, and by default keeps context between the two views.
@@ -291,6 +194,8 @@ class Controller(webapp2.RequestHandler, Uri):
         encode_base64 = staticmethod(base64.urlsafe_b64encode)
         decode_base64 = staticmethod(base64.urlsafe_b64decode)
 
+        underscore = staticmethod(inflector.underscore)
+
         @classmethod
         def localize_time(cls, datetime=None, strftime='%Y/%m/%d %H:%M:%S'):
             return time_util.localize(datetime).strftime(strftime)
@@ -300,28 +205,31 @@ class Controller(webapp2.RequestHandler, Uri):
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
-        self.settings = settings
-        # self.server_name = self.settings.server_name
-        self.host_information, self.namespace, self.theme, self.server_name = self.settings.get_host_information_item()
         self.name = inflector.underscore(self.__class__.__name__)
+        self.settings = settings
+        self.host_information, self.namespace, self.theme, self.server_name = self.settings.get_host_information_item()
         self.proper_name = self.__class__.__name__
         self.util = self.Util(weakref.proxy(self))
+        self.logging = logging
+        self.plugins = controller_helper
+        self.params = params.ParamInfo(weakref.proxy(self))
+        self.session_store = sessions.get_store(request=self.request)
+
         self.route = None
         self.scaffold = None
         self.application_user = None
-        self.application_user_level = 0
         self.prohibited_actions = []
         self.prohibited_controllers = []
-        self.params = ParamInfo(self.request)
-        self.logging = logging
-        self.plugins = plugins_information
-        self.session_store = sessions.get_store(request=self.request)
-        if self.namespace != u'default':
-            namespace_manager.set_namespace(self.namespace)
+        namespace_manager.set_namespace(self.namespace)
 
     def fire(self, event_name, *args, **kwargs):
         kwargs['controller'] = self
-        events.fire(event_name, *args, **kwargs)
+        result_list = events.fire(event_name, *args, **kwargs)
+        if len(result_list) == 0:
+            return None
+        if len(result_list) == 1:
+            return result_list[0]
+        return result_list
 
     def _build_components(self):
         self.events.before_build_components(controller=self)
@@ -418,7 +326,7 @@ class Controller(webapp2.RequestHandler, Uri):
         if hasattr(self.Meta, 'default_view') and self.Meta.default_view is not None:
             if isinstance(self.Meta.default_view, basestring):
                 self.meta.change_view(self.Meta.default_view)
-        self.prohibited_controllers = plugins_information.get_prohibited_controllers(self.host_information.plugins_list)
+        self.prohibited_controllers = self.plugins.get_prohibited_controllers(self.host_information.plugins_list)
         name = '.'.join(str(self).split(' object')[0][1:].split('.')[0:-1])
         if name in self.prohibited_controllers and name.startswith('plugins.') and name.find('.controller.'):
             # 組件被停用
@@ -428,8 +336,7 @@ class Controller(webapp2.RequestHandler, Uri):
             # 權限不足
             self.logging.debug(u'%s in %s' % (self.name, self.prohibited_actions))
             return self.abort(404)
-        if self.name in self.plugins.get_installed_list():
-            pass
+
 
     def startup(self):
         pass
@@ -584,10 +491,13 @@ class Controller(webapp2.RequestHandler, Uri):
     def json(self, data, code=200):
         self.meta.change_view('json')
         self.context['data'] = data
-        if 'code' in data:
-            self.response.status = data['code']
-        else:
-            self.response.status = code
+        try:
+            if 'code' in data:
+                self.response.status = data['code']
+                return
+        except TypeError:
+            pass
+        self.response.status = code
 
     admin_list = scaffold.list
     admin_view = scaffold.view

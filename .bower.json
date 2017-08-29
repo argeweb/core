@@ -1,11 +1,11 @@
 {
   "name": "core",
   "homepage": "https://github.com/argeweb/core",
-  "_release": "2fa3670d27",
+  "_release": "e45980b645",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "2fa3670d27249d821e6d7d9f5bdda2cbd6d103b2"
+    "commit": "e45980b645cca5b9ad5dbae746819adb9eef41f7"
   },
   "_source": "https://github.com/argeweb/core.git",
   "_target": "*",

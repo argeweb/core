@@ -10,14 +10,14 @@ from datetime import datetime
 
 
 class ParamInfo(object):
-    def __init__(self, request):
+    def __init__(self, controller):
         """ easy way to get param from request
 
         Args:
             key: the key to get from request
             default_value: then value not exits return
         """
-        self.request = request
+        self.request = controller.request
 
     def has(self, key):
         return key in self.request.params
@@ -98,14 +98,18 @@ class ParamInfo(object):
             rv = u''
         return rv
 
-    def get_datetime(self, key='', default_vaule=None, format='%Y-%m-%d %H:%M:%S'):
+    def get_datetime(self, key='', default_value=None):
+        str_format = self.get_string(key+'-format', '%Y-%m-%dT%H:%M:%S')
         str_date = self.get_string(key, u'')
         if str_date is u'':
-            if default_vaule is None:
+            if default_value is None:
                 return datetime.today()
-            return default_vaule
+            return default_value
         else:
-            return datetime.strptime(str_date, format=format)
+            try:
+                return datetime.strptime(str_date, str_format)
+            except (TypeError, ValueError):
+                return datetime.strptime(str_date, '%Y-%m-%d')
 
     def get_header(self, key='', default_value=u''):
         """ get from request and try to parse to a str(unicode)

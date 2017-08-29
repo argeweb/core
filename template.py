@@ -14,12 +14,10 @@ import datetime
 import json
 import jinja2
 from jinja2.exceptions import TemplateNotFound
-import webapp2
 import types
 import collections
 import argeweb
 import events
-import plugins_information
 import time_util
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
@@ -32,10 +30,10 @@ class TemplateEngine(object):
             'loader': self._build_loader(extra_paths=extra_paths),
             'auto_reload': False,
             # 'cache_size':  0 if debug else 50,
-            'cache_size':  400,
+            'cache_size':  0,
             'variable_start_string': "{{ ",
-            'variable_end_string': " }}"
-
+            'variable_end_string': " }}",
+            'extensions': ['jinja2.ext.do']
         }
         events.fire('before_jinja2_environment_creation', engine=self, jinja2_env_kwargs=jinja2_env_kwargs)
         self.environment = jinja2.Environment(**jinja2_env_kwargs)
@@ -75,28 +73,24 @@ class TemplateEngine(object):
         class ChoiceLoader(jinja2.ChoiceLoader):
             def get_source(self, environment, template):
                 is_assets = template.startswith(u'assets:')
-                for loader in self.loaders:
-                    loader_name = str(loader)
-                    if is_assets and loader_name.find('FunctionLoader') < 0:
+                for loader_item in self.loaders:
+                    # loader_name = str(loader)
+                    # if is_assets and loader_name.find('FunctionLoader') < 0:
+                    #     continue
+                    # if is_assets is True and loader_name.find('FunctionLoader') > 0:
+                    #     continue
+                    is_function_loader = str(loader_item).find('FunctionLoader') > 0
+                    if is_assets and is_function_loader is False:
+                        continue
+                    if is_assets is False and is_function_loader:
                         continue
                     try:
-                        return loader.get_source(environment, template)
+                        return loader_item.get_source(environment, template)
                     except TemplateNotFound:
                         pass
                 raise TemplateNotFound(template)
 
         def assets_loader(template):
-            template = u''+template
-            if template.startswith(u'code:') is True:
-                return template.replace(u'code:', u'')
-            if template.startswith(u'ndb:') is True:
-                from argeweb.core.ndb import decode_key
-                template = str(template).replace(u'ndb:', u'')
-                item = decode_key(template)
-                if item is None:
-                    return None
-                if hasattr(item, 'source') is True:
-                    return item.source
             if template.startswith(u'assets:') is False:
                 return None
             template = template.replace(u'assets:', u'')
@@ -189,8 +183,6 @@ class TemplateEngine(object):
                 'is_current_user_admin': users.is_current_user_admin,
                 'users': users,
                 'settings': settings(),
-                'has_plugin': plugins_information.exists,
-                'plugins': plugins_information.get_installed_list,
                 'version': argeweb.version,
                 'app_version': os.environ['CURRENT_VERSION_ID'],
                 'hostname': app_identity.get_default_version_hostname(),
@@ -228,7 +220,7 @@ def render_template(name, context=None, theme=None):
     """
     if context is None:
         context = {}
-
+    # TODO preload assets file
     return _get_engine(theme=theme).render(name, context)
 
 

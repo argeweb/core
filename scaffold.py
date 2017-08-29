@@ -86,9 +86,9 @@ class Scaffolding(object):
         except AttributeError:
             scaffold_description = {}
         try:
-            scaffold_field_name = controller.scaffold.field_name
+            scaffold_field_verbose_names = controller.scaffold.field_verbose_names
         except AttributeError:
-            scaffold_field_name = {}
+            scaffold_field_verbose_names = {}
         scaffold_languages = []
         languages = {
             'zhtw': {'lang':'zhtw', 'title': u'繁體中文'},
@@ -106,7 +106,7 @@ class Scaffolding(object):
             'proper_name': controller.proper_name,
             'scaffold_title': scaffold_title,
             'scaffold_description': scaffold_description,
-            'scaffold_field_name': scaffold_field_name,
+            'scaffold_field_verbose_names': scaffold_field_verbose_names,
             'scaffold_language': scaffold_languages,
             'plural': controller.scaffold.plural,
             'singular': controller.scaffold.singular,
@@ -131,10 +131,11 @@ class Scaffold(object):
     Scaffold Meta Object Base Class
     """
     def __init__(self, controller):
-        display_in_form, redirect_url, get_tab_pages, get_tab_pages_fields = None, None, None, None
-        field_name, model_form_tabs, model_form_data = {}, [], None
+        field_names, redirect_url, get_tab_pages, get_tab_pages_fields = None, None, None, None
+        field_verbose_names, model_form_tabs, model_form_data = {}, [], None
+
         if hasattr(controller.meta, 'Model'):
-            field_name, display_in_form = controller.meta.Model.get_default_display_in_form()
+            field_verbose_names, field_names = controller.meta.Model.get_default_display_in_form()
             model_form_data = model_form(controller.meta.Model)
             get_tab_pages = controller.meta.Model.get_tab_pages
             get_tab_pages_fields = controller.meta.Model.get_tab_pages_fields
@@ -146,8 +147,8 @@ class Scaffold(object):
             plural=inflector.underscore(controller.name),
             singular=inflector.underscore(inflector.singularize(controller.name)),
             ModelForm=model_form_data,
-            display_in_form=display_in_form,
-            display_in_list=display_in_form,
+            display_in_form=field_names,
+            display_in_list=field_names,
             actions_in_list=(),
             hidden_in_form=(),
             excluded_in_form=(),
@@ -162,17 +163,29 @@ class Scaffold(object):
             layouts={
                 None: 'layouts/default.html',
             },
-            field_name=field_name,
+            field_verbose_names=field_verbose_names,
             navigation={},
         )
         try:
-            defaults['field_name'].update(controller.meta.Model.Meta.label_name)
+            defaults['field_verbose_names'].update(controller.meta.Model.Meta.label_name)
         except:
             pass
 
         for k, v in defaults.iteritems():
             if not hasattr(self, k):
                 setattr(self, k, v)
+
+    def change_field_visibility(self, field_name, field_value, show_in_list=False):
+        if field_value is False:
+            if field_name in self.display_in_list:
+                self.display_in_list.remove(field_name)
+            if field_name not in self.hidden_in_form:
+                self.hidden_in_form.append(field_name)
+        if field_value is True:
+            if field_name in self.hidden_in_form:
+                self.hidden_in_form.remove(field_name)
+            if show_in_list and field_name not in self.display_in_list:
+                self.display_in_list.append(field_name)
 
 
 # Default Factories

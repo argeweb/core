@@ -35,7 +35,10 @@ def encode_key(ins):
     """
     Gets the urlsafe of a key for either a db or ndb instance
     """
-    return new_key(ins).urlsafe()
+    try:
+        return new_key(ins).urlsafe()
+    except AttributeError:
+        return new_key(ins.key).urlsafe()
 
 
 def new_key(ins_or_key):

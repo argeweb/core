@@ -37,6 +37,8 @@ class ModelMeta(ndb.model.MetaModel):
 
             def bind_all(name):
                 def find_all(cls, value):
+                    if hasattr(cls, '_fix_up_kind_map'):
+                        cls._fix_up_kind_map()
                     args = {}
                     args[name] = value
                     return cls.find_all_by_properties(**args)
@@ -49,6 +51,8 @@ class ModelMeta(ndb.model.MetaModel):
 
             def bind_one(name):
                 def find_one(cls, value):
+                    if hasattr(cls, '_fix_up_kind_map'):
+                        cls._fix_up_kind_map()
                     args = {}
                     args[name] = value
                     return cls.find_by_properties(**args)
@@ -81,6 +85,7 @@ class Model(ndb.Model):
             User.query().filter(User.first_name == 'Jon', User.role == 'Admin')
 
         """
+        cls._fix_up_kind_map()
         query = cls.query()
         for name, value in kwargs.items():
             property = cls._properties[name]
@@ -97,9 +102,10 @@ class Model(ndb.Model):
             User.find_by_properties(first_name='Jon',role='Admin')
 
         """
+        cls._fix_up_kind_map()
         if len(args) > 0 and 'name' not in kwargs:
             kwargs['name'] = args[0]
-        return cls.find_all_by_properties(**kwargs).get()
+        return cls.find_all_by_properties(**kwargs)
 
     def before_put(self):
         """
@@ -159,6 +165,10 @@ class Model(ndb.Model):
     # Impl details
 
     @classmethod
+    def _fix_up_kind_map(cls):
+        cls._kind_map[cls.__name__] = cls
+
+    @classmethod
     def _invoke_behaviors(cls, method, *args, **kwargs):
         for b in cls.behaviors:
             getattr(b, method)(*args, **kwargs)
@@ -215,7 +225,6 @@ class BasicModel(Model):
     modified = DateTimeProperty(auto_now=True)
     #modified_by = ndb.UserProperty(auto_current_user=True)
     sort = FloatProperty(default=0.0)
-    kind_name = HiddenProperty(verbose_name=u'Kind Name')
 
     @staticmethod
     def _get_dict_md5_(content):
@@ -255,15 +264,8 @@ class BasicModel(Model):
         return '%s.%s' % (cls.__module__, str(cls._class_name.im_self).split('<')[0])
 
     @classmethod
-    def _fix_up_kind_map(cls):
-        cls._kind_map[cls.__name__] = cls
-
-    @classmethod
     def _check_kind_name(cls, key, item):
         if item and item.kind_name is not None and item.kind_name != cls._get_kind_name():
-            import logging
-            logging.error('kind name error %s' % item.kind_name)
-            TargetConfigModel = cls
             try:
                 n = item.kind_name.split('.')
                 exec 'from %s import %s as TargetConfigModel' % ('.'.join(n[:-1]), n[-1])
@@ -271,15 +273,29 @@ class BasicModel(Model):
                 pass
             cls._fix_up_kind_map()
 
-    @classmethod
-    def get_prev_one(cls, item):
-        cls._fix_up_kind_map()
-        return cls.query(cls.sort > item.sort).order(cls.sort).get()
+    def get_prev_one(self):
+        kind_name = str(self.key).split('\'')[1]
+        cls = self._kind_map[kind_name]
+        return cls.query(cls.sort > self.sort).order(cls.sort).get()
 
-    @classmethod
-    def get_next_one(cls, item):
-        cls._fix_up_kind_map()
-        return cls.query(cls.sort < item.sort).order(-cls.sort).get()
+    def get_next_one(self):
+        kind_name = str(self.key).split('\'')[1]
+        cls = self._kind_map[kind_name]
+        return cls.query(cls.sort < self.sort).order(-cls.sort).get()
+
+    def get_prev_one_with_enable(self):
+        kind_name = str(self.key).split('\'')[1]
+        cls = self._kind_map[kind_name]
+        if hasattr(cls, 'is_enable'):
+            return cls.query(cls.is_enable == True, cls.sort > self.sort).order(cls.sort).get()
+        return None
+
+    def get_next_one_with_enable(self):
+        kind_name = str(self.key).split('\'')[1]
+        cls = self._kind_map[kind_name]
+        if hasattr(cls, 'is_enable'):
+            return cls.query(cls.is_enable == True, cls.sort < self.sort).order(-cls.sort).get()
+        return None
 
     @classmethod
     def get_prev_one_with_category(cls, item, cat):
@@ -318,7 +334,7 @@ class BasicModel(Model):
             if isinstance(category, basestring):
                 try:
                     cat_kind = eval(cls.category._kind)
-                    cat = cat_kind.find_by_name(category)
+                    cat = cat_kind.get_by_name(category)
                     cat_key = cat.key
                 except:
                     return None
@@ -340,6 +356,12 @@ class BasicModel(Model):
         return cls.query(cls.is_enable == True).order(-cls.sort)
 
     @classmethod
+    def get_by_name(cls, *args, **kwargs):
+        find_item = cls.find_by_name(*args, **kwargs)
+        if find_item is not None:
+            return find_item.get()
+
+    @classmethod
     def find_by_name(cls, *args, **kwargs):
         cls._fix_up_kind_map()
         name = None
@@ -348,26 +370,39 @@ class BasicModel(Model):
         if 'name' in kwargs:
             name = str(kwargs['name'])
         if hasattr(cls, 'name') and name is not None:
-            return cls.query(cls.name == name).get()
+            return cls.query(cls.name == name)
         else:
             return None
 
     @classmethod
-    def find_by_title(cls, title):
+    def get_by_name_async(cls, *args, **kwargs):
         cls._fix_up_kind_map()
-        if hasattr(cls, 'title'):
-            return cls.query(cls.title == title).get()
+        name = None
+        if len(args) > 0:
+            name = str(args[0])
+        if 'name' in kwargs:
+            name = str(kwargs['name'])
+        if hasattr(cls, 'name') and name is not None:
+            return cls.query(cls.name == name).get_async()
         else:
             return None
 
     @classmethod
-    def find_or_create_by_name(cls, name):
+    def get_or_create_by_name(cls, name, *args, **kwargs):
         cls._fix_up_kind_map()
-        item = cls.find_by_name(name)
+        item = cls.get_by_name(name)
         if item is None:
-            item = cls()
-            item.name = name
-            item.put()
+            item = cls.create_record(name, *args, **kwargs)
+        return item
+
+    @classmethod
+    def create_record(cls, name, *args, **kwargs):
+        item = cls()
+        item.name = name
+        for filed_name in kwargs:
+            if hasattr(item, filed_name):
+                setattr(item, filed_name, kwargs[filed_name])
+        item.put()
         return item
 
     @classmethod
@@ -382,18 +417,20 @@ class BasicModel(Model):
     @classmethod
     def get_default_display_in_form(cls):
         cls._fix_up_kind_map()
-        field_name = {
+        field_verbose_names = {
             'created': u'建立時間',
             'modified': u'修改時間',
             'sort': u'排序值',
-            'is_enable': u'啟用'
+            'is_enable': u'啟用',
+            'kind_name': u'類別名稱'
         }
         display_in_form = []
         for name, model_property in cls._properties.items():
-            display_in_form.append(name)
-            if model_property._verbose_name is not None:
-                field_name[name] = model_property._verbose_name
-        return field_name, sorted(display_in_form)
+            if name not in ['sort', 'kind_name', 'created', 'modified']:
+                display_in_form.append(name)
+                if model_property._verbose_name is not None:
+                    field_verbose_names[name] = model_property._verbose_name
+        return field_verbose_names, sorted(display_in_form)
 
     @classmethod
     def get_tab_pages(cls):

@@ -33,35 +33,23 @@ def get_true_name_and_argspec(method):
     return get_true_name_and_argspec(method)
 
 
-def router():
-    from argeweb import app
-    return app.app.router
-
-
 def add(route, app_router=None):
     """
     Adds a webapp2.Route class to the router
     """
-    if not app_router:
-        app_router = router()
     app_router.add(route)
 
 
-def auto_route(app_router, debug=True, version=u''):
+def auto_route(app_router, version=u''):
     """
     Automatically routes all controllers in main app and plugins
     """
-    import plugins_information
-    plugins = sorted(plugins_information.get_all_controller(debug, version))
-    for item in plugins:
+    import controller_helper
+    for item in controller_helper.get_all_controller(version):
         try:
             route_controllers(app_router, item)
         except ImportError as e:
-            if debug:
-                logging.error('Plugin %s does not exist, or contains a bad import: %s' % (item, e))
-                raise
-            else:
-                pass
+            logging.error('Plugin %s does not exist, or contains a bad import: %s' % (item, e))
 
 
 def redirect(url, to, app_router=None):
@@ -76,7 +64,7 @@ def route_controllers(app_router, controller_path=None):
     Called in app.routes to automatically route all controllers in the app/controllers
     folder
     """
-    import plugins_information
+    import controller_helper
     sp = ('%s' % controller_path).split('.')
     type_name = sp[0]
     plugin_name = sp[1]
@@ -86,8 +74,8 @@ def route_controllers(app_router, controller_path=None):
         try:
             controller_cls = getattr(module, inflector.camelize(controller_name))
             controller_cls._build_routes(app_router)
-            plugins_information.register_template(plugin_name, type_name=type_name)
-            plugins_information.register_template(controller_name, type_name=type_name)
+            controller_helper.register_template(plugin_name, type_name=type_name)
+            controller_helper.register_template(controller_name, type_name=type_name)
         except AttributeError:
             logging.debug('Controller %s not found, skipping' % inflector.camelize(controller_name))
     except ImportError as e:

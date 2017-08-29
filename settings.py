@@ -14,7 +14,8 @@ from google.appengine.api import namespace_manager
 from google.appengine.api import memcache
 
 _defaults = {}
-_server_name = ''
+_host_information = {}
+
 
 class ConfigurationError(Exception):
     pass
@@ -30,27 +31,21 @@ def load_settings(app_settings=None, refresh=False):
         return
     if app_settings is None:
         try:
-            from application import settings as appsettings
-            reload(appsettings)
-            # try:
-            # except ImportError:
-            #     raise ConfigurationError("Settings not found. Please create /application/settings.py")
-            appdefaults = appsettings.settings
+            from application import settings as app_settings
+            reload(app_settings)
+            app_defaults = app_settings.settings
             logging.debug('Static settings loaded from application.settings.py')
         except:
             try:
-                from argeweb import base_settings as appsettings
-                reload(appsettings)
-                # try:
-                # except ImportError:
-                #     raise ConfigurationError("Settings not found. Please create /application/settings.py")
-                appdefaults = appsettings.settings
+                from argeweb import base_settings as app_settings
+                reload(app_settings)
+                app_defaults = app_settings.settings
                 logging.debug('Static settings loaded from argeweb.base_settings.py')
             except AttributeError:
                 raise ConfigurationError("No dictionary 'settings' found in settings.py")
     else:
-        appdefaults = app_settings
-    defaults(appdefaults)
+        app_defaults = app_settings
+    defaults(app_defaults)
 
 
 def defaults(dict=None):
@@ -70,11 +65,11 @@ def settings():
     """
     Returns the entire settings registry
     """
-    settings = {}
-    events.fire('before_settings', settings=settings)
-    settings.update(_defaults)
-    events.fire('after_settings', settings=settings)
-    return settings
+    _settings = {}
+    events.fire('before_settings', settings=_settings)
+    _settings.update(_defaults)
+    events.fire('after_settings', settings=_settings)
+    return _settings
 
 
 def print_setting(key):
@@ -173,12 +168,13 @@ def get_server_name():
 
 
 def get_host_information_item(server_name=None):
+    global _host_information
     if server_name is None:
         server_name = get_server_name()
     host_item = get_memcache_in_shared('host.information.' + server_name)
     sn = []
     if host_item is None:
-        for n in 'application_user,backend_ui_material,scaffold,themes,' \
+        for n in 'application_user,backend_ui_material,webdav,scaffold,themes,' \
                  'file,user_file,code,plugin_manager,zz_last_path'.split(','):
             sn.append('plugins.%s' % n)
         host_item = HostInformationModel.get_or_insert(
@@ -187,14 +183,12 @@ def get_host_information_item(server_name=None):
             plugins=','.join(sn),
             is_lock=True
         )
-    host_item.plugin_enable_list = str(host_item.plugins).split(',')
-    host_item.application_controller_list = []
+    namespace_manager.set_namespace(host_item.namespace)
+    set_memcache_in_shared('host.information.' + server_name, host_item, host_item.namespace)
     return host_item, host_item.namespace, host_item.theme, server_name
 
 
 def get_memcache_in_shared(memcache_key, current_namespace=None):
-    if str(memcache_key).startswith('host.information'):
-        a=4
     namespace_manager.set_namespace('shared')
     item = memcache.get(memcache_key)
     if current_namespace is not None:
@@ -208,5 +202,3 @@ def set_memcache_in_shared(memcache_key, memcache_value, current_namespace):
     namespace_manager.set_namespace(current_namespace)
 
 
-server_name = get_server_name()
-theme = get

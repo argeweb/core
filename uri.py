@@ -130,6 +130,8 @@ class Uri(object):
         if 'namespace' in kwargs:
             namespace_manager.set_namespace(kwargs['namespace'])
 
+        user = getattr(self, 'application_user')
+        util = getattr(self, 'util')
         returnVal = False
         try:
             if 'item' in kwargs:
@@ -137,7 +139,17 @@ class Uri(object):
             if item is None:
                 self.uri(route_name, *args, **kwargs)
             else:
-                self.uri(route_name, key=self.util.encode_key(item), *args, **kwargs)
+                self.uri(route_name, key=util.encode_key(item), *args, **kwargs)
+                key_name = str(item.key)
+                if hasattr(item, 'permission_level'):
+                    if item.permission_level > user.get_role_level():
+                        raise ValueError
+                if key_name.find('RoleModel') > 0:
+                    if item.level > user.get_role_level():
+                        raise ValueError
+                if key_name.find('ApplicationUserModel') > 0:
+                    if item.get_role_level() > user.get_role_level():
+                        raise ValueError
             returnVal = True
         except:
             pass
@@ -148,7 +160,14 @@ class Uri(object):
             uri_s = '.'.join(uri_sn[:-1])
         if 'action' in kwargs:
             uri_s = uri_s + '.' + kwargs['action']
-        if returnVal and self.application_user.has_permission(uri_s):
+            action = kwargs['action']
+        else:
+            action = uri_s.split('.')[-1]
+        if action is 'delete':
+            if item is not None and item.key == user.key:
+                returnVal = False
+
+        if returnVal and user.has_permission(uri_s):
             return True
         else:
             return False

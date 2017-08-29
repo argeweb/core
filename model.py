@@ -22,7 +22,7 @@ class HostInformationModel(BasicModel):
     space_rental_price = Fields.StringProperty(verbose_name=u'空間費用', default=u'8000')
     space_rental_date = Fields.DateProperty(verbose_name=u'空間租借日', default=datetime.today())
     space_expiration_date = Fields.DateProperty(verbose_name=u'空間到期日', default=datetime.today() + timedelta(days=100))
-    is_lock = Fields.BooleanProperty(default=True, verbose_name=u'是否鎖定')
+    is_lock = Fields.BooleanProperty(verbose_name=u'是否鎖定', default=True)
     use_real_template_first = Fields.BooleanProperty(verbose_name=u'優先使用實體樣版', default=True)
     use_application_template_first = Fields.BooleanProperty(verbose_name=u'優先使用應用程式樣版', default=False)
     view_cache = Fields.BooleanProperty(verbose_name=u'緩存虛擬樣版文件', default=True)
@@ -31,10 +31,16 @@ class HostInformationModel(BasicModel):
     def plugins_list(self):
         return str(self.plugins).split(',')
 
+    def has_plugin(self, plugin_name):
+        return plugin_name in self.plugins_list
+
     @classmethod
     def get_by_host(cls, host):
-        q = cls.query(cls.host == host).get_async()
-        return q.get_result()
+        return cls.query(cls.host == host).get()
+
+    @classmethod
+    def get_by_host_async(cls, host):
+        return cls.query(cls.host == host).get_async()
 
     @classmethod
     def get_by_namespace(cls, namespace):
@@ -71,9 +77,9 @@ class HostInformationModel(BasicModel):
 
     @classmethod
     def after_get(cls, key, item):
-        cls._check_kind_name(key, item)
         from argeweb.core.settings import set_memcache_in_shared
         set_memcache_in_shared('host.information.%s' % item.host, item, item.namespace)
+
 
 class WebSettingModel(BasicModel):
     setting_name = Fields.StringProperty(verbose_name=u'名稱')

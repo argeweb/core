@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import random
-import logging
-import time
 import template
 import json_util
 from protorpc import protojson
@@ -13,12 +11,164 @@ _views = {}
 _function_list = {}
 _datastore_commands = {}
 
+
 def factory(name):
     """
     Creates a view instance by name
     """
     global _views
     return _views.get(name.lower(), _views.get((name + 'View').lower()))
+
+
+class DataGetObject(object):
+    def __init__(self, data_or_query):
+        if hasattr(data_or_query, 'get_async'):
+            self._query = data_or_query.get_async()
+            self._data = None
+        else:
+            self._query = None
+            self._data = data_or_query
+
+    @property
+    def data(self):
+        if self._data is None and self._query:
+            self._data = self._query.get_result()
+        return self._data
+
+
+    def __getitem__(self, item):
+        return item
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __getattr__(self, attr):
+        return getattr(self.data, attr)
+
+    # def __iter__(self):
+    #     lst = self.data
+    #     if isinstance(lst, dict):
+    #         return iter(lst)
+    #     return []
+
+    def __len__(self):
+        if self.data is not None:
+            return 1
+        return 0
+
+
+class DataQueryObject(object):
+    def __init__(self, query, page, size, near, data_only=False):
+        self._data = None
+        self._query_paging = None
+        self._near_list = []
+
+        near_2 = near // 2
+        if page > 1:
+            self._prev_page = page - 1
+        if page > near_2:
+            self._start_page = page - near_2
+            self._end_page = page + near_2
+        else:
+            self._start_page = 1
+            self._end_page = near
+        self._all_pages = self._end_page - self._start_page + 1
+        self._all_pages = self._all_pages <= 0 and 1 or self._all_pages
+        self._size = size
+        self._current = page
+        if hasattr(query, 'fetch_async'):
+            self._query = query.fetch_async(size, offset=size*(page-1))
+        else:
+            self._query = query.fetch_async(size, offset=size * (page - 1))
+        self._query_object = query
+        self._data_paging = None
+        self._pager_not_ready = True
+        if data_only is False:
+            self.pager()
+
+    def __iter__(self):
+        lst = self.data
+        if isinstance(lst, list):
+            return iter(lst)
+        return []
+
+    def __len__(self):
+        lst = self.data
+        if isinstance(lst, list):
+            return len(lst)
+        return 0
+
+    @property
+    def current(self):
+        return self._current
+
+    @property
+    def list(self):
+        return self.data
+
+    @property
+    def data(self):
+        if self._data is None:
+            self._data = self._query.get_result()
+        if self._data is None:
+            self._data = []
+        return self._data
+
+    def get(self, index=0):
+        lst = self.data
+        if isinstance(lst, list):
+            if len(lst) == index:
+                return lst[index]
+        return None
+
+    def random(self, size):
+        lst = self.data
+        return_lst = []
+        if isinstance(lst, list):
+            if len(lst) >= size:
+                return_lst = random.sample(lst, size)
+            else:
+                return_lst = lst
+        return return_lst
+
+    def pager(self):
+        self._pager_not_ready = False
+        self._query_paging = self._query_object.fetch_async(
+            self._size * self._all_pages, offset=self._size * (self._start_page - 1), keys_only=True)
+
+    @property
+    def pager_data(self):
+        if self._data_paging is None:
+            if self._pager_not_ready:
+                self.pager()
+            self._data_paging = self._query_paging.get_result()
+        if self._data_paging is None:
+            self._data_paging = []
+        return self._data_paging
+
+    @property
+    def near_list(self):
+        self._near_list = []
+        result_len = len(self.pager_data)
+        for i in xrange(0, self._all_pages):
+            if result_len > i * self._size:
+                self._near_list.append(self._start_page + i)
+            else:
+                break
+        return self._near_list
+
+    @property
+    def next_page(self):
+        result_len = len(self.pager_data)
+        if result_len > self._size:
+            return self._current + 1
+        return None
+
+    @property
+    def prev_page(self):
+        if self._current > 1:
+            return self._current - 1
+        return None
 
 
 class ViewFunction(object):
@@ -35,7 +185,7 @@ class ViewFunction(object):
     def get_run(self):
         def run(common_name, *args, **kwargs):
             prefix = u'global'
-            if kwargs.has_key('prefix'):
+            if 'prefix' in kwargs:
                 prefix = kwargs['prefix']
             name = prefix + ':' + common_name
             kwargs['controller'] = self._controller
@@ -53,7 +203,7 @@ class ViewFunctionProxy:
     def run(self, *args, **kwargs):
         kwargs['controller'] = self._controller
         prefix = u'global'
-        if kwargs.has_key('prefix'):
+        if 'prefix' in kwargs:
             prefix = kwargs['prefix']
         name = prefix + ':' + self.name
         if name in _function_list:
@@ -93,13 +243,7 @@ class ViewDatastore(object):
         if query_name and query_name in _datastore_commands:
             common_object = _datastore_commands[query_name]
             query = common_object(*args, **kwargs)
-            # target_module = common_object.im_self
-            # common_object.im_self._kind_map[target_module.__name__] = target_module
-            try:
-                return_value = query.get()
-            except:
-                return_value = query
-            return return_value
+            return DataGetObject(query)
 
     def query(self, query_name, *args, **kwargs):
         prefix = u'global'
@@ -116,7 +260,7 @@ class ViewDatastore(object):
             del kwargs['data_only']
         query_name = prefix + ':' + query_name
         if query_name in _datastore_commands:
-            common_object= _datastore_commands[query_name]
+            common_object = _datastore_commands[query_name]
             query = common_object(*args, **kwargs)
             target_module = common_object.im_self
             common_object.im_self._kind_map[target_module.__name__] = target_module
@@ -127,68 +271,14 @@ class ViewDatastore(object):
                 kwargs['page'] = self._controller.params.get_integer('page', 1)
             if 'near' not in kwargs:
                 kwargs['near'] = self._controller.params.get_integer('near', 10)
-            if 'data_only' not in kwargs:
-                kwargs['data_only'] = data_only
-            return self.paging(query, kwargs['size'], kwargs['page'], kwargs['near'], kwargs['data_only'])
-        return []
+            return DataQueryObject(query=query, page=kwargs['page'], size=kwargs['size'],
+                                   near=kwargs['near'], data_only=data_only)
 
     def search(self, *args, **kwargs):
         for name in ['use_pager', 'data_only', 'prefix']:
             if name in kwargs:
                 del kwargs[name]
         return self._controller.components.search(*args, **kwargs)
-
-    def paging(self, query, size=None, page=None, near=None, data_only=None, **kwargs):
-        data = query.fetch_async(size, offset=size*(page-1))
-        if data_only is True:
-            c = data.get_result()
-            return c
-        near_2 = near // 2
-        pager = {
-            'prev': 0,
-            'next': 0,
-            'near_list': [],
-            'current': page,
-            'data': None
-        }
-        if page > 1:
-            pager['prev'] = page - 1
-        if page > near_2:
-            start = page - near_2
-            end = page + near_2
-        else:
-            start = 1
-            end = near
-        has_next = False
-        all_pages = end - start + 1
-        all_pages = all_pages <= 0 and 1 or all_pages
-        q = query.fetch_async(size * all_pages, offset=size*(start-1), keys_only=True)
-        q_result_len = len(q.get_result())
-        if q_result_len > size:
-            has_next = True
-        for i in xrange(0, all_pages):
-            if q_result_len > i * size:
-                pager['near_list'].append(start + i)
-            else:
-                break
-        pager['data'] = data.get_result()
-        if has_next:
-            pager['next'] = page + 1
-        return pager
-
-    def random(self, cls_name, common_name, size=3, *args, **kwargs):
-        import random
-        return_lst = []
-        cls_name = cls_name + ':' + common_name
-        if cls_name not in _datastore_commands:
-            return return_lst
-        query = _datastore_commands[cls_name](*args, **kwargs)
-        lst = query.fetch(size * 10)
-        if len(lst) >= size:
-            return_lst = random.sample(lst, size)
-        else:
-            return_lst = lst
-        return return_lst
 
 
 class ViewContext(dict):
@@ -234,7 +324,6 @@ class View(object):
 
 
 class TemplateView(View):
-
     def __init__(self, controller, context=None):
         super(TemplateView, self).__init__(controller, context)
         self.template_name = None
@@ -246,19 +335,21 @@ class TemplateView(View):
     def setup_template_variables(self):
         self.context.get_dotted('this', {}).update({
             'uri': self.controller.uri,
-            'uri_exists': self.controller.uri_exists_with_permission,
+            'uri_permission': self.controller.uri_exists_with_permission,
             'on_uri': self.controller.on_uri,
             'encode_key': self.controller.util.encode_key,
             'decode_key': self.controller.util.decode_key,
         })
+        view_datastore = ViewDatastore(self.controller)
 
         self.context.update({
+            'plugin_name': str(self.controller).startswith('<plugins') and str(self.controller).split('.')[1] or '',
             'controller_name': self.controller.name,
             'events': self.events,
             'uri': self.controller.uri,
             'uri_exists': self.controller.uri_exists,
             'uri_action_link': self.controller.uri_action_link,
-            'uri_exists_with_permission': self.controller.uri_exists_with_permission,
+            'uri_permission': self.controller.uri_exists_with_permission,
             'user': self.controller.application_user,
             'on_uri': self.controller.on_uri,
             'request': self.controller.request,
@@ -269,8 +360,12 @@ class TemplateView(View):
             'namespace': self.controller.namespace,
             'print_key': self.controller.util.encode_key,
             'print_setting': self.controller.settings.print_setting,
-            'datastore': ViewDatastore(self.controller),
-            'function': ViewFunction(self.controller).get_run()
+            'datastore': view_datastore,
+            'query': view_datastore.query,
+            'get': view_datastore.get,
+            'function': ViewFunction(self.controller).get_run(),
+            'has_plugin': self.controller.plugins.exists,
+            'plugins': self.controller.plugins.get_installed_list,
         })
         for key in _function_list.keys():
             if key.startswith("global"):
@@ -282,7 +377,6 @@ class TemplateView(View):
     def render(self, *args, **kwargs):
         self.controller.events.before_render(controller=self.controller)
         self.context.update({'theme': self.theme})
-        self.controller.logging.debug(self.theme)
         result = template.render_template(self.get_template_names(), self.context, theme=self.theme)
         self.controller.response.content_type = 'text/html'
         self.controller.response.charset = 'utf-8'
@@ -291,11 +385,11 @@ class TemplateView(View):
         return self.controller.response
 
     def set_template_names_from_path(self, path):
+        # 依照傳入的檔案路徑取得樣版名稱
         if path.startswith('/') is False and path.endswith('.html') is False:
             path = '/%s.html' % path
         path_ds = 'assets:/themes/%s%s' % (self.theme, path)
         config = self.controller.host_information
-        # config = self.meta.Model.get_or_create('zz_last_path_config')
 
         # 樣版系統的快取
         self.cache = config.view_cache
