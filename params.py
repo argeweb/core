@@ -5,6 +5,8 @@
 # Author: Qi-Liang Wen (温啓良）
 # Web: http://www.yooliang.com/
 # Date: 2016/1/28.
+import re
+
 from argeweb.core.ndb import decode_key
 from datetime import datetime
 
@@ -18,6 +20,13 @@ class ParamInfo(object):
             default_value: then value not exits return
         """
         self.request = controller.request
+
+    def string_is_empty(self, key=''):
+        key = key.strip()
+        if key is None or key is '' or key is u'':
+            return True
+        else:
+            return False
 
     def has(self, key):
         return key in self.request.params
@@ -111,6 +120,13 @@ class ParamInfo(object):
             except (TypeError, ValueError):
                 return datetime.strptime(str_date, '%Y-%m-%d')
 
+    def get_email(self, key='', default_value=None):
+        email = self.get_string(key).strip()
+        if len(email) > 7:
+            if re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email) is not None:
+                return email
+        return default_value
+
     def get_header(self, key='', default_value=u''):
         """ get from request and try to parse to a str(unicode)
 
@@ -157,27 +173,27 @@ class ParamInfo(object):
 
     def get_list(self, key='', exactly_equal=True, use_dict=False):
         """ get from request and try to parse to a list
-
         Args:
             key: the key to get from request
-            default_value: then value not exits return
+            exactly_equal: item must equal key
+            use_dict: if True return key value dict object
         """
-        list = []
+        return_list = []
         if key is not '':
             for item in self.request.POST.multi._items:
                 if exactly_equal:
                     if item[0] == key:
                         if use_dict:
-                            list.append({'key': str(item[0]), 'value': str(item[1])})
+                            return_list.append({'key': str(item[0]), 'value': str(item[1])})
                         else:
-                            list.append(item[1])
+                            return_list.append(item[1])
                 else:
                     if item[0].find(key) >= 0:
                         if use_dict:
-                            list.append({'key': str(item[0]), 'value': str(item[1])})
+                            return_list.append({'key': str(item[0]), 'value': str(item[1])})
                         else:
-                            list.append(item[1])
-        return list
+                            return_list.append(item[1])
+        return return_list
 
     def get_json(self, key=''):
         try:
@@ -232,13 +248,6 @@ class ParamInfo(object):
         if taiwan_format:
             rv = "+886" + rv[1:]
         return rv
-
-    def string_is_empty(self, key=''):
-        key = key.strip()
-        if key is None or key is '' or key is u'':
-            return True
-        else:
-            return False
 
     def get_base64(self, key='', default_value=None):
         """ get from request and try to parse to a str(unicode)

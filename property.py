@@ -20,11 +20,13 @@ from google.appengine.api.datastore_errors import BadValueError
 class StringProperty(ndb.StringProperty):
     _field_group_index = 0
     _tab_page_index = 0
-
-    @utils.positional(1 + Property._positional)
+    _choices_text = {}
+    @utils.positional(2 + Property._positional)
     def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
         self._field_group_index = field_group
         self._tab_page_index = tab_page
+        if 'choices_text' in kwargs:
+            self._choices_text = kwargs.pop('choices_text')
         super(StringProperty, self).__init__(*args, **kwargs)
 
 
@@ -61,10 +63,15 @@ class FloatProperty(ndb.FloatProperty):
 
         super(FloatProperty, self).__init__(*args, **kwargs)
 
+    def _db_get_value(self, v, unused_p):
+        if not v.has_doublevalue():
+            return None
+        return v.doublevalue()
 
 class DateTimeProperty(ndb.DateTimeProperty):
     _field_group_index = 0
     _tab_page_index = 0
+    _set_default = False
 
     @utils.positional(1 + Property._positional)
     def __init__(self, field_group=0, tab_page=0,*args, **kwargs):
@@ -152,6 +159,21 @@ class KeyProperty(ndb.KeyProperty):
 
 # ArgeWeb Extended Property
 
+class ApplicationUserProperty(KeyProperty):
+    """ 使用者欄位"""
+    __property_name__ = 'user'
+    _attributes = Property._attributes + ['_is_lock']
+    _is_lock = False
+
+    @utils.positional(2 + Property._positional)
+    def __init__(self, field_group=0, tab_page=0, *args, **kwargs):
+        from model import ApplicationUserModel
+        kwargs['kind'] = ApplicationUserModel
+        if 'is_lock' in kwargs:
+            self._is_lock = kwargs.pop('is_lock')
+        super(ApplicationUserProperty, self).__init__(*args, **kwargs)
+
+
 class RichTextProperty(TextProperty):
     """ 文字編輯器 專用欄位"""
     __property_name__ = 'richtext'
@@ -177,12 +199,12 @@ class CategoryProperty(KeyProperty):
         用於綁定於另一個 ndb.Key
         """
     __property_name__ = 'category'
-    _ajax = None
+    _dropdown = True
 
     @utils.positional(2 + Property._positional)
     def __init__(self, *args, **kwargs):
-        if 'ajax' in kwargs:
-            self._ajax = kwargs.pop('ajax')
+        if 'dropdown' in kwargs:
+            self._dropdown = kwargs.pop('dropdown')
 
         super(CategoryProperty, self).__init__(*args, **kwargs)
 
@@ -239,16 +261,58 @@ class SidePanelProperty(StringProperty):
             except:
                 url = controller.uri(self._uri, target='--no-record--')
         else:
-            url = controller.uri(self._uri, target=target)
+            try:
+                url = controller.uri(self._uri, target=target)
+            except:
+                url = controller.uri(self._uri, target='--no-record--')
         setattr(fallback, self._name, url)
 
 
-class ImageProperty(StringProperty):
+class ImageProperty(TextProperty):
+    """ 圖片上傳欄位"""
     __property_name__ = 'image'
 
 
 class ImagesProperty(TextProperty):
     __property_name__ = 'images'
+
+
+class HtmlProperty(StringProperty):
+    """ 顯示用 Html 欄位"""
+    __property_name__ = 'html'
+    _html = ''
+
+    @utils.positional(2 + Property._positional)
+    def __init__(self, html='', *args, **kwargs):
+        self._html = html
+        super(HtmlProperty, self).__init__(*args, **kwargs)
+
+
+class RangeProperty(FloatProperty):
+    """ 範圍選擇欄位"""
+    __property_name__ = 'range'
+    _max = None
+    _min = None
+    _step = None
+    _multiple = None
+
+    @utils.positional(1 + Property._positional)
+    def __init__(self, min=0, max=100, step='any', multiple=False, unit='', *args, **kwargs):
+        self._max = max
+        self._min = min
+        self._step = step
+        self._multiple = multiple
+        self._unit = unit
+        super(RangeProperty, self).__init__(*args, **kwargs)
+
+    def process_before_put(self, model, field_name):
+        try:
+            field_value = getattr(model, field_name)
+            if isinstance(field_value, int) or isinstance(field_value, basestring):
+                field_value = float(field_value)
+                setattr(model, field_name, field_value)
+        except BadValueError:
+            pass
 
 
 class HiddenProperty(StringProperty):
@@ -279,6 +343,15 @@ class SearchingHelperProperty(StringProperty):
                 if isinstance(field_value, int) or isinstance(field_value, float):
                     field_value = str(field_value)
                 setattr(model, field_name, field_value)
+                from model import DataWatcher
+                watcher = DataWatcher.find_by_properties(
+                    watcher=model.key, watcher_field=field_name,
+                    be_watcher=target_ndb.key, be_watcher_field=self._target_field_name).get()
+                if watcher is None:
+                    watcher = DataWatcher(
+                        watcher=model.key, watcher_field=field_name,
+                        be_watcher=target_ndb.key, be_watcher_field=self._target_field_name)
+                    watcher.put()
             except BadValueError:
                 pass
         else:

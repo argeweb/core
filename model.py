@@ -72,6 +72,7 @@ class HostInformationModel(BasicModel):
         self.plugins = ','.join(sn)
 
     def after_put(self, key):
+        super(HostInformationModel, self).after_put(key)
         from argeweb.core.settings import set_memcache_in_shared
         set_memcache_in_shared('host.information.%s' % self.host, self, self.namespace)
 
@@ -100,3 +101,32 @@ class WebSettingModel(BasicModel):
             item.put()
         return item
 
+
+class ApplicationUserModel(BasicModel):
+    name = Fields.StringProperty(required=True, verbose_name=u'名稱')
+    account = Fields.StringProperty(required=True, verbose_name=u'帳號')
+    password = Fields.StringProperty(required=True, verbose_name=u'密碼')
+    email = Fields.StringProperty(verbose_name=u'E-Mail', default=u'')
+    is_email_verified = Fields.BooleanProperty(verbose_name=u'信箱是否已驗証', default=False)
+    avatar = Fields.ImageProperty(verbose_name=u'頭像')
+    is_enable = Fields.BooleanProperty(verbose_name=u'啟用', default=True)
+    rest_password_token = Fields.StringProperty(verbose_name=u'重設密碼令牌', default=u'')
+    need_check_old_password = Fields.BooleanProperty(verbose_name=u'可設定新密碼', default=True)
+    role = Fields.HiddenProperty(verbose_name=u'角色', default=u'user')
+    provider = Fields.HiddenProperty(verbose_name=u'provider', default=u'user')
+    federated_id = Fields.HiddenProperty(verbose_name=u'federated id', default=u'user')
+
+
+class DataWatcher(BasicModel):
+    watcher = Fields.KeyProperty()
+    watcher_field = Fields.StringProperty()
+    be_watcher = Fields.KeyProperty()
+    be_watcher_field = Fields.StringProperty()
+    last_update = Fields.DateTimeProperty(auto_now_add=True)
+
+
+class DataUpdater(BasicModel):
+    updater = Fields.KeyProperty()
+    need_updater = Fields.BooleanProperty()
+    cursor = Fields.StringProperty()
+    last_update = Fields.DateTimeProperty(auto_now=True)

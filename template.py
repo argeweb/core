@@ -5,6 +5,7 @@ argeweb' templating engine.
 from google.appengine.api import users, app_identity
 from google.appengine.ext import db, ndb
 from routing import route_name_exists, current_route_name
+from jinja2.exceptions import TemplateNotFound
 from json_util import DatastoreEncoder
 from settings import settings
 import logging
@@ -13,12 +14,13 @@ import math
 import datetime
 import json
 import jinja2
-from jinja2.exceptions import TemplateNotFound
 import types
 import collections
 import argeweb
 import events
+import time
 import time_util
+import random
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
@@ -173,9 +175,12 @@ class TemplateEngine(object):
             'list': list,
             'str': str,
             'len': len,
+            'random': random,
             'getattr': getattr,
+            'setattr': setattr,
             'unicode': unicode,
             'datetime': datetime,
+            'time': time,
             'localize': time_util.localize,
             'framework': {
                 'route_name_exists': route_name_exists,

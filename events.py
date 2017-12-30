@@ -21,7 +21,9 @@ def fire(event_name, *args, **kwargs):
     """
     Calls all of the registered event handlers for a given event. Passes through all arguments
     """
-    return global_events[event_name](*args, **kwargs)
+    if event_name not in kwargs:
+        kwargs['event_name'] = event_name
+    return global_events[event_name].fire(*args, **kwargs)
 
 
 def on(event_name):

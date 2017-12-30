@@ -73,6 +73,11 @@ class Uri(object):
             tkwargs.update(kwargs)
         else:
             tkwargs = kwargs
+        if route_name.find('zz_full_path') > 0 and 'path' not in tkwargs:
+            path = self.context['path']
+            if path == '':
+                path = 'index'
+            tkwargs.update({'path': path})
 
         tkwargs = {key: value for key, value in tkwargs.items()
                    if value is not None}
@@ -111,6 +116,10 @@ class Uri(object):
         if value.startswith(':'):
             if value == ':key':
                 value = item.key.urlsafe()
+            else:
+                filed_name = value[1:]
+                if hasattr(item, filed_name):
+                    value = getattr(item, filed_name)
         return u'%s=%s' % (name, value)
 
     def uri_exists(self, route_name=None,

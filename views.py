@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import random
-import template
-import json_util
+from google.appengine.api.datastore_errors import NeedIndexError
 from protorpc import protojson
 from protorpc.message_types import VoidMessage
 from events import ViewEvents
+import json_util
+import template
+import random
 
 _views = {}
 _function_list = {}
@@ -25,25 +26,29 @@ class DataGetObject(object):
         if hasattr(data_or_query, 'get_async'):
             self._query = data_or_query.get_async()
             self._data = None
+            self._message = u'get data from query'
         else:
             self._query = None
             self._data = data_or_query
+            self._message = u'get data from object'
 
     @property
-    def data(self):
+    def data_result(self):
         if self._data is None and self._query:
-            self._data = self._query.get_result()
+            try:
+                self._data = self._query.get_result()
+            except NeedIndexError:
+                pass
         return self._data
 
-
-    def __getitem__(self, item):
-        return item
+    # def __getitem__(self, item):
+    #     return item
 
     def __getitem__(self, key):
-        return self.data[key]
+        return self.data_result[key]
 
     def __getattr__(self, attr):
-        return getattr(self.data, attr)
+        return getattr(self.data_result, attr)
 
     # def __iter__(self):
     #     lst = self.data
@@ -52,16 +57,79 @@ class DataGetObject(object):
     #     return []
 
     def __len__(self):
-        if self.data is not None:
+        if self.data_result is not None:
             return 1
         return 0
 
+    @property
+    def debug_error_message(self):
+        return self._message
 
+
+class DataSearchObject(object):
+    def __init__(self, search_data):
+        self._message = u''
+        self._search_data = search_data
+        self._data = search_data['search_results']
+
+    def __iter__(self):
+        lst = self.data_result
+        if isinstance(lst, list):
+            return iter(lst)
+        return []
+
+    def __len__(self):
+        lst = self.data_result
+        if isinstance(lst, list):
+            return len(lst)
+        return 0
+
+    @property
+    def data_result(self):
+        if self._data is None:
+            self._data = []
+        return self._data
+
+    @property
+    def debug_error_message(self):
+        return self._message
+
+    @property
+    def near_list(self):
+        return []
+
+    @property
+    def next_page(self):
+        if 'next_cursor' in self.paging:
+            return self.paging['next_cursor']
+        return None
+
+    @property
+    def prev_page(self):
+        if 'previous_cursor' in self.paging:
+            return self.paging['previous_cursor']
+        return None
+
+    @property
+    def paging(self):
+        return self._search_data['paging']
+
+    @property
+    def current(self):
+        return self.paging['page']
+
+    def __getattr__(self, attr):
+        if attr in self._search_data:
+            return self._search_data[attr]
+        return None
+
+    
 class DataQueryObject(object):
     def __init__(self, query, page, size, near, data_only=False):
         self._data = None
         self._query_paging = None
         self._near_list = []
+        self._message= u''
 
         near_2 = near // 2
         if page > 1:
@@ -77,26 +145,35 @@ class DataQueryObject(object):
         self._size = size
         self._current = page
         if hasattr(query, 'fetch_async'):
-            self._query = query.fetch_async(size, offset=size*(page-1))
-        else:
             self._query = query.fetch_async(size, offset=size * (page - 1))
+        else:
+            self._query = query
         self._query_object = query
+        self._query_object_count = 0
         self._data_paging = None
         self._pager_not_ready = True
         if data_only is False:
-            self.pager()
+            self.process_pager()
 
     def __iter__(self):
-        lst = self.data
+        lst = self.data_result
         if isinstance(lst, list):
             return iter(lst)
         return []
 
     def __len__(self):
-        lst = self.data
+        lst = self.data_result
         if isinstance(lst, list):
             return len(lst)
         return 0
+
+    def __add__(self, other):
+        if isinstance(other, DataQueryObject):
+            return self.data_result + other.data_result
+        elif isinstance(other, DataSearchObject):
+            return self.data_result + other.data_result
+        else:
+            return NotImplemented
 
     @property
     def current(self):
@@ -104,25 +181,33 @@ class DataQueryObject(object):
 
     @property
     def list(self):
-        return self.data
+        return self.data_result
 
     @property
-    def data(self):
+    def data_result(self):
         if self._data is None:
-            self._data = self._query.get_result()
+            try:
+                self._data = self._query.get_result()
+            except NeedIndexError as e:
+                self._message = e
         if self._data is None:
             self._data = []
         return self._data
 
     def get(self, index=0):
-        lst = self.data
+        lst = self.data_result
         if isinstance(lst, list):
             if len(lst) == index:
                 return lst[index]
         return None
 
+    def count(self):
+        if self._query_object_count == 0:
+            self._query_object_count = self._query_object.count()
+        return self._query_object_count
+
     def random(self, size):
-        lst = self.data
+        lst = self.data_result
         return_lst = []
         if isinstance(lst, list):
             if len(lst) >= size:
@@ -131,7 +216,7 @@ class DataQueryObject(object):
                 return_lst = lst
         return return_lst
 
-    def pager(self):
+    def process_pager(self):
         self._pager_not_ready = False
         self._query_paging = self._query_object.fetch_async(
             self._size * self._all_pages, offset=self._size * (self._start_page - 1), keys_only=True)
@@ -140,28 +225,41 @@ class DataQueryObject(object):
     def pager_data(self):
         if self._data_paging is None:
             if self._pager_not_ready:
-                self.pager()
-            self._data_paging = self._query_paging.get_result()
+                self.process_pager()
+            try:
+                self._data_paging = self._query_paging.get_result()
+            except NeedIndexError as e:
+                self._message = e
         if self._data_paging is None:
             self._data_paging = []
         return self._data_paging
 
     @property
+    def debug_error_message(self):
+        return self._message
+
+    @property
     def near_list(self):
         self._near_list = []
-        result_len = len(self.pager_data)
-        for i in xrange(0, self._all_pages):
-            if result_len > i * self._size:
+        for i in range(0, self._all_pages):
+            if self.pages >= self._start_page + i:
                 self._near_list.append(self._start_page + i)
             else:
                 break
         return self._near_list
 
     @property
+    def pages(self):
+        n = self.count() % self._size
+        return (self.count() // self._size) + (n > 0 and 1 or 0)
+
+    @property
     def next_page(self):
-        result_len = len(self.pager_data)
-        if result_len > self._size:
+        if self._current + 1 in self.near_list:
             return self._current + 1
+        # result_len = len(self.pager_data)
+        # if result_len > self._size:
+        #     return self._current + 1
         return None
 
     @property
@@ -259,26 +357,43 @@ class ViewDatastore(object):
             data_only = kwargs['data_only']
             del kwargs['data_only']
         query_name = prefix + ':' + query_name
+        size = 10
+        page = 1
+        near = 10
         if query_name in _datastore_commands:
             common_object = _datastore_commands[query_name]
+            if 'size' in kwargs:
+                size = int(kwargs['size'])
+                del kwargs['size']
+            if 'page' in kwargs:
+                page = int(kwargs['page'])
+                del kwargs['page']
+            if 'near' in kwargs:
+                near = int(kwargs['near'])
+                del kwargs['near']
+
             query = common_object(*args, **kwargs)
             target_module = common_object.im_self
             common_object.im_self._kind_map[target_module.__name__] = target_module
 
             if 'size' not in kwargs:
-                kwargs['size'] = self._controller.params.get_integer('size', 10)
+                kwargs['size'] = self._controller.params.get_integer('size', size)
             if 'page' not in kwargs:
-                kwargs['page'] = self._controller.params.get_integer('page', 1)
+                kwargs['page'] = self._controller.params.get_integer('page', page)
             if 'near' not in kwargs:
-                kwargs['near'] = self._controller.params.get_integer('near', 10)
+                kwargs['near'] = self._controller.params.get_integer('near', near)
             return DataQueryObject(query=query, page=kwargs['page'], size=kwargs['size'],
                                    near=kwargs['near'], data_only=data_only)
 
     def search(self, *args, **kwargs):
+        if 'size' in kwargs:
+            kwargs['limit'] = kwargs['size']
+            del kwargs['size']
         for name in ['use_pager', 'data_only', 'prefix']:
             if name in kwargs:
                 del kwargs[name]
-        return self._controller.components.search(*args, **kwargs)
+        search_data = self._controller.components.search(return_all=True, *args, **kwargs)
+        return DataSearchObject(search_data)
 
 
 class ViewContext(dict):
@@ -467,9 +582,9 @@ class TemplateView(View):
         templates_new = []
         for i in templates:
             lower = i.lower()
-            if not i in templates_new:
+            if i not in templates_new:
                 templates_new.append(i+random_string)
-            if not lower in templates_new:
+            if lower not in templates_new:
                 templates_new.append(lower+random_string)
         self.controller.events.template_names(controller=self.controller, templates=templates_new)
         return templates_new
@@ -515,8 +630,8 @@ class JsonView(View):
                 if data is not None:
                     try:
                         scaffold_data['method_data_key'] = self.controller.util.encode_key(data)
-                        scaffold_data['method_record_edit_url'] = self.controller.uri(action='edit',
-                                                                                 key=scaffold_data['method_data_key'])
+                        scaffold_data['method_record_edit_url'] = self.controller.uri(
+                            action='edit', key=scaffold_data['method_data_key'])
                     except:
                         pass
                     result_data['data'] = data

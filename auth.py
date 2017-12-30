@@ -6,6 +6,8 @@ def check_user(controller):
     """
         Check and Get user info
         """
+    if controller.application_user:
+        return True
     if 'application_user_key' not in controller.session:
         return True
     check_target = 'application_user_key'
@@ -24,6 +26,8 @@ def require_user(controller):
     """
         Requires that a user is logged in
         """
+    if controller.application_user:
+        return True
     if 'application_user_key' not in controller.session:
         return False, 'require_user'
     application_user = controller.session['application_user_key'].get()
@@ -50,6 +54,7 @@ def require_admin(controller):
     if admin_user is None:
         return False, 'require_admin'
     controller.application_user = admin_user
+    controller.application_admin_user = admin_user
     controller.context['application_user_key'] = admin_user.key
     action_name = '.'.join(str(controller).split(' object')[0][1:].split('.')[0:-1]) + '.' + controller.route.action
 

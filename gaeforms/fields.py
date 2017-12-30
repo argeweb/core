@@ -33,6 +33,30 @@ class FloatField(wtforms.FloatField):
 
 class DateTimeField(wtforms.DateTimeField):
     _field_group_index = 0
+    _set_default = False
+
+    def __init__(self, label=None, validators=None, format='%Y-%m-%d %H:%M:%S', **kwargs):
+        if 'auto_now_add' in kwargs:
+            kwargs.pop('auto_now_add')
+            self._set_default = True
+        if 'auto_now' in kwargs:
+            kwargs.pop('auto_now')
+            self._set_default = True
+
+        super(DateTimeField, self).__init__(label, validators, **kwargs)
+        self.format = format
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            date_str = ' '.join(valuelist)
+            try:
+                self.data = datetime.datetime.strptime(date_str, self.format)
+            except ValueError:
+                if date_str is u'' and self._set_default:
+                    self.date = datetime.datetime.now().strftime(self.format)
+                else:
+                    self.data = None
+                    raise ValueError(self.gettext('Not a valid datetime value'))
 
 
 class TextAreaField(wtforms.TextAreaField):
@@ -108,46 +132,20 @@ class StringField(wtforms.StringField):
           a = self.data
 
 
-class UserField(wtforms.Field):
-    """
-    A field that alls WTForms to produce a field that can be used
-    to edit a db.UserProperty or ndb.UserProperty. Displays as a text field with an
-    Email.
-    """
-    widget = wtforms.widgets.TextInput()
-    __temporary_data = None
-
-    def _value(self):
-        if self.data:
-            return self.data.email()
-        else:
-            return u''
-
-    def process_formdata(self, valuelist):
-        if valuelist and valuelist[0]:
-            self.data = User(valuelist[0])
-        else:
-            self.data = None
-
-    def pre_validate(self, form):
-        if self.data:
-            self.__temporary_data = self.data
-            self.data = self.data.email()
-
-    def post_validate(self, form, validation_stopped):
-        if self.__temporary_data:
-            self.data = self.__temporary_data
-
-
 class KeyPropertyField(wtforms.fields.SelectFieldBase):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
+    _kind = None
+    _query = None
+    _the_same = None
     widget = wtforms.widgets.TextInput()
 
     def __init__(self, label=None, validators=None, kind=None,
                  label_attr=None, get_label=None, allow_blank=False,
                  blank_text='', query=None, **kwargs):
+        if 'the_same' in kwargs:
+            kwargs.pop('the_same')
         super(KeyPropertyField, self).__init__(label, validators,
                                                      **kwargs)
         if label_attr is not None:
@@ -163,12 +161,16 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
         self.allow_blank = allow_blank
         self.blank_text = blank_text
         self._set_data(None)
-        if not query and kind is not None:
-            if isinstance(kind, basestring):
-                kind = ndb.Model._kind_map[kind]
-            self.query = kind.query()
-        else:
-            self.query = query
+        self._query = query
+        self._kind = kind
+
+    @property
+    def query(self):
+        if self._query is None and self._kind is not None:
+            if isinstance(self._kind, basestring):
+                kind = ndb.Model._kind_map[self._kind]
+            return kind.query()
+        return self._query
 
     def _value(self):
         if self.data:
@@ -179,7 +181,7 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
     def _get_data(self):
         if self._formdata is not None:
             if self.query:
-                for obj in self.query:
+                for obj in self.query.fetch(1000):
                     if obj.key.urlsafe() == self._formdata:
                         self._set_data(obj.key)
                         break
@@ -195,16 +197,20 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
 
     def iter_choices(self):
         if self.allow_blank or not self.query:
-            yield ('__None', self.blank_text, self.data is None)
+            yield ('__None', self.blank_text, self.data is None, None)
 
         if self.query:
-            for obj in self.query:
+            for obj in self.query.fetch(50):
                 key = obj.key.urlsafe()
                 label = self.get_label(obj)
-                yield (key, label, self.data and (self.data == obj.key))
+                yield (key, label, self.data and (self.data == obj.key),
+                getattr(obj, 'category', None)
+                )
         elif self.data:
-            key = self.data.key.urlsafe()
-            yield(key, self.get_label(key.get()), True)
+            key = self.data
+            item = key.get()
+            yield(key, self.get_label(item), True, getattr(item, 'category', None)
+)
 
     def process_formdata(self, valuelist):
         if valuelist:
@@ -223,11 +229,42 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
                 raise ValueError(self.gettext('Not a valid choice'))
 
 
-class CategoryAjaxField(KeyPropertyField):
+class ApplicationUserField(KeyPropertyField):
+    """
+    A field that alls WTForms to produce a field that can be used
+    to edit a db.UserProperty or ndb.UserProperty. Displays as a text field with an
+    Email.
+    """
+    widget = widgets.ApplicationUserWidget()
+    __temporary_data = None
+    _is_lock = None
+
+    def __init__(self, *args, **kwargs):
+        self._is_lock = kwargs.pop('is_lock')
+        super(ApplicationUserField, self).__init__(*args, **kwargs)
+
+    def pre_validate(self, form):
+        if self.data in ['__None', u'__None', '', u'']:
+            self.data = None
+        if self.data:
+            from ..ndb.util import decode_key
+            self.data = decode_key(self.data)
+    #
+    # def post_validate(self, form, validation_stopped):
+    #     if self.__temporary_data:
+    #         self.data = self.__temporary_data
+
+
+class CategoryDropdownField(KeyPropertyField):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
     """
-    widget = widgets.CategorySelectWidget()
+    widget = widgets.CategoryDropdownWidget()
+    _the_same = None
+
+    def __init__(self, *args, **kwargs):
+        self._the_same = kwargs.pop('the_same')
+        super(CategoryDropdownField, self).__init__(*args, **kwargs)
 
 
 class SidePanelField(wtforms.StringField):
@@ -419,10 +456,39 @@ class ImageField(TextField):
 
 
 class ImagesField(ImageField):
-    """
-    Identical to the non-ndb counterpart, but only supports ndb references.
-    """
     widget = widgets.ImagesSelectWidget()
+
+
+class HtmlField(wtforms.Field):
+    _html = 'any'
+    widget = widgets.HtmlWeight()
+
+    def __init__(self, *args, **kwargs):
+        if 'html' in kwargs:
+            self._html = kwargs.pop('html')
+        super(HtmlField, self).__init__(*args, **kwargs)
+
+
+class RangeField(wtforms.Field):
+    _max = 100
+    _min = 0
+    _step = 'any'
+    _unit = ''
+    _multiple = False
+    widget = widgets.RangeWeight()
+
+    def __init__(self, *args, **kwargs):
+        if 'max' in kwargs:
+            self._max = kwargs.pop('max')
+        if 'min' in kwargs:
+            self._min = kwargs.pop('min')
+        if 'step' in kwargs:
+            self._step = kwargs.pop('step')
+        if 'unit' in kwargs:
+            self._unit = kwargs.pop('unit')
+        if 'multiple' in kwargs:
+            self._multiple = kwargs.pop('multiple')
+        super(RangeField, self).__init__(*args, **kwargs)
 
 
 class RichTextField(wtforms.Field):

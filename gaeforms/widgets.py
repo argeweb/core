@@ -97,12 +97,12 @@ class FileSelectWidget(object):
         if len(ext) > 5:
             ext = '---'
         html = u"""
-        <div class="file_picker_div input-group">
+        <div class="file-picker-div input-group">
             <%s type="text" %s value="%s" />
             <div class="input-group-btn">
-                <div class="btn btn-outline file_picker_item" data-ext="%s">%s</div>
+                <div class="btn btn-outline file-picker-item" data-ext="%s">%s</div>
             </div>
-            <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-file"></i> 選取檔案</a>
+            <a href="#" class="btn brand-bg-color file-picker"><i class="fa fa-file"></i> 選取檔案</a>
         </div>
         """ % (self.html_tag, html_params(**kwargs), field_data, ext, ext)
         return HTMLString(html)
@@ -111,7 +111,7 @@ class FileSelectWidget(object):
 class ImageSelectWidget(object):
     html_params = staticmethod(html_params)
     '''
-    Widget for MultipleReferenceField. Displays options as checkboxes'''
+    Widget for ImageField. Displays image upload button'''
     def __init__(self, html_tag='input'):
         super(ImageSelectWidget, self).__init__()
         self.html_tag = html_tag
@@ -127,12 +127,12 @@ class ImageSelectWidget(object):
         else:
             field_data = ''
         html = u"""
-        <div class="file_picker_div input-group">
+        <div class="file-picker-div input-group">
             <%s type="text" %s value="%s" />
             <div class="input-group-btn">
-                <div class="btn btn-outline file_picker_item" style="background-image: url(%s);"></div>
+                <div class="btn btn-outline file-picker-item" style="background-image: url(%s);"></div>
             </div>
-            <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-photo"></i> 選取圖片</a>
+            <a href="#" class="btn brand-bg-color file-picker"><i class="fa fa-photo"></i> 選取圖片</a>
         </div>
         """ % (self.html_tag, html_params(**kwargs), field_data, field_data)
         return HTMLString(html)
@@ -153,7 +153,7 @@ class ImagesSelectWidget(object):
         if field.data == 'None' or field.data is None:
             field.data = ''
         list = field.data.split(';')
-        html = u'<div class="imgs_selector_div">' \
+        html = u'<div class="imgs-selector-div">' \
                u'<%s %s style="display:none" >%s</%s>' \
                u'<a data-target="%s" class="btn-images-open-dropbox">Dropbox</a>'\
                u'<a data-target="%s" class="btn-images-open-google-picker">Google相冊</a>'\
@@ -162,11 +162,132 @@ class ImagesSelectWidget(object):
                % (self.html_tag, html_params(**kwargs), field.data, self.html_tag, field.id, field.id, field.id,)
         for item in list:
             if item != u'':
-                html += u'<div class="file_picker_item" data-link="%s" style="background-image: url(%s);" />' % (item, item)
+                html += u'<div class="file-picker-item" data-link="%s" style="background-image: url(%s);" />' % (item, item)
         return HTMLString(html + '</div>')
 
 
+class HtmlWeight(object):
+    def __init__(self, html_tag='div'):
+        super(HtmlWeight, self).__init__()
+        self.html_tag = html_tag
+
+    def __call__(self, field, **kwargs):
+        html = u'<%s class="html-helper">%s</%s>' % (self.html_tag, field._html, self.html_tag)
+        return HTMLString(html)
+
+
+class ApplicationUserWidget(object):
+    html_params = staticmethod(html_params)
+
+    def __init__(self, html_tag='input'):
+        super(ApplicationUserWidget, self).__init__()
+        self.html_tag = html_tag
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('name', field.id)
+        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + ' image'
+        if field.data == 'None' or field.data is None:
+            field.data = ''
+        u = None
+        user_name = ''
+        user_image = ''
+        user_key_urlsafe = '__None'
+        if field.data:
+            field_data = field.data
+            u = field_data.get()
+        else:
+            field_data = '__None'
+        if u is not None:
+            user_name = u.name
+            user_image = u.avatar
+            user_key_urlsafe = u.key.urlsafe()
+        btn_text = u'選擇使用者'
+        is_lock = ''
+        if field._is_lock and u is not None:
+            btn_text = u'無法變更'
+            is_lock = 'lock'
+
+        html = u"""
+        <div class="user_picker_div input-group">
+            <%s type="text" class="form-control field-type-user-field" value="%s" />
+            <input type="hidden" %s value="%s" />
+            <div class="input-group-btn">
+                <div class="btn btn-outline user-picker-item" style="background-image: url(%s);"></div>
+            </div>
+            <a href="#" class="btn brand-bg-color user-picker %s"><i class="fa fa-photo"></i> %s</a>
+        </div>
+        """ % (self.html_tag, user_name, html_params(**kwargs), user_key_urlsafe, user_image, is_lock, btn_text)
+        return HTMLString(html)
+
+
+class RangeWeight(object):
+    html_params = staticmethod(html_params)
+
+    def __init__(self, html_tag='input'):
+        super(RangeWeight, self).__init__()
+        self.html_tag = html_tag
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('name', field.id)
+        kwargs.setdefault('min', field._min)
+        kwargs.setdefault('max', field._max)
+        kwargs.setdefault('step', field._step)
+        multiple = field._multiple and 'multiple' or ''
+        if field.data == 'None' or field.data is None:
+            field.data = field._min
+        if field.data:
+            field_data = field.data
+        else:
+            field_data = field._min
+        html = u"""
+        <%s type="range" %s %s value="%s" data-unit="%s"/><span>%s%s</span>
+        """ % (self.html_tag, html_params(**kwargs), multiple, field_data, field._unit, field_data, field._unit)
+        return HTMLString(html)
+
+
 class CategorySelectWidget(object):
+    html_params = staticmethod(html_params)
+
+    def __init__(self, html_tag='input'):
+        super(CategorySelectWidget, self).__init__()
+        self.html_tag = html_tag
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('name', field.id)
+        kwargs['class'] = kwargs.get('class', '').replace('span6', 'form-control') + ' image'
+        if field.data == 'None' or field.data is None:
+            field.data = ''
+        u = None
+        user_name = ''
+        user_image = ''
+        user_key_urlsafe = ''
+        if field.data:
+            field_data = field.data
+            u = field_data.get()
+        else:
+            field_data = ''
+        kind = ''
+        if field.query and field.query.kind:
+            kind = field.query.kind
+        if u is not None:
+            user_name = u.name
+            user_key_urlsafe = u.key.urlsafe()
+        btn_text = u'選擇分類'
+
+        html = u"""
+        <div class="user_picker_div input-group">
+            <%s type="text" class="form-control field-type-user-field" value="%s" />
+            <input type="hidden" %s value="%s" />
+            <a href="#" class="btn brand-bg-color category-picker" data-kind="%s"><i class="fa fa-photo"></i> %s</a>
+        </div>
+        """ % (self.html_tag, user_name, html_params(**kwargs), user_key_urlsafe, kind, btn_text)
+        return HTMLString(html)
+
+
+class CategoryDropdownWidget(object):
     """
     Renders a select field.
 
@@ -184,30 +305,74 @@ class CategorySelectWidget(object):
         kwargs.setdefault('id', field.id)
         if self.multiple:
             kwargs['multiple'] = True
-        html = ['<select %s>' % html_params(name=field.name, **kwargs)]
-        for val, label, selected in field.iter_choices():
-            return_item = self.render_option(val, label, selected)
-            if return_item:
-                html.append(return_item)
+        html = ['<select data="down" %s>' % html_params(name=field.name, **kwargs)]
+        iter_list = field.iter_choices()
+        items = []
+        for val, label, selected, category in iter_list:
+            str_cat = category and category.urlsafe() or '__None'
+            if field._the_same:
+                is_root = str_cat == '__None' and True or False
+            else:
+                is_root = True
+            items.append({
+                'val': val,
+                'label': label,
+                'selected': selected,
+                'category': str_cat,
+                'is_root': is_root,
+                'children': [],
+            })
+        root_list = []
+        for item in items:
+            if item['is_root']:
+                root_list.append(item)
+            for item2 in items:
+                if item2['category'] == item['val'] and item2['category'] != '__None':
+                    item['children'].append(item2)
+        for item in root_list:
+            html += self.process_child_item(item, 0)
+
         html.append('</select>')
         return HTMLString(''.join(html))
+
+    def process_child_item(self, item, parent_count):
+        html = []
+        return_item = self.render_option(
+            item['val'],
+            item['label'],
+            item['selected'],
+            count=parent_count
+        )
+        if return_item:
+            html.append(return_item)
+        for child_item in item['children']:
+            html += self.process_child_item(child_item, parent_count+1)
+        return html
 
     @classmethod
     def render_option(cls, value, label, selected, **kwargs):
         if value is True:
             # Handle the special case of a 'True' value.
             value = text_type(value)
-
+        count = 0
+        if 'count' in kwargs:
+            count = kwargs['count']
         options = dict(kwargs, value=value)
         if selected:
             options['selected'] = True
         if value == '__None':
-            return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label)))))
+            return HTMLString('<option %s>%s</option>' % (
+                html_params(**options),
+                escape(pure_text(text_type(label)))
+            ))
         else:
             if hasattr(label, 'level') and hasattr(label, 'name'):
                 if label.level == 9999 and label.name == u'super_user' and (selected is False or selected is None):
                     return None
-            return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(pure_text(text_type(label.title)))))
+            return HTMLString('<option %s>%s%s</option>' % (
+                html_params(**options),
+                str('----' * count),
+                escape(pure_text(text_type(label.title)))))
 
 
 class SidePanelWidget(object):
@@ -267,11 +432,11 @@ class HiddenWidget(object):
         else:
             field_data = ''
         html = u"""
-        <div class="file_picker_div input-group">
+        <div class="file-picker-div input-group">
             <%s type="text" %s value="%s" />
             <div class="input-group-btn">
-                <div class="btn btn-outline file_picker_item" style="background-image: url(%s);" /></div>
-                <a href="#" class="btn brand-bg-color filepicker"><i class="fa fa-photo"></i> 選取</a>
+                <div class="btn btn-outline file-picker-item" style="background-image: url(%s);" /></div>
+                <a href="#" class="btn brand-bg-color"><i class="fa fa-photo"></i> 選取</a>
             </div>
         </div>
         """ % (self.html_tag, html_params(**kwargs), field_data, field_data)

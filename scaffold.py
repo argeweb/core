@@ -17,7 +17,7 @@ class Scaffolding(object):
         self._init_flash()
 
     def _init_flash(self):
-        if not FlashMessages in self.controller.Meta.components:
+        if FlashMessages not in self.controller.Meta.components:
             self.controller.components['flash_messages'] = FlashMessages(self.controller)
 
     def _init_meta(self):
@@ -100,6 +100,16 @@ class Scaffolding(object):
                 scaffold_languages.append(languages[lang])
         except AttributeError:
             pass
+        if controller.application_user and controller.application_user.has_role('super_user'):
+            controller.scaffold.hidden_in_form = []
+            controller.scaffold.disabled_in_form = []
+
+        if controller.scaffold and hasattr(controller.scaffold, 'scaffold_type'):
+            if controller.scaffold.scaffold_type == 'view':
+                if 'created' not in controller.scaffold.display_in_form:
+                    controller.scaffold.display_in_form.append('created')
+                if 'modified' not in controller.scaffold.display_in_form:
+                    controller.scaffold.display_in_form.append('modified')
 
         controller.context['scaffolding'] = {
             'name': controller.name,
@@ -108,6 +118,7 @@ class Scaffolding(object):
             'scaffold_description': scaffold_description,
             'scaffold_field_verbose_names': scaffold_field_verbose_names,
             'scaffold_language': scaffold_languages,
+            'scaffold_type': 'view',
             'plural': controller.scaffold.plural,
             'singular': controller.scaffold.singular,
             'form_action': controller.scaffold.form_action,
@@ -149,10 +160,10 @@ class Scaffold(object):
             ModelForm=model_form_data,
             display_in_form=field_names,
             display_in_list=field_names,
-            actions_in_list=(),
-            hidden_in_form=(),
-            excluded_in_form=(),
-            disabled_in_form=(),
+            actions_in_list=[],
+            hidden_in_form=[],
+            excluded_in_form=[],
+            disabled_in_form=[],
             redirect=redirect_url,
             form_action=None,
             form_return_encoding='application/json',
@@ -272,24 +283,6 @@ def _check_view(controller, default=False):
             controller.context['data'] = controller.context[controller.scaffold.plural]
 
 
-def _get_last_record_date(controller, item=None):
-    plural = controller.scaffold.plural
-    if item is None:
-        if plural in controller.context and controller.context[plural] is not None:
-            try:
-                lst = controller.context[plural]
-                if lst.__class__.__name__ == 'list':
-                    item = lst[-1]
-                else:
-                    lst_record = lst.fetch()
-                    if len(lst_record) > 0:
-                        item = lst_record[-1]
-            except:
-                pass
-    if item and hasattr(item, 'modified'):
-        controller.context['last_record_date'] = item.modified
-
-
 def save_callback(controller, item, parser):
     parser.update(item)
     controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
@@ -337,12 +330,13 @@ def parser_action(controller, item, callback=save_callback):
     controller.context.set(**{
         'form': parser.container,
         controller.scaffold.singular: item})
-    _get_last_record_date(controller, item)
 
 
 # controller Methods
 def list(controller, use_json=False):
+    controller.before_scaffold()
     controller.scaffold.scaffold_type = 'list'
+    controller.scaffold.use_json = use_json
     plural = None
     if 'query' in controller.request.params:
         try:
@@ -355,24 +349,25 @@ def list(controller, use_json=False):
         except:
             pass
     controller.context.set(**{controller.scaffold.plural: plural})
-    _get_last_record_date(controller)
-    _check_view(controller, use_json)
+    controller.after_scaffold()
 
 
 def view(controller, key, use_json=False):
+    controller.before_scaffold()
     controller.scaffold.scaffold_type = 'view'
     item = controller.params.get_ndb_record(key)
     if not item:
         return 404
     controller.context.set(**{
         controller.scaffold.singular: item})
-    _get_last_record_date(controller)
     if 'change_view_to_edit_function' not in controller.context:
         controller.context['change_view_to_edit_function'] = 'goEditPage'
-    _check_view(controller, use_json)
+    controller.scaffold.use_json = use_json
+    controller.after_scaffold(item=item)
 
 
 def add(controller, use_json=False, **kwargs):
+    controller.before_scaffold()
     controller.scaffold.scaffold_type = 'add'
     item = controller.scaffold.create_factory(controller)
     controller.scaffold.redirect = False
@@ -380,29 +375,29 @@ def add(controller, use_json=False, **kwargs):
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
     parser_action(controller, item)
-    _get_last_record_date(controller, item)
-    _check_view(controller, use_json)
+    controller.scaffold.use_json = use_json
+    controller.after_scaffold(item=item)
 
 
 def edit(controller, key, use_json=False, **kwargs):
+    controller.before_scaffold()
     controller.scaffold.scaffold_type = 'edit'
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
-    controller.context['last_record_date'] = item.modified
     controller.scaffold.redirect = False
     for i in kwargs:
         if hasattr(item, i):
             setattr(item, i, kwargs[i])
-    _get_last_record_date(controller, item)
     if 'change_view_to_view_function' not in controller.context:
         controller.context['change_view_to_view_function'] = 'goViewPage'
     parser_action(controller, item)
-    _get_last_record_date(controller, item)
-    _check_view(controller, use_json)
+    controller.scaffold.use_json = use_json
+    controller.after_scaffold(item=item)
 
 
 def delete(controller, key, use_json=True):
+    controller.before_scaffold()
     controller.scaffold.scaffold_type = 'delete'
     controller.response.headers['Request-Method'] = 'DELETE'
     key = controller.util.decode_key(key)
@@ -411,7 +406,8 @@ def delete(controller, key, use_json=True):
     controller.events.scaffold_after_delete(controller=controller, key=key)
     _flash(controller, u'此項目已成功的刪除', 'success')
     controller.context['data'] = {'info': 'success'}
-    _check_view(controller, use_json)
+    controller.scaffold.use_json = use_json
+    controller.after_scaffold()
 
 
 def sort_up(controller, key):
@@ -489,3 +485,25 @@ def plugins_check(controller):
     controller.context['data'] = {
         'status': 'enable'
     }
+
+
+def before_scaffold(controller):
+    pass
+
+
+def after_scaffold(controller, item=None):
+    use_json = controller.scaffold.use_json
+    plural = controller.scaffold.plural
+    if item is None:
+        if plural in controller.context and controller.context[plural] is not None:
+            try:
+                lst = controller.context[plural]
+                if lst.__class__.__name__ == 'list':
+                    item = lst[-1]
+                else:
+                    item = lst.get()
+            except:
+                pass
+    if item and hasattr(item, 'modified'):
+        controller.context['last_record_date'] = item.modified
+    _check_view(controller, use_json)

@@ -6,6 +6,8 @@ import webapp2
 import logging
 import base64
 
+from jinja2 import TemplatesNotFound
+
 from argeweb.core import controller_helper
 from google.appengine.api import namespace_manager
 from webapp2 import cached_property
@@ -28,7 +30,7 @@ from argeweb.core.menu import get_route_menu
 
 _temporary_route_storage = []
 _temporary_menu_storage = []
-_prefixes = ('admin', 'console', 'dashboard', 'taskqueue')
+_prefixes = ('admin', 'cron', 'taskqueue')
 
 
 def route(f):
@@ -74,9 +76,36 @@ def add_authorizations(*args):
     chains set in Controller.Meta.
     """
     def inner(f):
-        setattr(f, 'authorizations', args)
+        if hasattr(f, 'authorizations'):
+            authorizations = getattr(f, 'authorizations')
+            setattr(f, 'authorizations', authorizations + args)
+        else:
+            setattr(f, 'authorizations', args)
         return f
     return inner
+
+
+def require_post_method(controller):
+    """
+    Only support post method
+    """
+    if controller.request.method != 'POST':
+        return controller.abort(404)
+    return True
+
+
+def require_post(f):
+    """
+    Shortcut decorator to easily add the method_post check to an action
+    """
+    return add_authorizations(require_post_method)(f)
+
+
+def require_user(f):
+    """
+    Shortcut decorator to easily add the method_post check to an action
+    """
+    return add_authorizations(auth.require_user)(f)
 
 
 class Controller(webapp2.RequestHandler, Uri):
@@ -147,7 +176,7 @@ class Controller(webapp2.RequestHandler, Uri):
         #: be rejected.
         #: You should **always** have ``auth.require_admin_for_prefix(prefix=('admin',))`` in your
         #: authorization chain.
-        authorizations = (auth.require_admin_for_prefix(prefix=('admin',)),)
+        authorizations = (auth.require_admin_for_prefix(prefix=('admin',)), auth.check_user)
         #: Which :class:`~argeweb.core.views.View` class to use by default. use :meth:`change_view` to switch views.
         default_view = None
         View = views.TemplateView
@@ -195,6 +224,7 @@ class Controller(webapp2.RequestHandler, Uri):
         decode_base64 = staticmethod(base64.urlsafe_b64decode)
 
         underscore = staticmethod(inflector.underscore)
+        count_minute = staticmethod(time_util.count_minute)
 
         @classmethod
         def localize_time(cls, datetime=None, strftime='%Y/%m/%d %H:%M:%S'):
@@ -328,15 +358,18 @@ class Controller(webapp2.RequestHandler, Uri):
                 self.meta.change_view(self.Meta.default_view)
         self.prohibited_controllers = self.plugins.get_prohibited_controllers(self.host_information.plugins_list)
         name = '.'.join(str(self).split(' object')[0][1:].split('.')[0:-1])
-        if name in self.prohibited_controllers and name.startswith('plugins.') and name.find('.controller.'):
-            # 組件被停用
-            self.logging.debug(u'%s is disable' % self.name)
-            return self.abort(404)
-        if name in self.prohibited_actions:
-            # 權限不足
-            self.logging.debug(u'%s in %s' % (self.name, self.prohibited_actions))
-            return self.abort(404)
-
+        user_agent = ''
+        if 'User-Agent' in self.request.headers:
+            user_agent = self.request.headers['User-Agent']
+        if 'HTTP_X_APPENGINE_TASKETA' not in self.request.headers.environ and user_agent.find('CloudPubSub-Google') < 0:
+            if name in self.prohibited_controllers and name.startswith('plugins.') and name.find('.controller.'):
+                # 組件被停用
+                self.logging.debug(u'%s is disable' % self.name)
+                return self.abort(404)
+            if name in self.prohibited_actions:
+                # 權限不足
+                self.logging.debug(u'%s in %s' % (self.name, self.prohibited_actions))
+                return self.abort(404)
 
     def startup(self):
         pass
@@ -377,6 +410,17 @@ class Controller(webapp2.RequestHandler, Uri):
         self.events.after_authorization(controller=self, result=auth_result)
 
         return auth_result
+
+    def redirect_uri(self, uri_name, params):
+        import urllib
+        params_string = u''
+        for k, v in params.items():
+            params_string += u'&%s=%s'% (k, urllib.quote(v.encode('utf8')))
+        try:
+            url = u"%s?%s" % (self.uri(uri_name), params_string)
+        except:
+            url = u"%s?%s" % (uri_name, params_string)
+        return self.redirect(url)
 
     def error_and_abort(self, code, *args, **kwargs):
         self.error(code)
@@ -419,6 +463,10 @@ class Controller(webapp2.RequestHandler, Uri):
 
         # Return value handlers.
         # Response has highest precendence, the view class has lowest
+        if 'application/json' in self.request.headers.get('Accept', []) \
+                or self.request.headers.get('Content-Type') == 'application/json':
+            self.meta.change_view('json')
+
         response_handler = response_handlers.factory(type(result))
         if response_handler:
             self.response = response_handler(self, result)
@@ -426,8 +474,10 @@ class Controller(webapp2.RequestHandler, Uri):
         # View rendering works similar to the string mode above.
         elif self.meta.view.auto_render:
             self._clear_redirect()
-            self.response = self.meta.view.render()
-
+            try:
+                self.response = self.meta.view.render()
+            except TemplatesNotFound as e:
+                self.abort(404, str(e))
         else:
             self.abort(500, 'Nothing was able to handle the response %s (%s)' % (result, type(result)))
         self.events.dispatch_complete(controller=self)
@@ -447,7 +497,9 @@ class Controller(webapp2.RequestHandler, Uri):
         return self.session_store.get_session(backend='datastore')
 
     def get_session(self, key):
-        return self.session[key]
+        if key in self.session:
+            return self.session[key]
+        return None
 
     def set_session(self, key, value):
         self.session[key] = value
@@ -499,6 +551,33 @@ class Controller(webapp2.RequestHandler, Uri):
             pass
         self.response.status = code
 
+    def json_success_message(self, message, code=200):
+        self.meta.change_view('json')
+        self.success_message(message)
+        self.response.status = code
+
+    def json_failure_message(self, message, code=200):
+        self.meta.change_view('json')
+        self.failure_message(message)
+        self.response.status = code
+
+    def success_message(self, message):
+        self.context['message'] = message
+        self.context['data'] = {'result': 'success'}
+        self.response.data = {'result': 'success', 'message': message}
+
+    def failure_message(self, message):
+        self.context['message'] = message
+        self.context['data'] = {'result': 'failure'}
+        self.response.data = {'result': 'failure', 'message': message}
+
+    def abort(self, code, detail=None, *args, **kwargs):
+        if detail is not None:
+            self.failure_message(detail)
+        if 'json' in kwargs:
+            self.response.data = kwargs['json']
+        super(Controller, self).abort(code, *args, **kwargs)
+
     admin_list = scaffold.list
     admin_view = scaffold.view
     admin_add = scaffold.add
@@ -508,3 +587,5 @@ class Controller(webapp2.RequestHandler, Uri):
     admin_sort_down = scaffold.sort_down
     admin_set_boolean_field = scaffold.set_boolean_field
     admin_plugins_check = scaffold.plugins_check
+    before_scaffold = scaffold.before_scaffold
+    after_scaffold = scaffold.after_scaffold

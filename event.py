@@ -56,10 +56,14 @@ class Event(object):
                 if target_plugin_name in enable_plugins_list or (
                             not target_plugin_name.startswith('application.') and
                             not target_plugin_name.startswith('plugins.')):
-                    results.append(handler(*args, **kargs))
+                    n = handler(*args, **kargs)
+                    if n is not None:
+                        results.append(n)
         else:
             for p, handler in self.handlers:
-                results.append(handler(*args, **kargs))
+                n = handler(*args, **kargs)
+                if n is not None:
+                    results.append(n)
         return results
 
     def getHandlerCount(self):

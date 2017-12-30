@@ -10,6 +10,7 @@ import time
 from argeweb.behaviors.searchable import Searchable
 from ..property import SearchingHelperProperty, KeyProperty, CategoryProperty
 
+
 class ModelMeta(ndb.model.MetaModel):
     """
     Augments Models by adding the class methods find_all_by_x
@@ -220,23 +221,11 @@ class BasicModel(Model):
     """
     from argeweb.core.property import DateProperty, DateTimeProperty, FloatProperty, HiddenProperty
     name = HiddenProperty(verbose_name=u'識別名稱')
-    created = DateTimeProperty(auto_now_add=True)
-    #created_by = ndb.UserProperty(auto_current_user_add=True)
-    modified = DateTimeProperty(auto_now=True)
-    #modified_by = ndb.UserProperty(auto_current_user=True)
-    sort = FloatProperty(default=0.0)
-
-    @staticmethod
-    def _get_dict_md5_(content):
-        import hashlib
-        import random
-        try:
-            m2 = hashlib.md5()
-            m2.update(content)
-            random.seed(m2.hexdigest())
-        except:
-            pass
-        return str(int(time.time()*100) + random.randint(1, 799999999999))
+    created = DateTimeProperty(verbose_name=u'建立時間', auto_now_add=True)
+    created_time = FloatProperty(verbose_name=u'建立時間sp', default=0.0)
+    modified = DateTimeProperty(verbose_name=u'修改時間', auto_now=True)
+    modified_time = FloatProperty(verbose_name=u'修改時間sp', default=0.0)
+    sort = FloatProperty(verbose_name=u'排序值', default=0.0)
 
     def delete(self):
         self.key.delete()
@@ -250,14 +239,34 @@ class BasicModel(Model):
         """
         if self.sort is None or self.sort == 0.0:
             self.sort = time.time()
-        if self.name == None or self.name == u'':
-            self.name = self._get_dict_md5_(str(self.__dict__))
+        if self.created_time is None or self.created_time == 0.0:
+            self.created_time = self.sort
+        self.modified_time = time.time()
+        if self.name is None or self.name == u'':
+            from ..random_util import gen_dict_md5
+            self.name = gen_dict_md5(str(self.__dict__))
         for i in self._properties:
             item = self._properties[i]
-            if isinstance(item, SearchingHelperProperty):
+            if hasattr(item, 'process_before_put'):
                 item.process_before_put(self, i)
         self.kind_name = self._get_kind_name()
         super(BasicModel, self).before_put()
+
+    def after_put(self, key):
+        pass
+        # 資料變更監看功能 (為了維持 key 及其相關的資料，如 分類與其下的產品)
+        # if not hasattr(self.Meta, 'stop_data_watcher') and not hasattr(self, '__stop_update__') and self.__module__ not in [
+        #     'argeweb.core.model',
+        #     'plugins.code.models.code_model',
+        #     'plugins.file.models.file_model',
+        # ]:
+        #     from ..model import DataUpdater
+        #     updater = DataUpdater.find_by_properties(updater=self.key).get()
+        #     if updater is None:
+        #         updater = DataUpdater(updater=self.key)
+        #     updater.need_updater = True
+        #     updater.cursor = None
+        #     updater.put()
 
     @classmethod
     def _get_kind_name(cls):
@@ -265,6 +274,7 @@ class BasicModel(Model):
 
     @classmethod
     def _check_kind_name(cls, key, item):
+        # TODO 刪除?
         if item and item.kind_name is not None and item.kind_name != cls._get_kind_name():
             try:
                 n = item.kind_name.split('.')
@@ -418,18 +428,15 @@ class BasicModel(Model):
     def get_default_display_in_form(cls):
         cls._fix_up_kind_map()
         field_verbose_names = {
-            'created': u'建立時間',
-            'modified': u'修改時間',
-            'sort': u'排序值',
             'is_enable': u'啟用',
-            'kind_name': u'類別名稱'
+            'kind_name': u'類別名稱',
         }
         display_in_form = []
         for name, model_property in cls._properties.items():
-            if name not in ['sort', 'kind_name', 'created', 'modified']:
+            if name not in ['sort', 'kind_name', 'created', 'modified', 'created_time', 'modified_time']:
                 display_in_form.append(name)
-                if model_property._verbose_name is not None:
-                    field_verbose_names[name] = model_property._verbose_name
+            if model_property._verbose_name is not None:
+                field_verbose_names[name] = model_property._verbose_name
         return field_verbose_names, sorted(display_in_form)
 
     @classmethod
@@ -472,3 +479,9 @@ class BasicModel(Model):
         for item in tab_pages_list:
             tab_pages_list_real[int(item)] = tab_pages_list[item]
         return tab_pages_list_real
+
+
+class BasicConfigModel(BasicModel):
+    @classmethod
+    def get_config(cls):
+        return cls.get_or_create_by_name(str(cls.__module__).split('.')[1]+'_config')

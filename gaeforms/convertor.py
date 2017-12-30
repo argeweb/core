@@ -45,15 +45,19 @@ class Convert(object):
 
     def convert_FloatProperty(self, model, prop, kwargs):
         """Returns a form field for a ``ndb.FloatProperty``."""
-        if prop._code_name == 'sort':
+        if prop._code_name in ['sort', 'created_time', 'modified_time']:
             return None
         return fields.FloatField(**kwargs)
 
     def convert_DateTimeProperty(self, model, prop, kwargs):
         """Returns a form field for a ``ndb.DateTimeProperty``."""
-        if prop._auto_now or prop._auto_now_add:
+        if prop._code_name in ['created', 'modified']:
             return None
+        # if prop._auto_now or prop._auto_now_add:
+        #     return None
 
+        kwargs.setdefault('auto_now', prop._auto_now)
+        kwargs.setdefault('auto_now_add', prop._auto_now_add)
         kwargs.setdefault('format', '%Y-%m-%d %H:%M:%S')
         return fields.DateTimeField(**kwargs)
 
@@ -98,6 +102,11 @@ class Convert(object):
             """Returns a form field for a ``ndb.ComputedProperty``."""
             return None
 
+    def convert_ApplicationUserProperty(self, model, prop, kwargs):
+        """Returns a form field for a ``ndb.UserProperty``."""
+        kwargs['is_lock'] = prop._is_lock
+        return fields.ApplicationUserField(**kwargs)
+
     def convert_UserProperty(self, model, prop, kwargs):
         """Returns a form field for a ``ndb.UserProperty``."""
         if isinstance(prop, ndb.Property) and (prop._auto_current_user or prop._auto_current_user_add):
@@ -121,8 +130,9 @@ class Convert(object):
         """Returns a form field for a ``ndb.KeyProperty``."""
         kwargs['kind'] = prop._kind
         kwargs.setdefault('allow_blank', not prop._required)
-        if prop._ajax:
-            return fields.CategoryAjaxField(**kwargs)
+        kwargs['the_same'] = model.__name__ == prop._kind
+        if prop._dropdown:
+            return fields.CategoryDropdownField(**kwargs)
         return fields.CategoryField(**kwargs)
 
     def convert_SidePanelProperty(self, model, prop, kwargs):
@@ -166,6 +176,18 @@ class Convert(object):
 
     def convert_ImagesProperty(self, model, prop, kwargs):
         return fields.ImagesField(**kwargs)
+
+    def convert_HtmlProperty(self, model, prop, kwargs):
+        kwargs['html'] = prop._html
+        return fields.HtmlField(**kwargs)
+
+    def convert_RangeProperty(self, model, prop, kwargs):
+        kwargs['max'] = prop._max
+        kwargs['min'] = prop._min
+        kwargs['step'] = prop._step
+        kwargs['unit'] = prop._unit
+        kwargs['multiple'] = prop._multiple
+        return fields.RangeField(**kwargs)
 
     def convert_DateProperty(self, model, prop, kwargs):
         """Returns a form field for a ``ndb.DateProperty``."""
