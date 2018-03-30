@@ -235,71 +235,69 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None, plugin
 
     The routes generated are:
 
-    controller:list : /controller
-    controller:view : /controller/:id
-    controller:add  : /controller/add
-    controller:edit : /controller/:id/edit
-    controller:delete : /controller/:id/delete
+    controller:list : /plugin_name/controller
+    controller:view : /plugin_name/controller/:id
+    controller:add  : /plugin_name/controller/add
+    controller:edit : /plugin_name/controller/:id/edit
+    controller:delete : /plugin_name/controller/:id/delete
 
     prefixes just add to the beginning of the name and uri, for example:
 
-    admin:controller:edit: /admin/plugin/controller/:id/edit
+    admin:controller:edit: /admin/plugin_name/controller/:id/edit
     """
-    if hasattr(controllercls, 'name'):
-        name = controllercls.name
     name = inflector.underscore(controllercls.__name__)
     prefix_string = ''
 
     if prefix_name:
         prefix_string = prefix_name + '_'
 
-    top = []
-    path = []
-    id = []
+    top_route_list = []
+    route_list = []
+    record_route_list = []
 
     # GET /controller -> controller::list
     method_name = prefix_string + 'list'
     if hasattr(controllercls, method_name):
-        top.append(Route('/' + name, controllercls, 'list', handler_method=method_name, methods=['HEAD', 'GET']))
+        top_route_list.append(Route('/' + name, controllercls, 'list', handler_method=method_name, methods=['HEAD', 'GET']))
 
     # GET /controller/:urlsafe -> controller::view
     if hasattr(controllercls, prefix_string + 'view'):
-        path.append(Route('/:<key>', controllercls, 'view', handler_method=prefix_string + 'view', methods=['HEAD', 'GET']))
+        route_list.append(Route('/:<key>', controllercls, 'view', handler_method=prefix_string + 'view', methods=['HEAD', 'GET']))
 
     # GET/POST /controller/add -> controller::add
     # POST /controller -> controller::add
     if hasattr(controllercls, prefix_string + 'add'):
-        path.append(Route('/add', controllercls, 'add', handler_method=prefix_string + 'add', methods=['GET', 'POST']))
-        top.append(Route('/' + name, controllercls, 'add:rest', handler_method=prefix_string + 'add', methods=['POST']))
+        route_list.append(Route('/add', controllercls, 'add', handler_method=prefix_string + 'add', methods=['GET', 'POST']))
+        top_route_list.append(Route('/' + name, controllercls, 'add:rest', handler_method=prefix_string + 'add', methods=['POST']))
 
     # GET/POST /controller/:urlsafe/edit -> controller::edit
     # PUT /controller/:urlsafe -> controller::edit
     if hasattr(controllercls, prefix_string + 'edit'):
-        id.append(Route('/edit', controllercls, 'edit', handler_method=prefix_string + 'edit', methods=['GET', 'POST']))
-        path.append(Route('/:<key>', controllercls, 'edit:rest', handler_method=prefix_string + 'edit', methods=['PUT', 'POST']))
+        record_route_list.append(Route('/edit', controllercls, 'edit', handler_method=prefix_string + 'edit', methods=['GET', 'POST']))
+        route_list.append(Route('/:<key>', controllercls, 'edit:rest', handler_method=prefix_string + 'edit', methods=['PUT', 'POST']))
 
     # GET /controller/:urlsafe/delete -> controller::delete
     # DELETE /controller/:urlsafe -> controller::d
     if hasattr(controllercls, prefix_string + 'delete'):
-        id.append(Route('/delete', controllercls, 'delete', handler_method=prefix_string + 'delete'))
-        path.append(Route('/:<key>', controllercls, 'delete:rest', handler_method=prefix_string + 'delete', methods=['DELETE']))
+        record_route_list.append(Route('/delete', controllercls, 'delete', handler_method=prefix_string + 'delete'))
+        route_list.append(Route('/:<key>', controllercls, 'delete:rest', handler_method=prefix_string + 'delete', methods=['DELETE']))
 
     if hasattr(controllercls, prefix_string + 'sort_up'):
-        id.append(Route('/sort_up', controllercls, 'sort_up', handler_method=prefix_string + 'sort_up'))
+        record_route_list.append(Route('/sort_up', controllercls, 'sort_up', handler_method=prefix_string + 'sort_up'))
 
     if hasattr(controllercls, prefix_string + 'sort_down'):
-        id.append(Route('/sort_down', controllercls, 'sort_down', handler_method=prefix_string + 'sort_down'))
+        record_route_list.append(Route('/sort_down', controllercls, 'sort_down', handler_method=prefix_string + 'sort_down'))
 
     if hasattr(controllercls, prefix_string + 'set_boolean_field'):
-        id.append(Route('/set_boolean_field', controllercls, 'set_boolean_field', handler_method=prefix_string + 'set_boolean_field'))
+        record_route_list.append(Route('/set_boolean_field', controllercls, 'set_boolean_field', handler_method=prefix_string + 'set_boolean_field'))
 
     if hasattr(controllercls, prefix_string + 'plugins_check'):
-        id.append(Route('/plugins_check', controllercls, 'plugins_check', handler_method=prefix_string + 'plugins_check'))
+        record_route_list.append(Route('/plugins_check', controllercls, 'plugins_check', handler_method=prefix_string + 'plugins_check'))
 
     if plugin_name:
-        top_route = routes.NamePrefixRoute(name + ':', top + [
-            routes.PathPrefixRoute('/' + name, path + [
-                routes.PathPrefixRoute('/:<key>', id)
+        top_route = routes.NamePrefixRoute(name + ':', top_route_list + [
+            routes.PathPrefixRoute('/' + name, route_list + [
+                routes.PathPrefixRoute('/:<key>', record_route_list)
             ])
         ])
         top_route_2 = routes.NamePrefixRoute(plugin_name + ':', [
@@ -312,9 +310,9 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None, plugin
             return prefix_route
         return top_route_2
     else:
-        top_route = routes.NamePrefixRoute(name + ':', top + [
-            routes.PathPrefixRoute('/' + name, path + [
-                routes.PathPrefixRoute('/:<key>', id)
+        top_route = routes.NamePrefixRoute(name + ':', top_route_list + [
+            routes.PathPrefixRoute('/' + name, route_list + [
+                routes.PathPrefixRoute('/:<key>', record_route_list)
             ])
         ])
     if prefix_name:
@@ -322,5 +320,4 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None, plugin
             routes.PathPrefixRoute('/' + prefix_name, [top_route])
         ])
         return prefix_route
-
     return top_route

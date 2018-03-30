@@ -175,6 +175,8 @@ def get_enable_plugins_from_db(server_name, namespace=None):
         return _plugin_enable_list[str(namespace)]
     namespace_manager.set_namespace('shared')
     host_item = HostInformationModel.get_by_host(server_name)
+    if server_name.startswith('127') and host_item is None:
+        return []
     namespace_manager.set_namespace(namespace)
     enable_plugins = str(host_item.plugins).split(',')
     _plugin_enable_list[str(namespace)] = enable_plugins

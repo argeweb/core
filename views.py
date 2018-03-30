@@ -8,6 +8,7 @@ import json_util
 import template
 import random
 
+
 _views = {}
 _function_list = {}
 _datastore_commands = {}
@@ -274,8 +275,9 @@ class ViewFunction(object):
         self._controller = controller
 
     @staticmethod
-    def register(function_object=None, prefix=u'global'):
-        name = prefix + ':' + function_object.__name__
+    def register(function_object=None, prefix=u'global', name=None):
+        if name is None:
+            name = prefix + ':' + function_object.__name__
         if name in _function_list:
             return
         _function_list[name] = function_object
@@ -323,6 +325,26 @@ class ViewDatastore(object):
         if name in _datastore_commands:
             return
         _datastore_commands[name] = common_object
+
+    def config(self, config_name, *args, **kwargs):
+        import logging
+        logging.debug(config_name)
+        try:
+            config_model = None
+            exec('from application.%s.models.config_model import ConfigModel as config_model' % config_name)
+            if config_model:
+                return config_model.get_config()
+        except Exception as e:
+            logging.debug(e)
+            pass
+        try:
+            config_model = None
+            exec('from plugins.%s.models.config_model import ConfigModel as config_model' % config_name)
+            if config_model:
+                return config_model.get_config()
+        except Exception as e:
+            logging.debug(e)
+            pass
 
     def get(self, *args, **kwargs):
         query_name = None
@@ -375,7 +397,6 @@ class ViewDatastore(object):
             query = common_object(*args, **kwargs)
             target_module = common_object.im_self
             common_object.im_self._kind_map[target_module.__name__] = target_module
-
             if 'size' not in kwargs:
                 kwargs['size'] = self._controller.params.get_integer('size', size)
             if 'page' not in kwargs:

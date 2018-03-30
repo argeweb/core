@@ -7,12 +7,10 @@ import logging
 import base64
 
 from jinja2 import TemplatesNotFound
-
-from argeweb.core import controller_helper
 from google.appengine.api import namespace_manager
 from webapp2 import cached_property
 from webapp2_extras import sessions
-from argeweb.core.uri import Uri
+from argeweb.core import controller_helper
 from argeweb.core import inflector, response_handlers, request_parsers, events
 from argeweb.core import views
 from argeweb.core import routing
@@ -20,17 +18,17 @@ from argeweb.core import scaffold, auth
 from argeweb.core import settings
 from argeweb.core import time_util
 from argeweb.core import params
+from argeweb.core.uri import Uri
 from argeweb.core.bunch import Bunch
+from argeweb.core.ndb import encode_key, decode_key
+from argeweb.core.menu import get_route_menu
+from argeweb.core.json_util import parse as json_parse, stringify as json_stringify
 from argeweb.components.csrf import CSRF
 from argeweb.components.search import Search
 from argeweb.components.pagination import Pagination
-from argeweb.core.ndb import encode_key, decode_key
-from argeweb.core.json_util import parse as json_parse, stringify as json_stringify
-from argeweb.core.menu import get_route_menu
 
 _temporary_route_storage = []
 _temporary_menu_storage = []
-_prefixes = ('admin', 'cron', 'taskqueue')
 
 
 def route(f):
@@ -168,7 +166,7 @@ class Controller(webapp2.RequestHandler, Uri):
 
         #: Prefixes are added in from of controller (like admin_list) and will cause routing
         #: to produce a url such as '/admin/plugin/name/list' and a name such as 'admin:plugin:name:list'
-        prefixes = _prefixes
+        prefixes = settings.prefixes
 
         #: Authorizations control access to the controller. Each authorization is a callable.
         #: Authorizations are called in order and all must return True for the request to be

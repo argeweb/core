@@ -142,7 +142,7 @@ class Scaffold(object):
     Scaffold Meta Object Base Class
     """
     def __init__(self, controller):
-        field_names, redirect_url, get_tab_pages, get_tab_pages_fields = None, None, None, None
+        field_names, redirect_url, get_tab_pages, get_tab_pages_fields = [], None, None, None
         field_verbose_names, model_form_tabs, model_form_data = {}, [], None
 
         if hasattr(controller.meta, 'Model'):
@@ -265,7 +265,7 @@ def _load_model(controller):
             module = __import__(s, fromlist=['*'])
             setattr(controller.Meta, 'Model', getattr(module, model_name))
         except (ImportError, AttributeError, ValueError):
-            if controller.__class__.__name__ not in ['Data', 'Form', 'Api']:
+            if controller.__class__.__name__ not in ['Data', 'Form', 'Api', 'Oauth']:
                 controller.logging.debug('Scaffold coudn\'t automatically determine a model class for controller %s, please assign it a Meta.Model class variable.' % controller.__class__.__name__)
 
 
@@ -296,8 +296,11 @@ def parser_action(controller, item, callback=save_callback):
 
     if controller.request.method in ('PUT', 'POST', 'PATCH'):
         controller.response.headers['Request-Method'] = controller.request.method
+        controller.logging.debug('scaffold_before_validate')
         controller.events.scaffold_before_validate(controller=controller, parser=parser, item=item)
+        controller.logging.debug('scaffold_before_validate 2')
         if parser.validate():
+            controller.logging.debug('validate')
             controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=item)
             callback(controller, item, parser)
             controller.events.scaffold_after_apply(controller=controller, container=parser.container, item=item)

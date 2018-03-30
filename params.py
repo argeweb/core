@@ -118,7 +118,10 @@ class ParamInfo(object):
             try:
                 return datetime.strptime(str_date, str_format)
             except (TypeError, ValueError):
-                return datetime.strptime(str_date, '%Y-%m-%d')
+                try:
+                    return datetime.strptime(str_date, '%Y-%m-%dT%H:%M')
+                except (TypeError, ValueError):
+                    return datetime.strptime(str_date, '%Y-%m-%d')
 
     def get_email(self, key='', default_value=None):
         email = self.get_string(key).strip()

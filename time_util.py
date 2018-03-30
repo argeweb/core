@@ -10,6 +10,7 @@ def utc_tz():
 
 
 def local_tz():
+    # TODO 時區個人化
     s = pytz.timezone(settings.get('timezone')['local'])
     return s
 

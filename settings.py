@@ -15,6 +15,7 @@ from google.appengine.api import memcache
 
 _defaults = {}
 _host_information = {}
+prefixes = ['admin', 'cron', 'console', 'dashboard', 'taskqueue']
 
 
 class ConfigurationError(Exception):

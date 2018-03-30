@@ -10,6 +10,7 @@ import warnings
 import decimal
 import datetime
 import json
+import inspect
 
 from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api.users import User
@@ -146,8 +147,7 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
                  blank_text='', query=None, **kwargs):
         if 'the_same' in kwargs:
             kwargs.pop('the_same')
-        super(KeyPropertyField, self).__init__(label, validators,
-                                                     **kwargs)
+        super(KeyPropertyField, self).__init__(label, validators, **kwargs)
         if label_attr is not None:
             warnings.warn('label_attr= will be removed in WTForms 1.1, use get_label= instead.', DeprecationWarning)
             self.get_label = operator.attrgetter(label_attr)
@@ -169,7 +169,9 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
         if self._query is None and self._kind is not None:
             if isinstance(self._kind, basestring):
                 kind = ndb.Model._kind_map[self._kind]
-            return kind.query()
+            else:
+                kind = self._kind
+            return kind.query
         return self._query
 
     def _value(self):
@@ -180,13 +182,14 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
 
     def _get_data(self):
         if self._formdata is not None:
-            if self.query:
-                for obj in self.query.fetch(1000):
-                    if obj.key.urlsafe() == self._formdata:
-                        self._set_data(obj.key)
-                        break
-            else:
-                self._set_data(ndb.Key(urlsafe=self._formdata))
+            # if self.query:
+            #     self.query.filter('__key__ ==', self._formdata)
+            #     for obj in self.query.fetch(1000):
+            #         if obj.key.urlsafe() == self._formdata:
+            #             self._set_data(obj.key)
+            #             break
+            # else:
+            self._set_data(ndb.Key(urlsafe=self._formdata))
         return self._data
 
     def _set_data(self, data):
@@ -200,17 +203,19 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
             yield ('__None', self.blank_text, self.data is None, None)
 
         if self.query:
-            for obj in self.query.fetch(50):
-                key = obj.key.urlsafe()
-                label = self.get_label(obj)
-                yield (key, label, self.data and (self.data == obj.key),
-                getattr(obj, 'category', None)
-                )
+            if inspect.ismethod(self.query):
+                query = self.query()
+                # self.query = query
+            # TODO 如果大於 50筆 ?
+            if query:
+                for obj in query.fetch(50):
+                    key = obj.key.urlsafe()
+                    label = self.get_label(obj)
+                    yield (key, label, self.data and (self.data == obj.key), getattr(obj, 'category', None))
         elif self.data:
             key = self.data
             item = key.get()
-            yield(key, self.get_label(item), True, getattr(item, 'category', None)
-)
+            yield(key, self.get_label(item), True, getattr(item, 'category', None))
 
     def process_formdata(self, valuelist):
         if valuelist:
@@ -221,12 +226,38 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
                 self._formdata = valuelist[0]
 
     def pre_validate(self, form):
-        if not self.allow_blank or self.data is not None and self.query:
-            for obj in self.query:
-                if self.data.urlsafe() == obj.key.urlsafe():
-                    break
-            else:
-                raise ValueError(self.gettext('Not a valid choice'))
+        if self.data and self.query:
+            try:
+                if str(type(self.data.get())).find(str(self._kind)) < 0:
+                    raise ValueError(self.gettext('Not a valid choice %s ' % self.data))
+            except Exception as e:
+                raise ValueError(self.gettext('Not a valid choice %s' % e))
+        elif not self.allow_blank:
+            raise ValueError(self.gettext('Not a valid choice and not allow blank'))
+
+    # def pre_validate(self, form):
+    #     import logging
+    #     logging.debug('#!!!!')
+    #     s = str(self.data)
+    #     if self.data and self.query:
+    #         if self.allow_blank:
+    #             pass
+    #         else:
+    #             try:
+    #                 g = self.query.filter('__key__ ==', self.data.key).get()
+    #             except Exception as e:
+    #                 raise ValueError(self.gettext('Not a valid choice'))
+    #
+    #             if g is None:
+    #                 raise ValueError(self.gettext('Not a valid choice'))
+    #     else:
+    #         if not self.allow_blank:
+    #             raise ValueError(self.gettext('Not a valid choice and not allow blank'))
+            # for obj in self.query:
+            #     if self.data.urlsafe() == obj.key.urlsafe():
+            #         break
+            # else:
+            #     raise ValueError(self.gettext('Not a valid choice'))
 
 
 class ApplicationUserField(KeyPropertyField):

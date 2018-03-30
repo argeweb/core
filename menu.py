@@ -1,34 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from .settings import prefixes
 _temporary_menu_storage = []
-_prefixes = ('admin', 'console', 'dashboard', 'taskqueue')
 
 
 def route_menu(*args, **kwargs):
     def inner(f):
         if 'uri' not in kwargs:
-            plugin = ''
-            prefix = ''
             f_model_path = f.__module__.split('.')
-            if f_model_path[0] == 'application' or f_model_path[0] == 'plugins':
-                plugin = f_model_path[1]
             ctrl = f.__module__.split('.')[-1]
-            action = f.__name__
-            if 'prefix' in kwargs:
-                prefix = kwargs['prefix']
-            if 'action' in kwargs:
-                action = kwargs['action']
-            for possible_prefix in _prefixes:
+            if f_model_path[0] == 'application':
+                a = 5
+            plugin = f_model_path[0] in ['application', 'plugins'] and f_model_path[1] or ''
+            prefix = 'prefix' in kwargs and kwargs['prefix'] or ''
+            action = 'action' in kwargs and kwargs['action'] or f.__name__
+
+            for possible_prefix in prefixes:
                 if action.startswith(possible_prefix):
                     prefix = possible_prefix
                     break
-            if prefix != u'':
+            uri_array = []
+            if prefix != '':
                 action = action.replace(prefix + '_', '')
-            kwargs['uri'] = '%s:%s' % (ctrl, action)
+                uri_array.append(prefix)
             if plugin is not '':
-                kwargs['uri'] = '%s:%s' % (plugin, kwargs['uri'])
-            if prefix is not '':
-                kwargs['uri'] = '%s:%s' % (prefix, kwargs['uri'])
+                uri_array.append(plugin)
+            uri_array.append(ctrl)
+            uri_array.append(action)
+            kwargs['uri'] = ':'.join(uri_array)
             kwargs['plugin'] = plugin
             kwargs['controller'] = str(f.__module__)
             kwargs['action'] = action
@@ -67,16 +66,16 @@ def get_route_menu(list_name=u'', controller=None):
             text = menu['text']
             group_title = u''
         insert_item = {
+            'level': 1,
             'uri': uri,
             'url': url,
             'text': text,
-            'need_hr': menu['need_hr'] if 'need_hr' in menu else False,
-            'target': menu['target'] if 'target' in menu else '',
-            'need_hr_parent': menu['need_hr_parent'] if 'need_hr_parent' in menu else False,
             'group_title': group_title,
             'icon': menu['icon'] if 'icon' in menu else 'list',
+            'target': menu['target'] if 'target' in menu else '',
             'sort': float(menu['sort']) if 'sort' in menu else 1.0,
-            'level': 1
+            'need_hr': menu['need_hr'] if 'need_hr' in menu else False,
+            'need_hr_parent': menu['need_hr_parent'] if 'need_hr_parent' in menu else False
         }
         if 'group' in menu:
             sub_item = insert_item.copy()
