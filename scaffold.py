@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from argeweb.core import inflector
-from argeweb.core.gaeforms import model_form
+from argeweb.core.forms.gaeforms import model_form
 from argeweb.components.flash_messages import FlashMessages
 from google.appengine.ext.ndb.google_imports import datastore_errors
 

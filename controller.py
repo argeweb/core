@@ -18,6 +18,7 @@ from argeweb.core import scaffold, auth
 from argeweb.core import settings
 from argeweb.core import time_util
 from argeweb.core import params
+from argeweb.core import mysql
 from argeweb.core.uri import Uri
 from argeweb.core.bunch import Bunch
 from argeweb.core.ndb import encode_key, decode_key
@@ -241,6 +242,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.logging = logging
         self.plugins = controller_helper
         self.params = params.ParamInfo(weakref.proxy(self))
+        self.sql = mysql.CloudSQL(weakref.proxy(self))
         self.session_store = sessions.get_store(request=self.request)
 
         self.route = None

@@ -6,9 +6,9 @@
 # Web: http://www.yooliang.com/
 # Date: 2017/01/16.
 from google.appengine.ext import ndb
-from argeweb.libs import wtforms
-from argeweb.libs.wtforms import Form, validators
-from argeweb.libs.wtforms_appengine import ndb as wtfndb
+from .. import wtforms
+from ..wtforms import Form, validators
+from ..wtforms_appengine import ndb as wtfndb
 from . import fields
 
 

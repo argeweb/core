@@ -51,7 +51,7 @@ class FormParser(RequestParser):
     container_name = 'Form'
 
     def process(self, request, container, fallback=None):
-        from argeweb.libs.wtforms_json import MultiDict, flatten_json
+        from argeweb.core.forms.wtforms_json import MultiDict, flatten_json
 
         if inspect.isclass(container):
             container = container()

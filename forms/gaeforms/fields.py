@@ -14,11 +14,11 @@ import inspect
 
 from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api.users import User
-from argeweb.libs.wtforms import widgets as wtforms_widgets
-from argeweb.libs.wtforms.compat import text_type, string_types
-from argeweb.libs.wtforms.widgets import html5 as html5_widgets
-from argeweb.libs import wtforms
-from argeweb.core.gaeforms import widgets
+from ..wtforms import widgets as wtforms_widgets
+from ..wtforms.compat import text_type, string_types
+from ..wtforms.widgets import html5 as html5_widgets
+from ..gaeforms import widgets
+from .. import wtforms
 
 
 TextField = wtforms.StringField

@@ -277,6 +277,10 @@ class ImagesProperty(TextProperty):
     __property_name__ = 'images'
 
 
+class FileProperty(TextProperty):
+    __property_name__ = 'file'
+
+
 class HtmlProperty(StringProperty):
     """ 顯示用 Html 欄位"""
     __property_name__ = 'html'
@@ -357,6 +361,3 @@ class SearchingHelperProperty(StringProperty):
         else:
             setattr(model, field_name, None)
 
-
-class FileProperty(StringProperty):
-    __property_name__ = 'file'

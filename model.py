@@ -27,6 +27,12 @@ class HostInformationModel(BasicModel):
     use_application_template_first = Fields.BooleanProperty(verbose_name=u'優先使用應用程式樣版', default=False)
     view_cache = Fields.BooleanProperty(verbose_name=u'緩存虛擬樣版文件', default=True)
 
+    cloud_sql_instance_name = Fields.StringProperty(verbose_name=u'instance_name', default=u'')
+    cloud_sql_database = Fields.StringProperty(verbose_name=u'database', default=u'')
+    cloud_sql_database_ip = Fields.StringProperty(verbose_name=u'database_ip', default=u'')
+    cloud_sql_database_user = Fields.StringProperty(verbose_name=u'database_user', default=u'')
+    cloud_sql_database_password = Fields.StringProperty(verbose_name=u'database_password', default=u'')
+
     @property
     def plugins_list(self):
         return str(self.plugins).split(',')

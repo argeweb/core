@@ -186,6 +186,7 @@ def get_host_information_item(server_name=None):
         )
     namespace_manager.set_namespace(host_item.namespace)
     set_memcache_in_shared('host.information.' + server_name, host_item, host_item.namespace)
+    host_item.is_dev_server = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
     return host_item, host_item.namespace, host_item.theme, server_name
 
 

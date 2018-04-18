@@ -5,7 +5,7 @@
 # Author: Qi-Liang Wen (温啓良）
 # Web: http://www.yooliang.com/
 # Date: 2017/01/16.
-from argeweb.libs import wtforms
+from .. import wtforms
 from cgi import escape
 from argeweb.core.template import pure_text
 
